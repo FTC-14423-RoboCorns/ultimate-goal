@@ -49,9 +49,9 @@ public class DriveConstants {
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
      */
-    public static double kV = 0.00975;// / rpmToVelocity(MAX_RPM);
-    public static double kA = 0.005;
-    public static double kStatic = 0.01;
+    public static double kV = 1.0 / rpmToVelocity(MAX_RPM);
+    public static double kA = 0;
+    public static double kStatic = 0;
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,
@@ -81,10 +81,8 @@ public class DriveConstants {
      * Maximum Angular Velocity is calculated as maximum velocity / (trackWidth / 2) * (180 / Math.PI)
      */
     public static DriveConstraints BASE_CONSTRAINTS = new DriveConstraints(
-            30, 30, 0.0,
-            2.7, 2.7, 0.0
-//Math.toRadians(1067.864380952381),
-            //maxVel 146.77227662257178
+            146.77227662257178, 146.77227662257178, 0.0,
+            Math.toRadians(1067.864380952381), Math.toRadians(1067.864380952381), 0.0
     );
 
 
