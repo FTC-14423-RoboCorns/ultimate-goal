@@ -110,6 +110,8 @@ public abstract class TrcPixyCam2
      */
     public abstract byte[] syncReadResponse();
 
+    public abstract Block[] getBlocks(int sigMap, int maxBlocks);
+
     /**
      * This class implements the detected object block.
      */

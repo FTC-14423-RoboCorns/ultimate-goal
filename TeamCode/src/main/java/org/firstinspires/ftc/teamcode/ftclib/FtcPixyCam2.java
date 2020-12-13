@@ -168,6 +168,11 @@ public class FtcPixyCam2 extends TrcPixyCam2
         return response;
     }   //syncReadResponse
 
+    @Override
+    public Block[] getBlocks(int sigMap, int maxBlocks) {
+        return new Block[0];
+    }
+
     /**
      * This method writes the data buffer to the device asynchronously.
      *
