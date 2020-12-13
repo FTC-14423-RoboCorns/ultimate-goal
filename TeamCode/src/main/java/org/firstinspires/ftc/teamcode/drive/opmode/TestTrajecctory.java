@@ -6,7 +6,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import org.firstinspires.ftc.teamcode.drive.UltimateMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 /*
  * This is a simple routine to test translational drive capabilities.
@@ -18,7 +18,7 @@ public class TestTrajecctory extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        UltimateMecanumDrive drive = new UltimateMecanumDrive(hardwareMap);
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Pose2d startPose = new Pose2d(-63, 24, 0);
         drive.setPoseEstimate(startPose);
