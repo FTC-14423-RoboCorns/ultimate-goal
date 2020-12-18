@@ -53,7 +53,7 @@ public abstract class TrcPixyCam2
     private static final byte PIXY2_REQ_SET_LAMP                = (byte)22;
     private static final byte PIXY2_REQ_GET_FPS                 = (byte)24;
 
-    private static final byte PIXY2_REQ_GET_BLOCKS              = (byte)32;
+    public static final byte PIXY2_REQ_GET_BLOCKS              = (byte)32;
 
     private static final byte PIXY2_REQ_GET_MAIN_FEATURES       = (byte)48;
     private static final byte PIXY2_REQ_SET_MODE                = (byte)54;
@@ -68,7 +68,7 @@ public abstract class TrcPixyCam2
     private static final byte PIXY2_RES_RESOLUTION              = (byte)13;
     private static final byte PIXY2_RES_VERSION                 = (byte)15;
 
-    private static final byte PIXY2_RES_BLOCKS                  = (byte)33;
+    public static final byte PIXY2_RES_BLOCKS                  = (byte)33;
 
     private static final byte PIXY2_RES_MAIN_FEATURES           = (byte)49;
 
@@ -110,7 +110,8 @@ public abstract class TrcPixyCam2
      */
     public abstract byte[] syncReadResponse();
 
-    public abstract Block[] getBlocks(int sigMap, int maxBlocks);
+   // public abstract Block[] getBlocks(int sigMap, int maxBlocks);
+   // public abstract Block[] getBlocks(int sigMap, int maxBlocks);
 
     /**
      * This class implements the detected object block.
@@ -440,7 +441,7 @@ public abstract class TrcPixyCam2
      * @param expectedResponseType specifies the expected response type.
      * @return response packet if it's valid, null if invalid.
      */
-    private byte[] sendRequest(byte requestType, byte[] data, byte expectedResponseType)
+    public byte[] sendRequest(byte requestType, byte[] data, byte expectedResponseType)
     {
         final String funcName = "SendRequest";
         int dataLen = data == null ? 0 : data.length;
@@ -668,7 +669,8 @@ public abstract class TrcPixyCam2
      * @param maxBlocks specifies the maximum number of blocks to retrieve.
      * @return an array of detected blocks.
      */
-    public Block[] getBlocks(byte sigMap, byte maxBlocks)
+
+    public abstract Block[] getBlocks(byte sigMap, byte maxBlocks)
     {
         Block[] blocks = null;
         byte[] data = {sigMap, maxBlocks};

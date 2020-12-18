@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.drive.opmode;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.teamcode.trclib.TrcUtil;
 
 import org.firstinspires.ftc.teamcode.ftclib.FtcPixyCam2;
 import org.firstinspires.ftc.teamcode.trclib.TrcPixyCam2;
@@ -13,8 +15,9 @@ import java.util.Date;
 /**
  * Demonstrates empty OpMode
  */
-@TeleOp(name = "Concept: NullOp", group = "Concept")
-@Disabled
+@Config
+@TeleOp(name = "PixyCam", group = "Concept")
+//@Disabled
 public class PixyCamOpMode extends OpMode {
 
     FtcPixyCam2 pixy;
@@ -54,11 +57,16 @@ public class PixyCamOpMode extends OpMode {
      */
     @Override
     public void loop() {
+        telemetry.addData("Status", pixy.isEnabled());
         blocks = pixy.getBlocks(1, 5);
+        telemetry.addData("Status", "get blocks");
         for(TrcPixyCam2.Block block : blocks) {
+            telemetry.addData("Status", "found block");
             telemetry.addData("BlockHeight", block.height);
             telemetry.addData("BlockWidth", block.width);
+            telemetry.update();
         }
         telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.update();
     }
 }

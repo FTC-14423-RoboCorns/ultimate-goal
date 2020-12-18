@@ -169,8 +169,24 @@ public class FtcPixyCam2 extends TrcPixyCam2
     }   //syncReadResponse
 
     @Override
-    public Block[] getBlocks(int sigMap, int maxBlocks) {
-        return new Block[0];
+    public Block[] getBlocks(byte sigMap, byte  maxBlocks) {
+       // return new Block[0];
+        Block[] blocks = null;
+        byte[] data = {sigMap, maxBlocks};
+        byte[] response = sendRequest(TrcPixyCam2.PIXY2_REQ_GET_BLOCKS, data, TrcPixyCam2.PIXY2_RES_BLOCKS);
+
+        if (response != null)
+        {
+            int numBlocks = (response.length - 6)/14;
+
+            blocks = new Block[numBlocks];
+            for (int i = 0; i < numBlocks; i++)
+            {
+                blocks[i] = new Block(response, 6 + i*14);
+            }
+        }
+
+        return blocks;
     }
 
     /**
