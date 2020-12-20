@@ -44,9 +44,9 @@ import org.firstinspires.ftc.teamcode.trclib.TrcDbgTrace;
 public class FtcI2cDeviceSynch extends I2cDeviceSynchDevice<I2cDeviceSynch>
 {
     private static final String moduleName = "FtcI2cDeviceSynch";
-    private static final boolean debugEnabled = false;
-    private static final boolean tracingEnabled = false;
-    private static final boolean useGlobalTracer = false;
+    private static final boolean debugEnabled = true;
+    private static final boolean tracingEnabled = true;
+    private static final boolean useGlobalTracer = true;
     private static final TrcDbgTrace.TraceLevel traceLevel = TrcDbgTrace.TraceLevel.API;
     private static final TrcDbgTrace.MsgLevel msgLevel = TrcDbgTrace.MsgLevel.INFO;
     private TrcDbgTrace dbgTrace = null;

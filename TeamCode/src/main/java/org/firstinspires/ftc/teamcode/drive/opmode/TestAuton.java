@@ -22,29 +22,28 @@ public class TestAuton extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Pose2d startBlueInsidePose = new Pose2d(-63, 24, 0); //For blue, mirror red's y values
+        // Pose2d startBlueInsidePose = new Pose2d(-63, 24, 0); //For blue, mirror red's y values
         Pose2d startRedInsidePose = new Pose2d(-63, -24, 0);
-
-
+        int isRed = 1; // BLUE = -1; RED = 1
 
         drive.setPoseEstimate(startRedInsidePose);
 
         Trajectory trajectory1 = drive.trajectoryBuilder(startRedInsidePose)
-                .splineTo(new Vector2d(0, -12), Shooter.shooterAngle(0, -12, true))
+                .splineTo(new Vector2d(0, isRed * -12), Shooter.shooterAngle(0, -12, true))
                 .build();
         Trajectory trajectory2 = drive.trajectoryBuilder(trajectory1.end())
-                .splineTo(new Vector2d(60, -55), 0)
+                .splineTo(new Vector2d(60, isRed * -55), 0)
                 .build();
         Trajectory trajectory3 = drive.trajectoryBuilder(trajectory2.end())
-                //.splineTo(new Vector2d(-55, -55), 0)
+                //.splineTo(new Vector2d(-55, isRed * -55), 0)
                 .back(115)
                 .build();
         Trajectory trajectory4 = drive.trajectoryBuilder(trajectory3.end())
-                //.splineTo(new Vector2d(60, -55), 0)
+                //.splineTo(new Vector2d(60, isRed * -55), 0)
                 .forward(115)
                 .build();
         Trajectory trajectory5 = drive.trajectoryBuilder(trajectory4.end())
-                //.splineTo(new Vector2d(12, -55), 0)
+                //.splineTo(new Vector2d(12, isRed * -55), 0)
                 .back(48)
                 .build();
         waitForStart();

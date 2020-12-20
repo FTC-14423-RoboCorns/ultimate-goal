@@ -3,6 +3,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.trclib.TrcUtil;
 
@@ -29,6 +30,7 @@ public class PixyCamOpMode extends OpMode {
     @Override
     public void init() {
         telemetry.addData("Status", "Initialized");
+        pixy = new FtcPixyCam2(hardwareMap, "PixyCam", 0x54, true);
     }
 
     /*
@@ -37,7 +39,7 @@ public class PixyCamOpMode extends OpMode {
      */
     @Override
     public void init_loop() {
-        pixy = new FtcPixyCam2(hardwareMap, "PixyCam", 0x54, false);
+        //pixy = new FtcPixyCam2(hardwareMap, "PixyCam", 0x54, false);
     }
 
     /*
@@ -58,15 +60,22 @@ public class PixyCamOpMode extends OpMode {
     @Override
     public void loop() {
         telemetry.addData("Status", pixy.isEnabled());
-        blocks = pixy.getBlocks(1, 5);
+        //telemetry.addData("Hardware Version", pixy.getHardwareVersion());
+        telemetry.addData("Res Height", pixy.getResolutionHeight());
+        blocks = pixy.getBlocks((byte) 1, (byte) 5);
         telemetry.addData("Status", "get blocks");
-        for(TrcPixyCam2.Block block : blocks) {
+
+        if(blocks != null) {
             telemetry.addData("Status", "found block");
-            telemetry.addData("BlockHeight", block.height);
-            telemetry.addData("BlockWidth", block.width);
-            telemetry.update();
+            for(TrcPixyCam2.Block block : blocks) {
+                telemetry.addData("BlockHeight", block.height);
+                telemetry.addData("BlockWidth", block.width);
+                telemetry.update();
+            }
         }
+
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.update();
     }
 }
+//bob is great. Bob for prez! I am Bob, and I approve this message. Bob 2024. message and data rates apply (your tax money goes to my auto loan debt, feed me)

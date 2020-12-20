@@ -1,6 +1,13 @@
 package org.firstinspires.ftc.teamcode.drive;
 
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
 public class Shooter {
+    public DcMotorEx shooter;
+    public CRServo magazine;
+    //TODO: Add lift and confirm mag
 
     //the location of the red goal on the plane
     public static double redGoalX = 74;
@@ -20,7 +27,19 @@ public class Shooter {
     //height of the goal
     public static double goalHeight = 33.5;
 
-    public static double distanceToGoal(double robotX, double robotY, boolean red)
+    public Shooter(HardwareMap hardwareMap) {
+        init(hardwareMap);
+    }
+
+    private void init(HardwareMap hardwareMap) {
+        //TODO: Add lift and confirm mag class
+        shooter = hardwareMap.get(DcMotorEx.class, "Shooter");
+        shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+
+        magazine = hardwareMap.get(CRServo.class, "Magazine");
+    }
+
+    private static double distanceToGoal(double robotX, double robotY, boolean red)
     {
         //Finding the distance from the robot to the red goal
         double distance = 0;
@@ -60,8 +79,8 @@ public class Shooter {
 
         if(red = true)
         {
-            double opposite = robotY - redGoalY;
-            double adjacent = robotX - redGoalX;
+            double opposite = redGoalY - robotY;
+            double adjacent = redGoalX - robotX;
             goalAngle = Math.atan2(opposite, adjacent);
 
         }

@@ -35,9 +35,9 @@ import java.util.Locale;
 public abstract class TrcPixyCam2
 {
     protected static final String moduleName = "TrcPixyCam2";
-    protected static final boolean debugEnabled = false;
-    protected static final boolean tracingEnabled = false;
-    protected static final boolean useGlobalTracer = false;
+    protected static final boolean debugEnabled = true;
+    protected static final boolean tracingEnabled = true;
+    protected static final boolean useGlobalTracer = true;
     protected static final TrcDbgTrace.TraceLevel traceLevel = TrcDbgTrace.TraceLevel.API;
     protected static final TrcDbgTrace.MsgLevel msgLevel = TrcDbgTrace.MsgLevel.INFO;
     protected TrcDbgTrace dbgTrace = null;
@@ -53,7 +53,7 @@ public abstract class TrcPixyCam2
     private static final byte PIXY2_REQ_SET_LAMP                = (byte)22;
     private static final byte PIXY2_REQ_GET_FPS                 = (byte)24;
 
-    public static final byte PIXY2_REQ_GET_BLOCKS              = (byte)32;
+    private static final byte PIXY2_REQ_GET_BLOCKS              = (byte)32;
 
     private static final byte PIXY2_REQ_GET_MAIN_FEATURES       = (byte)48;
     private static final byte PIXY2_REQ_SET_MODE                = (byte)54;
@@ -68,7 +68,7 @@ public abstract class TrcPixyCam2
     private static final byte PIXY2_RES_RESOLUTION              = (byte)13;
     private static final byte PIXY2_RES_VERSION                 = (byte)15;
 
-    public static final byte PIXY2_RES_BLOCKS                  = (byte)33;
+    private static final byte PIXY2_RES_BLOCKS                  = (byte)33;
 
     private static final byte PIXY2_RES_MAIN_FEATURES           = (byte)49;
 
@@ -79,8 +79,8 @@ public abstract class TrcPixyCam2
     public static final byte PIXY2_FEATURES_INTERSECTION        = (byte)(1 << 1);
     public static final byte PIXY2_FEATURES_BARCODE             = (byte)(1 << 2);
     public static final byte PIXY2_FEATURES_ALL                 = (byte)(PIXY2_FEATURES_VECTOR +
-                                                                         PIXY2_FEATURES_INTERSECTION +
-                                                                         PIXY2_FEATURES_BARCODE);
+            PIXY2_FEATURES_INTERSECTION +
+            PIXY2_FEATURES_BARCODE);
 
     public static final byte PIXY2_BLOCKS_SIG_1                 = (byte)(1 << 0);
     public static final byte PIXY2_BLOCKS_SIG_2                 = (byte)(1 << 1);
@@ -109,9 +109,6 @@ public abstract class TrcPixyCam2
      * This method issues a synchronous read of the request response.
      */
     public abstract byte[] syncReadResponse();
-
-   // public abstract Block[] getBlocks(int sigMap, int maxBlocks);
-   // public abstract Block[] getBlocks(int sigMap, int maxBlocks);
 
     /**
      * This class implements the detected object block.
@@ -147,8 +144,8 @@ public abstract class TrcPixyCam2
         public String toString()
         {
             return String.format(
-                Locale.US, "sig=%d, centerX=%3d, centerY=%3d, width=%3d, height=%3d, angle=%3d, index=%d, age=%d",
-                signature, centerX, centerY, width, height, angle, trackingIndex, age);
+                    Locale.US, "sig=%d, centerX=%3d, centerY=%3d, width=%3d, height=%3d, angle=%3d, index=%d, age=%d",
+                    signature, centerX, centerY, width, height, angle, trackingIndex, age);
         }   //toString
 
     }   //class Block
@@ -176,7 +173,7 @@ public abstract class TrcPixyCam2
         public String toString()
         {
             return String.format(Locale.US, "x0=%d, y0=%d, x1=%d, y1=%d, index=%d, flags=0x%x",
-                x0, y0, x1, y1, index, flags);
+                    x0, y0, x1, y1, index, flags);
         }   //toString
 
     }   //class Vector
@@ -390,8 +387,8 @@ public abstract class TrcPixyCam2
         if (debugEnabled)
         {
             dbgTrace = useGlobalTracer?
-                TrcDbgTrace.getGlobalTracer():
-                new TrcDbgTrace(moduleName + "." + instanceName, tracingEnabled, traceLevel, msgLevel);
+                    TrcDbgTrace.getGlobalTracer():
+                    new TrcDbgTrace(moduleName + "." + instanceName, tracingEnabled, traceLevel, msgLevel);
         }
 
         this.instanceName = instanceName;
@@ -441,7 +438,7 @@ public abstract class TrcPixyCam2
      * @param expectedResponseType specifies the expected response type.
      * @return response packet if it's valid, null if invalid.
      */
-    public byte[] sendRequest(byte requestType, byte[] data, byte expectedResponseType)
+    private byte[] sendRequest(byte requestType, byte[] data, byte expectedResponseType)
     {
         final String funcName = "SendRequest";
         int dataLen = data == null ? 0 : data.length;
@@ -459,11 +456,11 @@ public abstract class TrcPixyCam2
         if (debugEnabled)
         {
             dbgTrace.traceInfo(funcName, "Request%s => Response%s",
-                Arrays.toString(request), Arrays.toString(response));
+                    Arrays.toString(request), Arrays.toString(response));
         }
 
         if ((short) TrcUtil.bytesToInt(response[0], response[1]) == PIXY2_RECV_SYNC &&
-            response[2] == expectedResponseType && validateChecksum(response))
+                response[2] == expectedResponseType && validateChecksum(response))
         {
             return response;
         }
@@ -614,7 +611,7 @@ public abstract class TrcPixyCam2
         if (panValue >= 0 && panValue <= 511 && tiltValue >= 0 && tiltValue <= 511)
         {
             byte[] data = {TrcUtil.intToByte(panValue, 0), TrcUtil.intToByte(panValue, 1),
-                           TrcUtil.intToByte(tiltValue, 0), TrcUtil.intToByte(tiltValue, 1)};
+                    TrcUtil.intToByte(tiltValue, 0), TrcUtil.intToByte(tiltValue, 1)};
 
             result = sendDataRequest(PIXY2_REQ_SET_SERVOS, data);
         }
@@ -669,8 +666,7 @@ public abstract class TrcPixyCam2
      * @param maxBlocks specifies the maximum number of blocks to retrieve.
      * @return an array of detected blocks.
      */
-
-    public abstract Block[] getBlocks(byte sigMap, byte maxBlocks)
+    public Block[] getBlocks(byte sigMap, byte maxBlocks)
     {
         Block[] blocks = null;
         byte[] data = {sigMap, maxBlocks};
@@ -810,7 +806,7 @@ public abstract class TrcPixyCam2
     public int getRGB(int x, int y, byte satFlag)
     {
         byte[] data = {TrcUtil.intToByte(x, 0), TrcUtil.intToByte(x, 1),
-                       TrcUtil.intToByte(y, 0), TrcUtil.intToByte(y, 1), satFlag};
+                TrcUtil.intToByte(y, 0), TrcUtil.intToByte(y, 1), satFlag};
 
         return sendDataRequest(PIXY2_REQ_GET_RGB, data);
     }   //getRGB
