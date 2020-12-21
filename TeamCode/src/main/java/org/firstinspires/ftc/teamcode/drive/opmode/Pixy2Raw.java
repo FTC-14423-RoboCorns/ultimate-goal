@@ -19,7 +19,7 @@ public class Pixy2Raw extends OpMode
     byte[] request = new byte[4];
     private HalDashboard dashboard;
     private FtcI2cDeviceSynch pixyCam;
-    private static final short PIXY2_SEND_SYNC                  = (short)0xc1ae;
+    private static final short PIXY2_SEND_SYNC   = (short)0xc1ae;
     @Override
     public void init()
     {
@@ -28,7 +28,7 @@ public class Pixy2Raw extends OpMode
         pixyCam.setDeviceInfo(HardwareDevice.Manufacturer.Other, "Pixy Camera v2");
         pixyCam.setI2cAddress(0x54, true);
         pixyCam.getDeviceClient().engage();
-       telemetry.addData("Data",pixyCam.getDeviceClient();
+       telemetry.addData("Data",pixyCam.getDeviceClient());
 
 
 
@@ -43,12 +43,12 @@ public class Pixy2Raw extends OpMode
         request[3] = (byte)2;
         request[4]=(byte)1;
         request[5]=(byte)3;
-        pixyCam.writeData(-1,request,false);
+        pixyCam.writeData(0,request,false);
 
 
 
-        byte[] recvHeader =pixyCam.readData(-1,6);
-        byte[] recvData = recvHeader[3] > 0 ? pixyCam.readData(-1, recvHeader[3]) : null;
+        byte[] recvHeader =pixyCam.readData(0,6);
+        byte[] recvData = recvHeader[3] > 0 ? pixyCam.readData(0, recvHeader[3]) : null;
         if (recvData != null)
         {
            response = new byte[recvHeader.length + recvData.length];

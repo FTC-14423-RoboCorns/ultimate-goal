@@ -26,20 +26,22 @@ import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 
-import java.util.Arrays;
-
 import org.firstinspires.ftc.teamcode.trclib.TrcDbgTrace;
 import org.firstinspires.ftc.teamcode.trclib.TrcPixyCam2;
+import org.firstinspires.ftc.teamcode.drive.NewPixy2;
+import org.firstinspires.ftc.teamcode.drive.LynxI2CDeviceSynchEx;
+import java.util.Arrays;
 
 /**
  * This class implements a platform dependent pixy camera 2 that is connected to an I2C bus.
  * It provides access to the last detected objects reported by the pixy camera asynchronously.
  */
-public class FtcPixyCam2 extends TrcPixyCam2
+public class FtcPixyCam2Robo extends TrcPixyCam2
 {
     private static final int DEF_I2C_ADDRESS = 0x54;
     private static final boolean USE_BUFFERED_READ = false;
-    private final FtcI2cDevice pixyCam;
+    private final NewPixy2 pixyCam;
+    private LynxI2CDeviceSynchEx deviceSynch;
 
     /**
      * Constructor: Create an instance of the object.
@@ -49,17 +51,13 @@ public class FtcPixyCam2 extends TrcPixyCam2
      * @param devAddress specifies the I2C address of the device.
      * @param addressIs7Bit specifies true if the I2C address is a 7-bit address, false if it is 8-bit.
      */
-    public FtcPixyCam2(HardwareMap hardwareMap, String instanceName, int devAddress, boolean addressIs7Bit)
+    public FtcPixyCam2Robo(HardwareMap hardwareMap, String instanceName, int devAddress, boolean addressIs7Bit)
     {
         super(instanceName);
-        pixyCam = new FtcI2cDevice(hardwareMap, instanceName, devAddress, addressIs7Bit, false);
-        pixyCam.deviceSynch.setDeviceInfo(HardwareDevice.Manufacturer.Other, "Pixy Camera v2");
-        if (USE_BUFFERED_READ)
-        {
-            pixyCam.deviceSynch.setBufferedReadWindow(
-                    -1, I2cDeviceSynch.ReadWindow.READ_REGISTER_COUNT_MAX, I2cDeviceSynch.ReadMode.REPEAT,
-                    14);
-        }
+        pixyCam = new NewPixy2(hardwareMap.get(LynxI2CDeviceSynchEx.class, instanceName));
+        deviceSynch=pixyCam.getDeviceClient();
+       //mot needed pixyCam.deviceClient.setDeviceInfo(HardwareDevice.Manufacturer.Other, "Pixy Camera v2");
+
     }   //FtcPixyCam2
 
     /**
@@ -69,7 +67,7 @@ public class FtcPixyCam2 extends TrcPixyCam2
      * @param devAddress specifies the I2C address of the device.
      * @param addressIs7Bit specifies true if the I2C address is a 7-bit address, false if it is 8-bit.
      */
-    public FtcPixyCam2(String instanceName, int devAddress, boolean addressIs7Bit)
+    public FtcPixyCam2Robo(String instanceName, int devAddress, boolean addressIs7Bit)
     {
         this(FtcOpMode.getInstance().hardwareMap, instanceName, devAddress, addressIs7Bit);
     }   //FtcPixyCam2
@@ -79,7 +77,7 @@ public class FtcPixyCam2 extends TrcPixyCam2
      *
      * @param instanceName specifies the instance name.
      */
-    public FtcPixyCam2(String instanceName)
+    public FtcPixyCam2Robo(String instanceName)
     {
         this(FtcOpMode.getInstance().hardwareMap, instanceName, DEF_I2C_ADDRESS, true);
     }   //FtcPixyCam2
@@ -89,10 +87,11 @@ public class FtcPixyCam2 extends TrcPixyCam2
      *
      * @return true if pixy camera is enabled, false otherwise.
      */
+
     public boolean isEnabled()
     {
         final String funcName = "isEnabled";
-        boolean enabled = pixyCam.isEnabled() && pixyCam.deviceSynch.isEnabled();
+        boolean enabled = deviceSynch.isEngaged();
 
         if (debugEnabled)
         {
@@ -116,9 +115,12 @@ public class FtcPixyCam2 extends TrcPixyCam2
         {
             dbgTrace.traceEnter(funcName, TrcDbgTrace.TraceLevel.API, "enanbled=%b", enabled);
         }
-
-        pixyCam.deviceSynch.setEnabled(enabled);
-        pixyCam.setEnabled(enabled);
+    if enabled {
+        deviceSynch.engage();
+    } else {
+        deviceSynch.disengage();
+    }
+       // pixyCam.setEnabled(enabled);
 
         if (debugEnabled)
         {
@@ -144,7 +146,7 @@ public class FtcPixyCam2 extends TrcPixyCam2
             dbgTrace.traceEnter(funcName, TrcDbgTrace.TraceLevel.API);
 
         }
-
+/*
         byte[] recvHeader = pixyCam.syncRead(-1, 6);
         byte[] recvData = recvHeader[3] > 0 ? pixyCam.syncRead(-1, recvHeader[3]) : null;
 
@@ -158,7 +160,8 @@ public class FtcPixyCam2 extends TrcPixyCam2
         {
             response = recvHeader;
         }
-
+*/
+        response = pixyCam.readPacket();
         if (debugEnabled)
         {
             dbgTrace.traceInfo(funcName, "response: %s", Arrays.toString(response));
@@ -183,7 +186,7 @@ public class FtcPixyCam2 extends TrcPixyCam2
             dbgTrace.traceEnter(funcName, TrcDbgTrace.TraceLevel.API, "data=%s", Arrays.toString(data));
         }
 
-        pixyCam.syncWrite(-1, data, data.length);
+        pixyCam.writeComplete(data); //syncWrite(-1, data, data.length);
 
         if (debugEnabled)
         {

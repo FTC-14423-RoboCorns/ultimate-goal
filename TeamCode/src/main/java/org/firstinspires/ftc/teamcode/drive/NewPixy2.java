@@ -5,12 +5,13 @@ package org.firstinspires.ftc.teamcode.drive;
         import com.qualcomm.robotcore.hardware.I2cDeviceSynchDevice;
         import com.qualcomm.robotcore.hardware.configuration.annotations.DeviceProperties;
         import com.qualcomm.robotcore.hardware.configuration.annotations.I2cDeviceType;
+        import com.qualcomm.robotcore.hardware.usb.RobotArmingStateNotifier;
 
         import org.firstinspires.ftc.teamcode.drive.CommunicationException;
         import org.firstinspires.ftc.teamcode.drive.LynxI2CDeviceSynchEx;
 
-//@I2cDeviceType
-//@DeviceProperties(xmlTag = "Pixy2", name = "Pixy2", description = "Pixy2 Vision Camera")
+@I2cDeviceType
+@DeviceProperties(xmlTag = "Pixy2", name = "Pixy2", description = "Pixy2 Vision Camera")
 public final class NewPixy2 extends I2cDeviceSynchDevice<LynxI2CDeviceSynchEx> {
 
     private static final byte[] EMPTY_DATA = new byte[0];
@@ -93,7 +94,7 @@ public final class NewPixy2 extends I2cDeviceSynchDevice<LynxI2CDeviceSynchEx> {
 
     // Internal methods
 
-    private void writePacket(PacketType packetType, byte[] data) {
+    public void writePacket(PacketType packetType, byte[] data) {
         byte dataLength = (byte) data.length;
         byte[] packet = new byte[4 + dataLength];
         packet[0] = (byte) 0xae;
@@ -106,7 +107,21 @@ public final class NewPixy2 extends I2cDeviceSynchDevice<LynxI2CDeviceSynchEx> {
         deviceClient.writeMultipleBytes(packet);
     }
 
-    private byte[] readPacket() {
+    public void writeComplete(byte[] data) {
+        byte dataLength = (byte) data.length;
+        if (dataLength > 0) {
+            deviceClient.writeMultipleBytes(data);
+        }
+    }
+
+
+
+        @Override
+    public void onModuleStateChange(RobotArmingStateNotifier module, RobotArmingStateNotifier.ARMINGSTATE state) {
+        super.onModuleStateChange(module, state);
+    }
+
+    public byte[] readPacket() {
         byte[] packetHeader = deviceClient.readMultipleBytes(6);
         byte dataLength = packetHeader[3];
         if (dataLength > 0) {
