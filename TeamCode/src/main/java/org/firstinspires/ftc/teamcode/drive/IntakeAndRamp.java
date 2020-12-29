@@ -40,6 +40,11 @@ public class IntakeAndRamp {
         intake.setPower(0);
         roller.setPower(0);
     }
+    public void spit() {
+        intake.setPower(-1);
+        roller.setPower(-1);
+    }
+
 
     //Flips intake from start position to end position
     public void flipIntake() {
