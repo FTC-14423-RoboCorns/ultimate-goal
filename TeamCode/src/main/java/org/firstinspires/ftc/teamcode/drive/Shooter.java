@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive;
 
+import android.app.ApplicationErrorReport;
+
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -7,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class Shooter {
     public DcMotorEx shooter;
-    public CRServo magazine;
+    public Servo pusher;
     public Servo lift;
     //TODO: confirm mag
 
@@ -19,7 +21,12 @@ public class Shooter {
 
     private static int SHOOTER_VELOCITY = 1900;
     private static int MAX_VELOCITY = 2160;
-
+    private static double PUSHER_START=.16;
+    private static double PUSHER_STOP=.43;
+    private double RAMP_DISTANCE = 7.5;
+    private double CRANK_RADIUS=1.111;
+    private double ROD_LENGTH=3.75;
+    private double SERVO_RANGE_ANGLE=Math.toRadians(160);
 
     //the location of the middle of the robot.
     public static double robotY = 0;
@@ -60,11 +67,13 @@ public class Shooter {
     private void init(HardwareMap hardwareMap) {
         //TODO: confirm mag class
         shooter = hardwareMap.get(DcMotorEx.class, "Shooter");
+        pusher = hardwareMap.get(Servo.class, "pusher");
+        lift= hardwareMap.get(Servo.class, "lift");
+        lift.scaleRange(.12,.6);//lift servo now goes from 0,1
+        lift.setPosition(.9);
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        pusher.setPosition(PUSHER_START);
 
-        //magazine = hardwareMap.get(CRServo.class, "Magazine");
-
-        //lift = hardwareMap.get(Servo.class, "lift");
     }
 
 
@@ -81,7 +90,7 @@ public class Shooter {
 
         }
     }
-    private static double distanceToGoal(double robotX, double robotY, target goal)
+    private double distanceToGoal(double robotX, double robotY, target goal)
     {
         //Finding the distance from the robot to the red goal
         double distance = 0;
@@ -94,21 +103,34 @@ public class Shooter {
         return distance;
     }
 
-    public static double shooterAngle(double robotX, double robotY, target goal)
+    public double shooterAngle(double robotX, double robotY, target goal)
     {
         //Finding the angle of the shooter relative to the goal
         double opposite = goal.height - 3;
         double adjacent = distanceToGoal(robotX - 8.5, robotY, goal);
-        double angle = Math.atan2(opposite, adjacent);
-        return angle;
+        return Math.atan2(opposite, adjacent);
     }
 
-    public static double supportHeight(double angle)
+    private double supportHeight(double angle)
     {
         //Finding the distance of the bottom of the ramp
-        double rampDistance = 7.5;
-        double height = rampDistance * Math.tan(angle);
-        return height;
+
+        return RAMP_DISTANCE * Math.tan(angle);
+    }
+
+    //returns angle in RADIANS
+    private double crankAngle(double height){
+        double Lsquared = ROD_LENGTH*ROD_LENGTH;
+        double Rsquared = CRANK_RADIUS*CRANK_RADIUS;
+        double Xsquared = height * height;
+        double numerator = Lsquared - Rsquared - Xsquared;
+        double denominator=2*CRANK_RADIUS * height *-1;
+        return Math.acos(numerator/denominator);
+    }
+
+    //assumes angle in radians
+    private double liftPosFromAngle(double angle){
+        return angle/SERVO_RANGE_ANGLE;
     }
 
     public double angleToGoal(double robotX, double robotY, target goal)
@@ -122,16 +144,22 @@ public class Shooter {
 
         return targetAngle;
     }
-
-    public void shooterOn()
+    //three versions of this method
+    //no parameter: go to default velocity
+    //int parameter: sets velocity to the parameter
+    //double parameter between 0 and 1: sets velocity to percent of max
+    //returns the velocity set, as caller may not know default or max.
+    public double shooterOn()
     {
         ((DcMotorEx) shooter).setVelocity(SHOOTER_VELOCITY);
+        return SHOOTER_VELOCITY;
     }
-    public void shooterOn(int velocity)
+    public double shooterOn(int velocity)
     {
         ((DcMotorEx) shooter).setVelocity(velocity);
+        return velocity;
     }
-    public void shooterOn(double percentOfMax)
+    public double shooterOn(double percentOfMax)
     {
         if(percentOfMax>1)
         {
@@ -142,6 +170,12 @@ public class Shooter {
             percentOfMax = 0;
         }
         ((DcMotorEx) shooter).setVelocity(percentOfMax*MAX_VELOCITY);
+        return percentOfMax*MAX_VELOCITY;
+    }
+
+    public boolean isShooterReady(double velocity)
+    {
+        return shooter.getVelocity() >= velocity;
     }
     public void shooterOff()
     {
@@ -153,7 +187,43 @@ public class Shooter {
         //range 0.6 (low) to 0.12 (high)
         double angle = shooterAngle(robotX, robotY, goal);
         double shooterHeight = supportHeight(angle);
+        double crankAngle = crankAngle(shooterHeight);
+        double liftPos = liftPosFromAngle(crankAngle);
+        lift.setPosition(liftPos);
 
 
     }
+    public void raiseShooterManual(double degrees)
+    {
+        //range 0.6 (low) to 0.12 (high)
+        //double angle = currentAngle + degrees;
+        //double shooterHeight = supportHeight(angle);
+    //TODO need to get current angle and change it
+
+    }
+
+    public void lowerShooterManual(double degrees)
+    {
+        //range 0.6 (low) to 0.12 (high)
+        //double angle = currentAngle - degrees;
+        //double shooterHeight = supportHeight(angle);
+
+
+    }
+
+    public void pushRing()
+    {
+        pusher.setPosition(PUSHER_STOP);
+        pusher.setPosition(PUSHER_START);
+    }
+
+    public void pusherIn(){
+        pusher.setPosition(PUSHER_STOP);
+
+    }
+    public void pusherOut(){
+        pusher.setPosition(PUSHER_START);
+    }
+
+
 }
