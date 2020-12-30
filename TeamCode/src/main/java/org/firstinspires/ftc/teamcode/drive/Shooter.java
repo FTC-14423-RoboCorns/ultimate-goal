@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import android.app.ApplicationErrorReport;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -14,19 +15,22 @@ public class Shooter {
     //TODO: confirm mag
 
     //the location of the red goal on the plane
-    public static double goalX = 74;
-    public static double goalY = -36;
+    public final static double goalX = 74;
+    public final static double goalY = -36;
 
-    public static double powerShotY = -54;
+    public boolean isShooterOn = false;
+    public boolean isDoneShooting;
 
-    private static int SHOOTER_VELOCITY = 1900;
-    private static int MAX_VELOCITY = 2160;
-    private static double PUSHER_START=.16;
-    private static double PUSHER_STOP=.43;
-    private double RAMP_DISTANCE = 7.5;
-    private double CRANK_RADIUS=1.111;
-    private double ROD_LENGTH=3.75;
-    private double SERVO_RANGE_ANGLE=Math.toRadians(160);
+    public final static double powerShotY = -54;
+
+    private final int SHOOTER_VELOCITY = 1900;
+    private final int MAX_VELOCITY = 2160;
+    private final double PUSHER_START=.16;
+    private final double PUSHER_STOP=.43;
+    private final double RAMP_DISTANCE = 7.5;
+    private final double CRANK_RADIUS=1.111;
+    private final double ROD_LENGTH=3.75;
+    private final double SERVO_RANGE_ANGLE=Math.toRadians(160);
 
     //the location of the middle of the robot.
     public static double robotY = 0;
@@ -36,8 +40,8 @@ public class Shooter {
     public static boolean red = true;
 
     //height of the goal
-    public static double goalHeight = 33.5;
-    public static double powerShotHeight = 30.5;
+    public final double goalHeight = 33.5;
+    public final double powerShotHeight = 30.5;
 
     public target redGoal;
     public target blueGoal;
@@ -50,10 +54,14 @@ public class Shooter {
     public target bluePowerShot2;
     public target bluePowerShot3;
 
+    public target currentTarget;
+
     public Shooter(HardwareMap hardwareMap) {
         init(hardwareMap);
         redGoal= new target(goalX, goalY, goalHeight);
         blueGoal= new target(goalX, goalY*-1, goalHeight);
+
+        isShooterOn = false;
 
         redPowerShot1 = new target(goalX, powerShotY, goalHeight);
         redPowerShot2 = new target(goalX, powerShotY-8, goalHeight);
@@ -73,7 +81,7 @@ public class Shooter {
         lift.setPosition(.9);
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         pusher.setPosition(PUSHER_START);
-
+        currentTarget=redGoal;
     }
 
 
@@ -152,11 +160,13 @@ public class Shooter {
     public double shooterOn()
     {
         ((DcMotorEx) shooter).setVelocity(SHOOTER_VELOCITY);
+        isShooterOn = true;
         return SHOOTER_VELOCITY;
     }
     public double shooterOn(int velocity)
     {
         ((DcMotorEx) shooter).setVelocity(velocity);
+        isShooterOn = true;
         return velocity;
     }
     public double shooterOn(double percentOfMax)
@@ -170,6 +180,7 @@ public class Shooter {
             percentOfMax = 0;
         }
         ((DcMotorEx) shooter).setVelocity(percentOfMax*MAX_VELOCITY);
+        isShooterOn = true;
         return percentOfMax*MAX_VELOCITY;
     }
 
@@ -177,9 +188,11 @@ public class Shooter {
     {
         return shooter.getVelocity() >= velocity;
     }
+
     public void shooterOff()
     {
         ((DcMotorEx) shooter).setVelocity(0);
+        isShooterOn = false;
     }
 
     public void raiseShooter(double robotX, double robotY, target goal)
@@ -199,6 +212,7 @@ public class Shooter {
         //double angle = currentAngle + degrees;
         //double shooterHeight = supportHeight(angle);
     //TODO need to get current angle and change it
+        lift.setPosition(lift.getPosition()+.02);
 
     }
 
@@ -207,7 +221,8 @@ public class Shooter {
         //range 0.6 (low) to 0.12 (high)
         //double angle = currentAngle - degrees;
         //double shooterHeight = supportHeight(angle);
-
+        //TODO need to get current angle and change it
+        lift.setPosition(lift.getPosition()-.01);
 
     }
 
@@ -225,5 +240,8 @@ public class Shooter {
         pusher.setPosition(PUSHER_START);
     }
 
+    public void update(Pose2d position){
+        raiseShooter(position.getX(),position.getY(),currentTarget);
+    }
 
 }
