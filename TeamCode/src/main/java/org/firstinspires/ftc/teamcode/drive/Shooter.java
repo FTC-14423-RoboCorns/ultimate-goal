@@ -7,12 +7,22 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Shooter {
     public DcMotorEx shooter;
     public Servo pusher;
     public Servo lift;
+    public Telemetry telemetry;
     //TODO: confirm mag
+
+    public double angle;
+    public double shooterHeight;
+    public double crankAngle;
+    public double liftPos;
+
 
     //the location of the red goal on the plane
     public final static double goalX = 74;
@@ -30,7 +40,10 @@ public class Shooter {
     private final double RAMP_DISTANCE = 7.5;
     private final double CRANK_RADIUS=1.111;
     private final double ROD_LENGTH=3.75;
-    private final double SERVO_RANGE_ANGLE=Math.toRadians(160);
+    private final double SERVO_RANGE_ANGLE=Math.toRadians(150);
+    private final double RING_EXIT_VELOCITY=50;//feet per second
+    private final double LAUNCH_HEIGHT=4;
+    private final double GRAVITY_FEET=32.17;
 
     //the location of the middle of the robot.
     public static double robotY = 0;
@@ -56,7 +69,7 @@ public class Shooter {
 
     public target currentTarget;
 
-    public Shooter(HardwareMap hardwareMap) {
+    public Shooter(HardwareMap hardwareMap, Telemetry telem) {
         init(hardwareMap);
         redGoal= new target(goalX, goalY, goalHeight);
         blueGoal= new target(goalX, goalY*-1, goalHeight);
@@ -70,6 +83,8 @@ public class Shooter {
         bluePowerShot1 = new target(goalX, (powerShotY*-1), goalHeight);
         bluePowerShot2 = new target(goalX, (powerShotY*-1)-8, goalHeight);
         bluePowerShot3 = new target(goalX, (powerShotY*-1)-16, goalHeight);
+
+        this.telemetry = telem;
     }
 
     private void init(HardwareMap hardwareMap) {
@@ -78,7 +93,7 @@ public class Shooter {
         pusher = hardwareMap.get(Servo.class, "pusher");
         lift= hardwareMap.get(Servo.class, "lift");
         lift.scaleRange(.12,.6);//lift servo now goes from 0,1
-        lift.setPosition(.9);
+        lift.setPosition(.8);
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         pusher.setPosition(PUSHER_START);
         currentTarget=redGoal;
@@ -114,16 +129,29 @@ public class Shooter {
     public double shooterAngle(double robotX, double robotY, target goal)
     {
         //Finding the angle of the shooter relative to the goal
-        double opposite = goal.height - 3;
-        double adjacent = distanceToGoal(robotX - 8.5, robotY, goal);
-        return Math.atan2(opposite, adjacent);
+        double opposite = goal.height - LAUNCH_HEIGHT;//delta y
+        double adjacent = distanceToGoal(robotX - 8.5, robotY, goal);//delta x
+        System.out.println("FTC Opposite "+ opposite);
+        System.out.println("FTC Adjacent "+ adjacent);
+       //straight triangle method
+        //return Math.atan2(opposite, adjacent);
+        //trajectory method - as delta x gets smaller, this angle approaches the atan method.
+        double v_squared = RING_EXIT_VELOCITY*RING_EXIT_VELOCITY;
+        double first_term=(v_squared)/(GRAVITY_FEET*adjacent);
+        double numerator=v_squared*(v_squared-(2*GRAVITY_FEET*opposite));
+        double denominator=(GRAVITY_FEET*GRAVITY_FEET)*(adjacent*adjacent);
+        double second_term=Math.sqrt((numerator/denominator)-1);
+        return Math.atan(first_term-second_term);
+
+
     }
 
     private double supportHeight(double angle)
     {
         //Finding the distance of the bottom of the ramp
+        double tempHeight=RAMP_DISTANCE * Math.tan(angle);
 
-        return RAMP_DISTANCE * Math.tan(angle);
+        return Range.clip(tempHeight,ROD_LENGTH-CRANK_RADIUS,ROD_LENGTH+CRANK_RADIUS);
     }
 
     //returns angle in RADIANS
@@ -198,13 +226,11 @@ public class Shooter {
     public void raiseShooter(double robotX, double robotY, target goal)
     {
         //range 0.6 (low) to 0.12 (high)
-        double angle = shooterAngle(robotX, robotY, goal);
-        double shooterHeight = supportHeight(angle);
-        double crankAngle = crankAngle(shooterHeight);
-        double liftPos = liftPosFromAngle(crankAngle);
-        lift.setPosition(liftPos);
-
-
+        angle = shooterAngle(robotX, robotY, goal);
+        shooterHeight = supportHeight(angle);
+        crankAngle = crankAngle(shooterHeight);
+        liftPos = liftPosFromAngle(crankAngle);
+        //lift.setPosition(liftPos);
     }
     public void raiseShooterManual(double degrees)
     {
@@ -212,7 +238,7 @@ public class Shooter {
         //double angle = currentAngle + degrees;
         //double shooterHeight = supportHeight(angle);
     //TODO need to get current angle and change it
-        lift.setPosition(lift.getPosition()+.02);
+        lift.setPosition(lift.getPosition()+.01);
 
     }
 

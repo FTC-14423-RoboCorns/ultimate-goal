@@ -59,7 +59,7 @@ public class TestAuton extends OpMode {
         //TODO: Create Pre-Match Selection Using Joystick
         startPos = StartPosEnum.INSIDE_RED;
 
-        robot = new Robot(hardwareMap);
+        robot = new Robot(hardwareMap, telemetry);
         switch (startPos){
             case INSIDE_RED:
 
@@ -138,24 +138,26 @@ public class TestAuton extends OpMode {
                 }
                 if (robot.shooter.isShooterReady(targetVelocity)) {
                     currentState = State.SHOOT;
-                }
+                } //will need to add a timer later to move on in case we never get up to speed
                 break;
 
             case SHOOT:
-                if(shootCount<4)
-                {
-                    robot.shooter.pusherIn();
-                    shootCount += 1;
-                }
-                if (shootCount < 3) {
-                    currentState = State.TURN;
-                }
-                else
-                {
-                    if (!robot.shooter.isShooterReady(targetVelocity)) {
-                        robot.shooter.shooterOff();
-                        robot.shooter.pusherOut();
-                        currentState = State.DRIVE_WOBBLE_1;
+                if (!robot.drive.isBusy()) {//making sure our turn is done
+                    if(shootCount<4)
+                    {
+                        robot.shooter.pusherIn();
+                        shootCount += 1;
+                    }
+                    if (shootCount < 3) {
+                        currentState = State.TURN;
+                    }
+                    else
+                    {
+                        if (!robot.shooter.isShooterReady(targetVelocity)) {
+                            robot.shooter.shooterOff();
+                            robot.shooter.pusherOut();
+                            currentState = State.DRIVE_WOBBLE_1;
+                        }
                     }
                 }
                 break;
@@ -171,6 +173,7 @@ public class TestAuton extends OpMode {
                 robot.drive.followTrajectoryAsync(trajectory2);
                 currentState = State.DROP_WOBBLE_1;
             case DROP_WOBBLE_1:
+                //add code here to drop the wobble
         }
 
 
