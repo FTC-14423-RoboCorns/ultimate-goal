@@ -22,7 +22,7 @@ public class Shooter {
     public double shooterHeight;
     public double crankAngle;
     public double liftPos;
-
+    public boolean shooting;
 
     //the location of the red goal on the plane
     public final static double goalX = 74;
@@ -37,7 +37,7 @@ public class Shooter {
     private final int MAX_VELOCITY = 2160;
     private final double PUSHER_START=.16;
     private final double PUSHER_STOP=.43;
-    private final double RAMP_DISTANCE = 7.5;
+    private final double RAMP_DISTANCE = 6;
     private final double CRANK_RADIUS=1.111;
     private final double ROD_LENGTH=3.75;
     private final double SERVO_RANGE_ANGLE=Math.toRadians(150);
@@ -93,7 +93,7 @@ public class Shooter {
         pusher = hardwareMap.get(Servo.class, "pusher");
         lift= hardwareMap.get(Servo.class, "lift");
         lift.scaleRange(.12,.6);//lift servo now goes from 0,1
-        lift.setPosition(.8);
+        lift.setPosition(.56);
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         pusher.setPosition(PUSHER_START);
         currentTarget=redGoal;
@@ -129,18 +129,25 @@ public class Shooter {
     public double shooterAngle(double robotX, double robotY, target goal)
     {
         //Finding the angle of the shooter relative to the goal
-        double opposite = goal.height - LAUNCH_HEIGHT;//delta y
-        double adjacent = distanceToGoal(robotX - 8.5, robotY, goal);//delta x
-        System.out.println("FTC Opposite "+ opposite);
-        System.out.println("FTC Adjacent "+ adjacent);
+        double opposite = (goal.height - LAUNCH_HEIGHT)/12;//delta y
+        double adjacent = (distanceToGoal(robotX , robotY, goal))/12;//delta x
+        //System.out.println("FTC Opposite "+ opposite);
+        //System.out.println("FTC Adjacent "+ adjacent);
+
        //straight triangle method
         //return Math.atan2(opposite, adjacent);
         //trajectory method - as delta x gets smaller, this angle approaches the atan method.
         double v_squared = RING_EXIT_VELOCITY*RING_EXIT_VELOCITY;
-        double first_term=(v_squared)/(GRAVITY_FEET*adjacent);
-        double numerator=v_squared*(v_squared-(2*GRAVITY_FEET*opposite));
-        double denominator=(GRAVITY_FEET*GRAVITY_FEET)*(adjacent*adjacent);
-        double second_term=Math.sqrt((numerator/denominator)-1);
+        //System.out.println("ShooterAngle_FTC v_squared "+ v_squared);
+        double first_term = (v_squared)/(GRAVITY_FEET*adjacent);
+        //System.out.println("ShooterAngle_FTC first_term "+ first_term);
+        double numerator = v_squared*(v_squared-(2*GRAVITY_FEET*opposite));
+        //System.out.println("ShooterAngle_FTC numerator "+ numerator);
+        double denominator = (GRAVITY_FEET*GRAVITY_FEET)*(adjacent*adjacent);
+        //System.out.println("ShooterAngle_FTC denominator "+ denominator);
+        double second_term = Math.sqrt((numerator/denominator)-1);
+        //System.out.println("ShooterAngle_FTC second_term "+ second_term);
+        //System.out.println("ShooterAngle_FTC final "+ (first_term-second_term));
         return Math.atan(first_term-second_term);
 
 
@@ -149,9 +156,10 @@ public class Shooter {
     private double supportHeight(double angle)
     {
         //Finding the distance of the bottom of the ramp
-        double tempHeight=RAMP_DISTANCE * Math.tan(angle);
+        double tempHeight = RAMP_DISTANCE * Math.tan(angle);
 
-        return Range.clip(tempHeight,ROD_LENGTH-CRANK_RADIUS,ROD_LENGTH+CRANK_RADIUS);
+       // return Range.clip(tempHeight,ROD_LENGTH-CRANK_RADIUS,ROD_LENGTH+CRANK_RADIUS);
+        return tempHeight;
     }
 
     //returns angle in RADIANS
@@ -226,11 +234,26 @@ public class Shooter {
     public void raiseShooter(double robotX, double robotY, target goal)
     {
         //range 0.6 (low) to 0.12 (high)
-        angle = shooterAngle(robotX, robotY, goal);
+        /*angle = shooterAngle(robotX, robotY, goal);
+        System.out.println("Raise_FTC angle "+ angle);
         shooterHeight = supportHeight(angle);
-        crankAngle = crankAngle(shooterHeight);
+        System.out.println("Raise_FTC shooterHeight "+ shooterHeight);
+        crankAngle = crankAngle(shooterHeight+1.25);
+        System.out.println("Raise_FTC crank angle "+ crankAngle);
         liftPos = liftPosFromAngle(crankAngle);
-        //lift.setPosition(liftPos);
+        System.out.println("Raise_FTC liftPos "+ liftPos);
+        //lift.setPosition(liftPos);*/
+        double distance = (distanceToGoal(robotX , robotY, goal));
+        if(distance<88){
+            liftPos = 0.61;
+        } else if(distance<120){
+            liftPos = 0.63;
+        } else {
+            liftPos = 0.65;
+        }
+
+        lift.setPosition(liftPos);
+
     }
     public void raiseShooterManual(double degrees)
     {
@@ -260,14 +283,17 @@ public class Shooter {
 
     public void pusherIn(){
         pusher.setPosition(PUSHER_STOP);
+        shooting = true;
 
     }
     public void pusherOut(){
         pusher.setPosition(PUSHER_START);
+        shooting = false;
     }
 
     public void update(Pose2d position){
         raiseShooter(position.getX(),position.getY(),currentTarget);
+
     }
 
 }

@@ -21,10 +21,8 @@ public class Robot
     }
 
     public void Init(HardwareMap hardwareMap) {
-        //TODO: Figure out address and bit for pixycam2
-        //pixy = new FtcPixyCam2(hardwareMap, "PixyCam",);
-        //wobble = new Wobble(hardwareMap);
-        //intake = new IntakeAndRamp(hardwareMap);
+        wobble = new Wobble(hardwareMap);
+        intake = new IntakeAndRamp(hardwareMap);
         shooter = new Shooter(hardwareMap,telemetry);
         drive = new SampleMecanumDrive(hardwareMap);
         pixy = new PixyAnalog(hardwareMap);

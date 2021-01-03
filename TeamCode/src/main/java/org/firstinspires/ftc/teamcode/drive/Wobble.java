@@ -24,13 +24,14 @@ public class Wobble
         wobble = hardwareMap.get(DcMotorEx.class, "Wobble");
         wobble.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         wobble.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        closeWobble();
+
         //TODO: set position that wobble starts in
         //wobble.setTargetPosition();
 
         wobbleServo = hardwareMap.get(Servo.class, "WobbleServo");
         //TODO: set a postion that closes the wobble servo
         //wobbleServo.setPosition();
+        closeWobble();
 
 
 

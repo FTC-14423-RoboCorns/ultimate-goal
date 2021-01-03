@@ -11,6 +11,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robot;
@@ -35,13 +36,29 @@ import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 @TeleOp(group = "advanced")
 public class Driving extends LinearOpMode {
 
+    private Robot robot;
     public static double DRAWING_TARGET_RADIUS = 2;
-
+    private ElapsedTime buttonWait;
+    private boolean driveButtonDown;
+    private boolean shootButtonDown;
+    private boolean intakeButtonDown;
     // Define 2 states, driver control or alignment control
     enum Mode {
         NORMAL_CONTROL,
         ALIGN_TO_POINT
     }
+
+    enum Intake_State {
+        INTAKE_OFF,
+        INTAKE_ON,
+        INTAKE_SPIT
+    }
+
+    enum Wobble_State {
+        WOBBLE_UP,
+        WOBBLE_DOWN
+    }
+
     enum Shooter_State {
         SHOOTER_ON,
         RAMP_UP,
@@ -51,9 +68,10 @@ public class Driving extends LinearOpMode {
     }
 
     double targetVelocity = 1900;
-
+    private Intake_State intakeMode = Intake_State.INTAKE_OFF;
     private Mode currentMode = Mode.NORMAL_CONTROL;
     private Shooter_State shooterMode = Shooter_State.SHOOTER_OFF;
+    private Wobble_State wobbleMode = Wobble_State.WOBBLE_DOWN;
     private int shootCount = 0;
 
     // Declare a PIDF Controller to regulate heading
@@ -66,11 +84,16 @@ public class Driving extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Initialize SampleMecanumDrive
-        Robot robot = new Robot(hardwareMap, telemetry);
+        robot = new Robot(hardwareMap, telemetry);
 
         // We want to turn off velocity control for teleop
         // Velocity control per wheel is not necessary outside of motion profiled auto
         robot.drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        driveButtonDown=false;
+        intakeButtonDown=false;
+        shootButtonDown=false;
+        //Used to wait between button inputs
+        buttonWait = new ElapsedTime();
 
         // Retrieve our pose from the PoseStorage.currentPose static field
         // See AutoTransferPose.java for further details
@@ -80,6 +103,7 @@ public class Driving extends LinearOpMode {
         robot.drive.getLocalizer().setPoseEstimate(startPose);
 
         shooterMode = Shooter_State.SHOOTER_OFF;
+        wobbleMode = Wobble_State.WOBBLE_UP;
 
         // Set input bounds for the heading controller
         // Automatically handles overflow
@@ -107,10 +131,13 @@ public class Driving extends LinearOpMode {
             TelemetryPacket packet = new TelemetryPacket();
             Canvas fieldOverlay = packet.fieldOverlay();
 
+            checkButtons();
+
             switch (currentMode) {
                 case NORMAL_CONTROL:
-                    // Switch into alignment mode if `a` is pressed
-                    if (gamepad1.a) {
+                    // Switch into alignment mode if `b` is pressed
+                    if (gamepad1.b && !driveButtonDown) {
+                        driveButtonDown=true;
                         currentMode = Mode.ALIGN_TO_POINT;
                     }
 
@@ -124,7 +151,8 @@ public class Driving extends LinearOpMode {
                     break;
                 case ALIGN_TO_POINT:
                     // Switch back into normal driver control mode if `b` is pressed
-                    if (gamepad1.b) {
+                    if (gamepad1.b && !driveButtonDown) {
+                        driveButtonDown=true;
                         currentMode = Mode.NORMAL_CONTROL;
                     }
 
@@ -172,15 +200,17 @@ public class Driving extends LinearOpMode {
                     break;
             }
 
-
+            handleIntake();
+            handleWobble();
 
             switch (shooterMode) {
 
                 case SHOOTER_OFF:
                     shootCount = 0;
                     robot.shooter.shooterOff();
-                    if (gamepad1.y)
+                    if (gamepad1.x && !shootButtonDown)
                     {
+                        shootButtonDown=true;
                         shooterMode = Shooter_State.SHOOTER_ON;
                     }
                     break;
@@ -194,19 +224,23 @@ public class Driving extends LinearOpMode {
 
                 case RAMP_UP:
                 if (!robot.shooter.isShooterReady(targetVelocity)) {
+
                     robot.shooter.pusherOut();
                 }
-
-                if (shootCount < 3)
+                if (shootCount <= 3)
                 {
+
                     if (robot.shooter.isShooterReady(targetVelocity)) {
-                        shooterMode = Shooter_State.SHOOT;
-                        shootCount += 1;
+                        if(!robot.shooter.shooting) {
+                            shootCount += 1;
+                            shooterMode = Shooter_State.SHOOT;
+                        }
                     }
                 }
                 else
                 {
                     shooterMode = Shooter_State.SHOOTER_OFF;
+                    robot.shooter.pusherOut();
                 }
                 break;
 
@@ -231,10 +265,13 @@ public class Driving extends LinearOpMode {
 
             // Send telemetry packet off to dashboard
             FtcDashboard.getInstance().sendTelemetryPacket(packet);
-            telemetry.addData("angle", robot.shooter.angle);
+            /*telemetry.addData("angle", robot.shooter.angle);
             telemetry.addData("shooter Height", robot.shooter.shooterHeight);
-            telemetry.addData("crank Angle", robot.shooter.crankAngle);
+            telemetry.addData("crank Angle", robot.shooter.crankAngle);*/
             telemetry.addData("lift Pos", robot.shooter.liftPos);
+            telemetry.addData("shooterReady", robot.shooter.isShooterReady(targetVelocity));
+            telemetry.addData("targetvelocity", targetVelocity);
+            telemetry.addData("shoot_count", shootCount);
             telemetry.addData("lift Pos", shooterMode);
 
             // Print pose to telemetry
@@ -243,5 +280,65 @@ public class Driving extends LinearOpMode {
             telemetry.addData("heading", poseEstimate.getHeading());
             telemetry.update();
         }
+    }
+
+    public void checkButtons(){
+        if (!gamepad1.b) driveButtonDown=false;
+        if (!gamepad1.a) intakeButtonDown=false;
+        if (!gamepad1.x) shootButtonDown=false;
+    }
+
+    public void handleIntake() {
+        switch (intakeMode) {
+            case INTAKE_OFF:
+                if (gamepad1.a && !intakeButtonDown) {
+                    intakeButtonDown=true;
+                    robot.intake.turnOn();
+                    intakeMode = Intake_State.INTAKE_ON;
+                }
+                if (gamepad2.y) {
+                    robot.intake.spit();
+                    intakeMode = Intake_State.INTAKE_SPIT;
+                }
+                break;
+            case INTAKE_ON:
+                if (gamepad1.a && !intakeButtonDown) {
+                    intakeButtonDown=true;
+                    robot.intake.turnOff();
+                    intakeMode = Intake_State.INTAKE_OFF;
+                }
+                if (gamepad2.y) {
+                    intakeMode = Intake_State.INTAKE_SPIT;
+                    robot.intake.spit();
+                }
+                break;
+            case INTAKE_SPIT:
+                if (gamepad1.a && !intakeButtonDown) {
+                    robot.intake.turnOn();
+                    intakeMode = Intake_State.INTAKE_ON;
+                }
+                if (gamepad2.y) {
+                    intakeMode = Intake_State.INTAKE_OFF;
+                    robot.intake.turnOff();
+                }
+                break;
+        }
+    }
+
+        public void handleWobble() {
+            switch (wobbleMode){
+                case WOBBLE_UP:
+                    if (gamepad1.left_bumper){
+                        robot.wobble.raiseWobble();
+                        wobbleMode=Wobble_State.WOBBLE_DOWN;
+                    }
+                    break;
+                case WOBBLE_DOWN:
+                    if (gamepad1.right_bumper){
+                        robot.wobble.lowerWobble();
+                        wobbleMode=Wobble_State.WOBBLE_UP;
+                    }
+                    break;
+            }
     }
 }

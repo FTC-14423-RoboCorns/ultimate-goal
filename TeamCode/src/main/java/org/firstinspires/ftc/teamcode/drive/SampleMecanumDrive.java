@@ -66,9 +66,9 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
     public static double LATERAL_MULTIPLIER = 2.05;
 
-    public static double VX_WEIGHT = .75;
+    public static double VX_WEIGHT = .5;
     public static double VY_WEIGHT = .5;
-    public static double OMEGA_WEIGHT = .75;
+    public static double OMEGA_WEIGHT = .5;
 
     public static int POSE_HISTORY_LIMIT = 100;
 
