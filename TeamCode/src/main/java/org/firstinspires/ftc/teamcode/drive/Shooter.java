@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import static android.util.Log.println;
+
 public class Shooter {
     public DcMotorEx shooter;
     public Servo pusher;
@@ -284,6 +286,7 @@ public class Shooter {
     public void pusherIn(){
         pusher.setPosition(PUSHER_STOP);
         shooting = true;
+
 
     }
     public void pusherOut(){

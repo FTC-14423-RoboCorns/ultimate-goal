@@ -69,4 +69,17 @@ public class Wobble
         wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         wobble.setPower(0);
     }
+
+    public boolean isWobbleUp() {
+        if (wobble.getCurrentPosition() < (START_POSITION + 75)) {
+            return true;
+        } else return false;
+    }
+
+        public boolean isWobbleDown () {
+            if (wobble.getCurrentPosition() > (STOP_POSITION - 50)) {
+                return true;
+            } else return false;
+        }
+
 }

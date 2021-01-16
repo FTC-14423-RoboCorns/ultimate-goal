@@ -84,18 +84,6 @@ public class TestAuton extends OpMode {
         trajectory1 = robot.drive.trajectoryBuilder(startPose)
                 .splineTo(new Vector2d(0, isRed * -12), robot.shooter.shooterAngle(0, -12, robot.shooter.redPowerShot1))
                 .build();
-        trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
-                //.splineTo(new Vector2d(-55, isRed * -55), 0)
-                .back(115)
-                .build();
-        trajectory4 = robot.drive.trajectoryBuilder(trajectory3.end())
-                //.splineTo(new Vector2d(60, isRed * -55), 0)
-                .forward(115)
-                .build();
-        trajectory5 = robot.drive.trajectoryBuilder(trajectory4.end())
-                //.splineTo(new Vector2d(12, isRed * -55), 0)
-                .back(48)
-                .build();
         robot.shooter.currentTarget=robot.shooter.redPowerShot1;
         robot.shooter.update(robot.drive.getPoseEstimate());
         PoseStorage.currentPose = robot.drive.getPoseEstimate();
@@ -264,6 +252,18 @@ public class TestAuton extends OpMode {
                         .build();
                 break;
         }
+        trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
+                //.splineTo(new Vector2d(-55, isRed * -55), 0)
+                .back(115)
+                .build();
+        trajectory4 = robot.drive.trajectoryBuilder(trajectory3.end())
+                //.splineTo(new Vector2d(60, isRed * -55), 0)
+                .forward(115)
+                .build();
+        trajectory5 = robot.drive.trajectoryBuilder(trajectory4.end())
+                //.splineTo(new Vector2d(12, isRed * -55), 0)
+                .back(48)
+                .build();
     }
 
 

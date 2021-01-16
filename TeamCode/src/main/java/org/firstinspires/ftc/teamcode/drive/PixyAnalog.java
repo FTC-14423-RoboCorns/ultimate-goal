@@ -28,11 +28,11 @@ public class PixyAnalog
     public int getStackHeight()
     {
         sensorHeight = readPixy();
-        if(sensorHeight<(oneRing - 0.2))
+        if(sensorHeight<(oneRing - 0.01))
         {
             return 0;
         }
-        else if(sensorHeight<(oneRing + 0.04))
+        else if(sensorHeight<(oneRing + 0.02))
         {
             return 1;
         }
