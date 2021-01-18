@@ -22,7 +22,7 @@ public class IntakeAndRamp {
     private void init(HardwareMap hardwareMap)
     {
         intake = hardwareMap.get(DcMotor.class, "Intake");
-        intake.setDirection(DcMotorSimple.Direction.FORWARD);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         roller = hardwareMap.get(CRServo.class, "Roller");

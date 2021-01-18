@@ -40,7 +40,7 @@ public class Driving extends LinearOpMode {
     public static double DRAWING_TARGET_RADIUS = 2;
     private ElapsedTime buttonWait;
     private ElapsedTime wobbleWait;
-    private boolean debug = false;
+    private boolean debug = true;
     int oneShoot = 0;
 
     //Gamepad1
@@ -60,10 +60,13 @@ public class Driving extends LinearOpMode {
     private boolean ringDecreaseButtonDown;
     private boolean psIncreaseButtonDown;
     private boolean psDecreaseButtonDown;
+    private boolean headingRightButtonDown;
+    private boolean headingLeftButtonDown;
 
     private boolean upOrDown = true;
 
     private int shootNumber = 3;
+
     // Define 2 states, driver control or alignment control
     enum Mode {
         NORMAL_CONTROL,
@@ -94,7 +97,7 @@ public class Driving extends LinearOpMode {
         RESET_SHOOT_COUNT
     }
 
-    double targetVelocity = 1900;
+    double targetVelocity = 2000;
     private Intake_State intakeMode = Intake_State.INTAKE_OFF;
     private Mode currentMode = Mode.NORMAL_CONTROL;
     private Shooter_State shooterMode = Shooter_State.SHOOTER_OFF;
@@ -116,9 +119,9 @@ public class Driving extends LinearOpMode {
         // We want to turn off velocity control for teleop
         // Velocity control per wheel is not necessary outside of motion profiled auto
         robot.drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        driveButtonDown=false;
-        intakeButtonDown=false;
-        shootButtonDown=false;
+        driveButtonDown = false;
+        intakeButtonDown = false;
+        shootButtonDown = false;
         //Used to wait between button inputs
         buttonWait = new ElapsedTime();
         wobbleWait = new ElapsedTime();
@@ -165,7 +168,7 @@ public class Driving extends LinearOpMode {
                 case NORMAL_CONTROL:
                     // Switch into alignment mode if 'rb` is pressed
                     if (gamepad1.right_bumper && !driveButtonDown) {
-                        driveButtonDown=true;
+                        driveButtonDown = true;
                         currentMode = Mode.ALIGN_TO_POINT;
                     }
 
@@ -185,7 +188,7 @@ public class Driving extends LinearOpMode {
                 case ALIGN_TO_POINT:
                     // Switch back into normal driver control mode if `rb` is pressed
                     if (gamepad1.right_bumper && !driveButtonDown) {
-                        driveButtonDown=true;
+                        driveButtonDown = true;
                         currentMode = Mode.NORMAL_CONTROL;
                     }
 
@@ -199,7 +202,7 @@ public class Driving extends LinearOpMode {
                     Vector2d robotFrameInput = fieldFrameInput.rotated(-poseEstimate.getHeading());
 
                     // Difference between the target vector and the bot's position
-                    Vector2d offset = new Vector2d(0,4.75);
+                    Vector2d offset = new Vector2d(0, 4.75);
                     Vector2d adjusted = poseEstimate.vec().plus(offset);
                     //Vector2d difference = targetPosition.minus(poseEstimate.vec());
                     Vector2d difference = targetPosition.minus(adjusted);
@@ -245,6 +248,7 @@ public class Driving extends LinearOpMode {
 
             handleIntake();
             handleWobble();
+            handleChangeHeading();
 
             switch (shooterMode) {
 
@@ -252,17 +256,17 @@ public class Driving extends LinearOpMode {
                     shootCount = 0;
                     robot.shooter.shooterOff();
                     if (gamepad2.x && !shootButtonDown)
-                   // if (oneShoot == 0)
+                    // if (oneShoot == 0)
                     {
                         oneShoot = 1;
-                        shootButtonDown=true;
-                        if(debug) System.out.println("SHOOT_X");
+                        shootButtonDown = true;
+                        if (debug) System.out.println("SHOOT_X");
                         shooterMode = Shooter_State.SHOOTER_ON;
                     }
                     break;
 
                 case SHOOTER_ON:
-                    if(debug) System.out.println("SHOOT_Shooter On");
+                    if (debug) System.out.println("SHOOT_Shooter On");
                     if (!robot.shooter.isShooterOn) {
                         targetVelocity = robot.shooter.shooterOn();
                     }
@@ -270,46 +274,48 @@ public class Driving extends LinearOpMode {
                     break;
 
                 case RAMP_UP:
-                    if(debug) System.out.println("SHOOT_Ramp In " + robot.shooter.shooter.getVelocity());
-                if (!robot.shooter.isShooterReady(targetVelocity)) {
-                    if(debug) System.out.println("SHOOT_Check Shoot " + targetVelocity + " " + robot.shooter.shooter.getVelocity());
-                    robot.shooter.pusherOut();
-                }
-                    if(debug) System.out.println("SHOOT_Shoot Count " + shootCount);
-                    if(debug) System.out.println("SHOOT_Shoot Number " + shootNumber);
-                if (shootCount <= shootNumber)
-                {
-
-                    if (robot.shooter.isShooterReady(targetVelocity)) {
-                        if(debug) System.out.println("SHOOT_Shooter Ready " + robot.shooter.shooter.getVelocity());
-                        if(debug) System.out.println("SHOOT_Shooter Ready " + robot.shooter.isShooterReady(targetVelocity));
-                        if(!robot.shooter.shooting) {
-                            shootCount += 1;
-                            shooterMode = Shooter_State.SHOOT;
-                            if(debug) System.out.println("SHOOT_Shooting");
-                        }
+                    if (debug)
+                        System.out.println("SHOOT_Ramp In " + robot.shooter.shooter.getVelocity());
+                    if (!robot.shooter.isShooterReady(targetVelocity - 200)) {
+                        if (debug)
+                            System.out.println("SHOOT_Check Shoot " + targetVelocity + " " + robot.shooter.shooter.getVelocity());
+                        robot.shooter.pusherOut();
                     }
-                }
-                else
-                {
-                    shooterMode = Shooter_State.SHOOTER_OFF;
-                    shootNumber = 3;
-                    robot.shooter.pusherOut();
-                    if(debug) System.out.println("SHOOT_Done");
-                }
-                break;
+                    if (debug) System.out.println("SHOOT_Shoot Count " + shootCount);
+                    if (debug) System.out.println("SHOOT_Shoot Number " + shootNumber);
+                    if (shootCount <= shootNumber) {
+
+                        if (robot.shooter.isShooterReady(targetVelocity)) {
+                            if (debug)
+                                System.out.println("SHOOT_Shooter Ready " + robot.shooter.shooter.getVelocity());
+                            if (debug)
+                                System.out.println("SHOOT_Shooter Ready " + robot.shooter.isShooterReady(targetVelocity));
+                            if (!robot.shooter.shooting) {
+                                shootCount += 1;
+                                shooterMode = Shooter_State.SHOOT;
+                                if (debug) System.out.println("SHOOT_Shooting");
+                            }
+                        }
+                    } else {
+                        shooterMode = Shooter_State.SHOOTER_OFF;
+                        shootNumber = 3;
+                        currentMode = Mode.NORMAL_CONTROL;
+                        robot.shooter.pusherOut();
+                        if (debug) System.out.println("SHOOT_Done");
+                    }
+                    break;
 
                 case SHOOT:
                     robot.shooter.pusherIn();
                     shooterMode = Shooter_State.RAMP_UP;
-                    if(debug) System.out.println("SHOOT_Done");
-                break;
+                    if (debug) System.out.println("SHOOT_Done");
+                    break;
             }
-            if(gamepad2.dpad_right && !ringIncreaseButtonDown){
+            if (gamepad2.dpad_right && !ringIncreaseButtonDown) {
                 ringIncreaseButtonDown = true;
                 shootNumber += 1;
             }
-            if(gamepad2.dpad_left && !ringDecreaseButtonDown){
+            if (gamepad2.dpad_left && !ringDecreaseButtonDown) {
                 ringDecreaseButtonDown = true;
                 shootNumber += 1;
             }
@@ -348,7 +354,25 @@ public class Driving extends LinearOpMode {
         }
     }
 
-    public void checkButtons(){
+    public void handleChangeHeading() {
+        Pose2d adj=new Pose2d(0,0,2);
+        if(gamepad1.dpad_right &&!headingRightButtonDown)
+
+    {
+
+        Pose2d newPose = robot.drive.getLocalizer().getPoseEstimate().plus(adj);
+        robot.drive.getLocalizer().setPoseEstimate(newPose);
+    }
+        if(gamepad1.dpad_left &&!headingLeftButtonDown)
+
+    {
+        Pose2d newPose = robot.drive.getLocalizer().getPoseEstimate().minus(adj);
+        robot.drive.getLocalizer().setPoseEstimate(newPose);
+    }
+
+}
+
+        public void checkButtons(){
         if (!gamepad1.right_bumper) driveButtonDown=false;
         if (!gamepad1.a) intakeButtonDown=false;
         if (!gamepad1.y) spitButtonDown=false;
@@ -363,6 +387,8 @@ public class Driving extends LinearOpMode {
         if (!gamepad2.left_bumper) ringDecreaseButtonDown=false;
         if (!gamepad2.dpad_right) psIncreaseButtonDown=false;
         if (!gamepad2.dpad_left) psDecreaseButtonDown=false;
+        if (!gamepad1.dpad_right) headingRightButtonDown=false;
+        if (!gamepad1.dpad_left) headingLeftButtonDown=false;
     }
 
     public void handleIntake() {

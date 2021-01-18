@@ -35,7 +35,7 @@ public class Shooter {
 
     public final static double powerShotY = -54;
 
-    private final int SHOOTER_VELOCITY = 1900;
+    private final int SHOOTER_VELOCITY = 2000;
     private final int MAX_VELOCITY = 2160;
     private final double PUSHER_START=.16;
     private final double PUSHER_STOP=.43;
@@ -247,11 +247,12 @@ public class Shooter {
         //lift.setPosition(liftPos);*/
         double distance = (distanceToGoal(robotX , robotY, goal));
         if(distance<88){
-            liftPos = 0.61;
-        } else if(distance<120){
-            liftPos = 0.63;
+          //  liftPos = 0.61;
+            liftPos=.54;
+        } else if(distance<100){
+            liftPos = 0.59;
         } else {
-            liftPos = 0.65;
+            liftPos = 0.57;
         }
 
         lift.setPosition(liftPos);

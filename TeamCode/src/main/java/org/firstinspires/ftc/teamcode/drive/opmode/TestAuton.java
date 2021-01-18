@@ -141,7 +141,7 @@ public class TestAuton extends OpMode {
                     }
                     else
                     {
-                        if (!robot.shooter.isShooterReady(targetVelocity)) {
+                        if (!robot.shooter.isShooterReady(targetVelocity-200)) {
                             robot.shooter.shooterOff();
                             robot.shooter.pusherOut();
                             currentState = State.DRIVE_WOBBLE_1;
