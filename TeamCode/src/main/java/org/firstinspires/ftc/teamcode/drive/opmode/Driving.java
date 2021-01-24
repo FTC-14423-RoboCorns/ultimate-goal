@@ -16,8 +16,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.Shooter;
-import org.firstinspires.ftc.teamcode.drive.advanced.PoseStorage;
 //import org.firstinspires.ftc.teamcode.drive.advanced.TeleOpAlignWithPoint;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
@@ -128,9 +126,11 @@ public class Driving extends LinearOpMode {
 
         // Retrieve our pose from the PoseStorage.currentPose static field
         // See AutoTransferPose.java for further details
+        //TODO: Need way to define whether read or blue? Need manual if PoseStorage is corrupt
         int isRed = 1;
         Pose2d startPose = new Pose2d(-63, -24 * isRed, 0);
 //        robot.drive.getLocalizer().setPoseEstimate(PoseStorage.currentPose);
+        //isRed = PoseStorage.isRed;
         robot.drive.getLocalizer().setPoseEstimate(startPose);
 
         shooterMode = Shooter_State.SHOOTER_OFF;
@@ -139,8 +139,11 @@ public class Driving extends LinearOpMode {
         // Set input bounds for the heading controller
         // Automatically handles overflow
         headingController.setInputBounds(-Math.PI, Math.PI);
-        Vector2d targetPosition = new Vector2d(robot.shooter.redGoal.x, robot.shooter.redGoal.y);
-        robot.shooter.currentTarget = robot.shooter.redGoal;
+        //TODO:need to adjust for red or blue
+        Vector2d targetPosition = new Vector2d(robot.shooter.redGoal.x, ((isRed*robot.shooter.redGoal.y) -5)); //offset by 5 to adjust for shooter position
+        if (isRed==1)  robot.shooter.currentTarget = robot.shooter.redGoal;
+                else robot.shooter.currentTarget = robot.shooter.blueGoal;
+
         waitForStart();
 
         if (isStopRequested()) return;
@@ -202,10 +205,10 @@ public class Driving extends LinearOpMode {
                     Vector2d robotFrameInput = fieldFrameInput.rotated(-poseEstimate.getHeading());
 
                     // Difference between the target vector and the bot's position
-                    Vector2d offset = new Vector2d(0, 4.75);
-                    Vector2d adjusted = poseEstimate.vec().plus(offset);
-                    //Vector2d difference = targetPosition.minus(poseEstimate.vec());
-                    Vector2d difference = targetPosition.minus(adjusted);
+                    //Vector2d offset = new Vector2d(0, 4.75);
+                   // Vector2d adjusted = poseEstimate.vec().plus(offset);
+                    Vector2d difference = targetPosition.minus(poseEstimate.vec());
+                    //Vector2d difference = targetPosition.minus(adjusted);
 
                     // Obtain the target angle for feedback and derivative for feedforward
                     double theta = difference.angle();
@@ -436,15 +439,15 @@ public class Driving extends LinearOpMode {
         switch (wobbleMode){
             case WOBBLE_DOWN:
                 if (gamepad1.b && !wobbleButtonDown){
-                    robot.wobble.lowerWobble();
+                    robot.wobble.lowerWobbleFromFront();
                     wobbleMode=Wobble_State.WOBBLE_DOWNWAIT;
                 }
                 break;
             case WOBBLE_DOWNWAIT:
-                if (robot.wobble.isWobbleDown())
-                {
+                //if (robot.wobble.isWobbleDown())
+                //{
                         wobbleMode = Wobble_State.WOBBLE_OPEN;
-                }
+                //}
                 break;
             case WOBBLE_OPEN:
                 robot.wobble.openClaw();
@@ -452,7 +455,7 @@ public class Driving extends LinearOpMode {
                 break;
             case WOBBLE_CLOSE:
                 if (gamepad1.b && !wobbleButtonDown){
-                    robot.wobble.closeWobble();
+                    robot.wobble.closeClaw();
                     wobbleMode=Wobble_State.WOBBLE_UP;
                     wobbleWait.reset();
                 }
@@ -460,7 +463,7 @@ public class Driving extends LinearOpMode {
             case WOBBLE_UP:
                 if (wobbleWait.time() > 500)
                 {
-                    robot.wobble.raiseWobble();
+                    //robot.wobble.raiseWobble();
                     wobbleMode = Wobble_State.WOBBLE_DOWN;
                 }
                 break;

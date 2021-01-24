@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.drive;
 import android.app.ApplicationErrorReport;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -33,7 +35,7 @@ public class Shooter {
     public boolean isShooterOn = false;
     public boolean isDoneShooting;
 
-    public final static double powerShotY = -54;
+    public final static double powerShotY = -19;
 
     private final int SHOOTER_VELOCITY = 2000;
     private final int MAX_VELOCITY = 2160;
@@ -79,12 +81,12 @@ public class Shooter {
         isShooterOn = false;
 
         redPowerShot1 = new target(goalX, powerShotY, goalHeight);
-        redPowerShot2 = new target(goalX, powerShotY-8, goalHeight);
-        redPowerShot3 = new target(goalX, powerShotY-16, goalHeight);
+        redPowerShot2 = new target(goalX, powerShotY+7, goalHeight);
+        redPowerShot3 = new target(goalX, powerShotY+14, goalHeight);
 
         bluePowerShot1 = new target(goalX, (powerShotY*-1), goalHeight);
-        bluePowerShot2 = new target(goalX, (powerShotY*-1)-8, goalHeight);
-        bluePowerShot3 = new target(goalX, (powerShotY*-1)-16, goalHeight);
+        bluePowerShot2 = new target(goalX, (powerShotY*-1)-7, goalHeight);
+        bluePowerShot3 = new target(goalX, (powerShotY*-1)-14, goalHeight);
 
         this.telemetry = telem;
     }
@@ -182,13 +184,22 @@ public class Shooter {
     public double angleToGoal(double robotX, double robotY, target goal)
     {
         //Finding the angle of the robot it needs to turn to shoot to the goal
-        double targetAngle = 0;
+        //double targetAngle = 0;
 
-            double opposite = robotY - goal.y;
-            double adjacent = robotX - goal.x;
-            targetAngle = Math.atan2(opposite, adjacent);
+            //double opposite = robotY - goal.y;
+            //double adjacent = robotX - goal.x;
+            //targetAngle = Math.atan2(opposite, adjacent);
 
-        return targetAngle;
+        Vector2d goalVec = new Vector2d(goal.x, goal.y);
+        Vector2d botVec = new Vector2d(robotX, robotY + 7);
+        //Vector2d difference = targetPosition.minus(poseEstimate.vec());
+        Vector2d difference = goalVec.minus(botVec);
+
+        // Obtain the target angle for feedback and derivative for feedforward
+        double theta = difference.angle();
+        System.out.println("SHOOTER_THETA " + Math.toDegrees(theta));
+        System.out.println("SHOOTER_DIFFERENCE " + Math.toDegrees(difference.angle()));
+        return theta;
     }
     //three versions of this method
     //no parameter: go to default velocity
@@ -246,15 +257,23 @@ public class Shooter {
         System.out.println("Raise_FTC liftPos "+ liftPos);
         //lift.setPosition(liftPos);*/
         double distance = (distanceToGoal(robotX , robotY, goal));
-        if(distance<88){
-          //  liftPos = 0.61;
-            liftPos=.54;
-        } else if(distance<100){
-            liftPos = 0.59;
+        if (Math.abs(goal.y) < 24) {
+            liftPos = 0.61;
         } else {
-            liftPos = 0.57;
-        }
 
+            if (distance < 88) {
+                //  liftPos = 0.61;
+                liftPos = .54;
+            } else if (distance < 100) {
+                liftPos = 0.57;
+            } else if (distance < 120) {
+                liftPos = 0.59;
+            } else if (distance < 140) {
+                liftPos = 0.59;
+            } else {
+                liftPos = 0.57;
+            }
+        }
         lift.setPosition(liftPos);
 
     }

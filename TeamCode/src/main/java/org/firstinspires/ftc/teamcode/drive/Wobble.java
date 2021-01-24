@@ -8,10 +8,11 @@ public class Wobble
 {
     public DcMotorEx wobble;
     public Servo wobbleServo;
+    public boolean on;
     private static int START_POSITION = 0;
-    private static int STOP_POSITION= 250;
+    private static int STOP_POSITION= 1140;
     private static double SERVO_OPEN = 0.7;
-    private static double SERVO_CLOSED = 0.45;
+    private static double SERVO_CLOSED = 0.37;
 
 
     public Wobble(HardwareMap hardwareMap)
@@ -24,6 +25,7 @@ public class Wobble
         wobble = hardwareMap.get(DcMotorEx.class, "Wobble");
         wobble.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         wobble.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        wobble.setDirection(DcMotorEx.Direction.REVERSE);
 
         //TODO: set position that wobble starts in
         //wobble.setTargetPosition();
@@ -31,7 +33,8 @@ public class Wobble
         wobbleServo = hardwareMap.get(Servo.class, "WobbleServo");
         //TODO: set a postion that closes the wobble servo
         //wobbleServo.setPosition();
-        closeWobble();
+        closeClaw();
+        on=false;
 
 
 
@@ -43,43 +46,53 @@ public class Wobble
     }
 
     //Closes Wobble Hand and grabs Wobble
-    public void closeWobble() {
+    public void closeClaw() {
         //TODO: set a postion that closes the wobble servo
         wobbleServo.setPosition(SERVO_CLOSED);
     }
 
     //Moves Wobble Arm to Raised Position (over Ramp)
-    public void raiseWobble()
+    public void raiseWobbleFromFront()
     {
         //TODO: set position that raises the wobble
-        wobble.setTargetPosition(START_POSITION+75);
-        wobble.setPower(0.8);
-        wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-        wobble.setPower(0);
-
+        if(wobble.getCurrentPosition()<(STOP_POSITION-50))
+        {
+            wobble.setTargetPosition(wobble.getCurrentPosition()+20);
+            wobble.setPower(1);
+            wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+            on=true;
+        }
     }
 
     //Moves Wobble Arm to Lowered Position (Extended position)
-    public void lowerWobble()
+    public void lowerWobbleFromFront()
     {
         //TODO: set position that lowers the wobble
-        wobble.setTargetPosition(STOP_POSITION-50);
-        // Positive Target = move clockwise (out from robot)
-        wobble.setPower(0.8);
-        wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-        wobble.setPower(0);
+        if(wobble.getCurrentPosition()>(START_POSITION+50))
+        {
+            wobble.setTargetPosition(wobble.getCurrentPosition()-20);
+            wobble.setPower(1);
+            wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+            on=true;
+        }
     }
 
-    public boolean isWobbleUp() {
-        if (wobble.getCurrentPosition() < (START_POSITION + 75)) {
+    public void wobbleOff()
+    {
+        wobble.setPower(0);
+        on=false;
+    }
+
+    public boolean isWobbleUp(int pos) {
+        if (wobble.getCurrentPosition() >= (pos)) {
             return true;
         } else return false;
     }
 
-        public boolean isWobbleDown () {
-            if (wobble.getCurrentPosition() > (STOP_POSITION - 50)) {
-                return true;
-            } else return false;
+    public boolean isWobbleDown (int pos) {
+        if (wobble.getCurrentPosition() <= (pos)) {
+              return true;
+           } else return false;
         }
 
 }
