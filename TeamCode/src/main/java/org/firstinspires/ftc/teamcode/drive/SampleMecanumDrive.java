@@ -251,11 +251,11 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
         packet.put("x", currentPose.getX());
         packet.put("y", currentPose.getY());
-        packet.put("heading", currentPose.getHeading());
+        packet.put("heading (deg)", Math.toDegrees(currentPose.getHeading()));
 
         packet.put("xError", lastError.getX());
         packet.put("yError", lastError.getY());
-        packet.put("headingError", lastError.getHeading());
+        packet.put("headingError (deg)", Math.toDegrees(lastError.getHeading()));
 
         switch (mode) {
             case IDLE:
@@ -291,7 +291,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                 break;
             }
             case FOLLOW_TRAJECTORY: {
-                setDriveSignal(follower.update(currentPose));
+                setDriveSignal(follower.update(currentPose, getPoseVelocity()));
 
                 Trajectory trajectory = follower.getTrajectory();
 
