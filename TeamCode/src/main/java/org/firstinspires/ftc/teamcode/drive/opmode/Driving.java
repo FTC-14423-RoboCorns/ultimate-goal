@@ -140,7 +140,7 @@ public class Driving extends LinearOpMode {
         // Automatically handles overflow
         headingController.setInputBounds(-Math.PI, Math.PI);
         //TODO:need to adjust for red or blue
-        Vector2d targetPosition = new Vector2d(robot.shooter.redGoal.x, ((isRed*robot.shooter.redGoal.y) -5)); //offset by 5 to adjust for shooter position
+        Vector2d targetPosition = new Vector2d(robot.shooter.redGoal.x, ((isRed*robot.shooter.redGoal.y) +robot.shooter.SHOOTER_OFFSET)); //offset to adjust for shooter position on robot
         if (isRed==1)  robot.shooter.currentTarget = robot.shooter.redGoal;
                 else robot.shooter.currentTarget = robot.shooter.blueGoal;
 

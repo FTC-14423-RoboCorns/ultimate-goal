@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -79,7 +80,7 @@ public class TestAuton extends OpMode {
 
                 isRed = 1;
                 startPose = new Pose2d(-63, -24 * isRed, 0);
-                PowerTarget =359;
+                PowerTarget =363;
 
                 break;
 
@@ -99,8 +100,8 @@ public class TestAuton extends OpMode {
         robot.drive.setPoseEstimate(startPose);
 
         trajectory1 = robot.drive.trajectoryBuilder(startPose)
-                //.splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)), 0)
-                .splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
+                .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)), 0)
+                //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
                 .build();
         robot.shooter.currentTarget=robot.shooter.redPowerShot1;
         robot.shooter.update(robot.drive.getPoseEstimate());
@@ -135,6 +136,7 @@ public class TestAuton extends OpMode {
             case TRAJECTORY_1:
                 if (!robot.drive.isBusy()) {
                     currentState = State.SHOOTER_ON;
+                    System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)));
                 }
                 break;
 
@@ -151,14 +153,15 @@ public class TestAuton extends OpMode {
             case SHOOT:
                 boolean done;
                 System.out.println("SHOOTER_shootInState");
-                //if (!robot.drive.isBusy()) {//making sure our turn is done
-                    if (isRed==1) {
+                System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
+                if (!robot.drive.isBusy()) {//making sure our turn is done
+                   /* if (isRed==1) {
                         done=robot.drive.getPoseEstimate().getHeading() <= Math.toRadians(PowerTarget);
                     } else {
                         done=robot.drive.getPoseEstimate().getHeading()>= Math.toRadians(PowerTarget);
                     }
-                    if (done) {
-                    System.out.println("SHOOTER_Current heading" + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
+                    if (done) {*/
+                    //System.out.println("SHOOTER_now shooting heading " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                     if(shootCount<4)
                     {
                         System.out.println("SHOOTER_shoot " + shootCount);
@@ -254,7 +257,7 @@ public class TestAuton extends OpMode {
                 break;
         }
 
-
+        handleWobble();
 
         /*
         sleep(1000);
@@ -326,24 +329,26 @@ public class TestAuton extends OpMode {
 
     public void turnTo(double targetAngle, boolean isInputRadians)
     {
-        //double currentHeading = robot.drive.getPoseEstimate().getHeading();
+        double currentHeading = robot.drive.getPoseEstimate().getHeading();
 
         if(!isInputRadians)
         {
            targetAngle = Math.toRadians(targetAngle);
         }
 
-        /*double normAngle = targetAngle;
-        if (targetAngle < 0)
+        double normAngle = Angle.normDelta(targetAngle - currentHeading);
+       /* if (targetAngle < 0)
         {
             normAngle = targetAngle + (Math.PI * 2);
-        }
+        }*/
 
-        System.out.println("SHOOTER_targetAngle " + Math.toDegrees(normAngle));
+        System.out.println("SHOOTER_targetAngle (in Degrees) " + Math.toDegrees(normAngle));
 
-        double diff=normAngle - currentHeading;
-        System.out.println("SHOOTER_diff " + Math.toDegrees(diff));*/
-        robot.drive.turnAsync( Math.toRadians(targetAngle) );
+       // double diff= normAngle-currentHeading;
+        System.out.println("SHOOTER_Turnto Current  " + Math.toDegrees(currentHeading));
+        System.out.println("SHOOTER_Turnto Target  " + Math.toDegrees(targetAngle));
+        System.out.println("SHOOTER_Turnto Turn  " + Math.toDegrees(normAngle));
+        robot.drive.turnAsync(normAngle);
         //robot.drive.turnAsync(targetAngle);
     }
     public void turnTo(double targetAngle)
@@ -353,10 +358,10 @@ public class TestAuton extends OpMode {
 
     public void powerTurn()
     {
-        PowerTarget=PowerTarget - (isRed*6);
-        turnTo(isRed*-6);
+       // PowerTarget=PowerTarget - (isRed*6);
+        //turnTo(isRed*-6);
 
-       /* if(isRed == 1)
+        if(isRed == 1)
         {
             if(shootCount == 1)
             {
@@ -377,7 +382,7 @@ public class TestAuton extends OpMode {
             {
                 turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.bluePowerShot3));
             }
-        }*/
+        }
     }
 
     public void setDriveWobble1()

@@ -36,7 +36,7 @@ public class Shooter {
     public boolean isDoneShooting;
 
     public final static double powerShotY = -19;
-
+    public final double SHOOTER_OFFSET=-4.75;
     private final int SHOOTER_VELOCITY = 2000;
     private final int MAX_VELOCITY = 2160;
     private final double PUSHER_START=.16;
@@ -190,15 +190,14 @@ public class Shooter {
             //double adjacent = robotX - goal.x;
             //targetAngle = Math.atan2(opposite, adjacent);
 
-        Vector2d goalVec = new Vector2d(goal.x, goal.y);
-        Vector2d botVec = new Vector2d(robotX, robotY + 7);
+        Vector2d goalVec = new Vector2d(goal.x, goal.y+SHOOTER_OFFSET);
+        Vector2d botVec = new Vector2d(robotX, robotY);
         //Vector2d difference = targetPosition.minus(poseEstimate.vec());
         Vector2d difference = goalVec.minus(botVec);
 
         // Obtain the target angle for feedback and derivative for feedforward
         double theta = difference.angle();
-        System.out.println("SHOOTER_THETA " + Math.toDegrees(theta));
-        System.out.println("SHOOTER_DIFFERENCE " + Math.toDegrees(difference.angle()));
+        System.out.println("SHOOTER_angle to goal absolute " + Math.toDegrees(theta));
         return theta;
     }
     //three versions of this method
