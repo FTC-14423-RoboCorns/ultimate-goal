@@ -44,6 +44,7 @@ public class Driving extends LinearOpMode {
     //Gamepad1
     private boolean driveButtonDown;
     private boolean spitButtonDown;
+    private boolean stopShootButtonDown;
     private boolean intakeButtonDown;
     private boolean wobbleButtonDown;
     private boolean resetOdomButtonDown;
@@ -64,7 +65,7 @@ public class Driving extends LinearOpMode {
     private boolean upOrDown = true;
 
     private int shootNumber = 3;
-
+    private ElapsedTime waitTimer = new ElapsedTime();
     // Define 2 states, driver control or alignment control
     enum Mode {
         NORMAL_CONTROL,
@@ -175,7 +176,7 @@ public class Driving extends LinearOpMode {
                         currentMode = Mode.ALIGN_TO_POINT;
                     }
 
-                    if (gamepad1.x && !resetOdomButtonDown) {
+                    if (gamepad2.right_stick_button && !resetOdomButtonDown) {
                         resetOdomButtonDown = true;
                         currentMode = Mode.RESET_ODOMETRY;
                     }
@@ -252,7 +253,12 @@ public class Driving extends LinearOpMode {
             handleIntake();
             handleWobble();
             handleChangeHeading();
-
+            if (gamepad2.y && !stopShootButtonDown)
+            {
+                stopShootButtonDown=true;
+                robot.shooter.pusherOut();
+                shooterMode = Shooter_State.SHOOTER_OFF;
+            }
             switch (shooterMode) {
 
                 case SHOOTER_OFF:
@@ -283,6 +289,7 @@ public class Driving extends LinearOpMode {
                         if (debug)
                             System.out.println("SHOOT_Check Shoot " + targetVelocity + " " + robot.shooter.shooter.getVelocity());
                         robot.shooter.pusherOut();
+                        waitTimer.reset();
                     }
                     if (debug) System.out.println("SHOOT_Shoot Count " + shootCount);
                     if (debug) System.out.println("SHOOT_Shoot Number " + shootNumber);
@@ -293,7 +300,7 @@ public class Driving extends LinearOpMode {
                                 System.out.println("SHOOT_Shooter Ready " + robot.shooter.shooter.getVelocity());
                             if (debug)
                                 System.out.println("SHOOT_Shooter Ready " + robot.shooter.isShooterReady(targetVelocity));
-                            if (!robot.shooter.shooting) {
+                            if (!robot.shooter.shooting && waitTimer.milliseconds()>400) {
                                 shootCount += 1;
                                 shooterMode = Shooter_State.SHOOT;
                                 if (debug) System.out.println("SHOOT_Shooting");
@@ -379,8 +386,9 @@ public class Driving extends LinearOpMode {
         if (!gamepad1.right_bumper) driveButtonDown=false;
         if (!gamepad1.a) intakeButtonDown=false;
         if (!gamepad1.y) spitButtonDown=false;
+        if (!gamepad2.y) stopShootButtonDown=false;
         if (!gamepad1.b) wobbleButtonDown=false;
-        if (!gamepad1.x) resetOdomButtonDown=false;
+        if (!gamepad2.right_stick_button) resetOdomButtonDown=false;
 
         if (!gamepad2.x) shootButtonDown=false;
         if (!gamepad2.b) powerShotButtonDown=false;

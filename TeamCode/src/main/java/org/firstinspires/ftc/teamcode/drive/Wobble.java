@@ -11,8 +11,8 @@ public class Wobble
     public boolean on;
     private static int START_POSITION = 0;
     private static int STOP_POSITION= 1140;
-    private static double SERVO_OPEN = 0.7;
-    private static double SERVO_CLOSED = 0.37;
+    private static double SERVO_OPEN = 1;
+    private static double SERVO_CLOSED = 0.55;
 
 
     public Wobble(HardwareMap hardwareMap)
@@ -57,7 +57,7 @@ public class Wobble
         //TODO: set position that raises the wobble
         if(wobble.getCurrentPosition()<(STOP_POSITION-50))
         {
-            wobble.setTargetPosition(wobble.getCurrentPosition()+20);
+            wobble.setTargetPosition(wobble.getCurrentPosition()+30);
             wobble.setPower(1);
             wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             on=true;
@@ -70,7 +70,7 @@ public class Wobble
         //TODO: set position that lowers the wobble
         if(wobble.getCurrentPosition()>(START_POSITION+50))
         {
-            wobble.setTargetPosition(wobble.getCurrentPosition()-20);
+            wobble.setTargetPosition(wobble.getCurrentPosition()-30);
             wobble.setPower(1);
             wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             on=true;

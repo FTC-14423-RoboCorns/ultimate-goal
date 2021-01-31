@@ -27,7 +27,7 @@ public class TestAuton extends OpMode {
     public Robot robot;
     int ringPosition;
     int wobblePos = 0;
-    Trajectory trajectory1,trajectory2,trajectory3,trajectory4,trajectory5;
+    Trajectory trajectory1,trajectory2,trajectory3,trajectory4,trajectory5,misswobble;
     Pose2d startPose;
     ElapsedTime waitTimer1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     ElapsedTime wobbleWait = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -51,16 +51,19 @@ public class TestAuton extends OpMode {
 
     enum State {
         TRAJECTORY_1,   // First, follow a splineTo() trajectory
+        FIRST_TURN,
         SHOOTER_ON,
         SHOOT,
         TURN,
         DRIVE_WOBBLE_1,
         DROP_WOBBLE_1,
+        WOBBLE_DOWN,
         GET_WOBBLE_2,
         GRAB_WOBBLE_2,
         GRAB_WAIT,
         DRIVE_WOBBLE_2,
         DROP_WOBBLE_2,
+        CLAW_WAIT,
         PARK,
         OFF
         //TURN_2,         // Finally, we're gonna turn again
@@ -100,13 +103,15 @@ public class TestAuton extends OpMode {
         robot.drive.setPoseEstimate(startPose);
 
         trajectory1 = robot.drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)), 0)
+                .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)), -15)
                 //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
                 .build();
         robot.shooter.currentTarget=robot.shooter.redPowerShot1;
         robot.shooter.update(robot.drive.getPoseEstimate());
         PoseStorage.currentPose = robot.drive.getPoseEstimate();
         currentState=State.TRAJECTORY_1;
+
+        robot.wobble.closeClaw();
     }
 
     public void init_loop(){
@@ -135,8 +140,14 @@ public class TestAuton extends OpMode {
             //TODO: CHANGE ORDER FOR OUTSIDE RED
             case TRAJECTORY_1:
                 if (!robot.drive.isBusy()) {
+                    turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1));
+ //               System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)));
+                }
+                break;
+
+            case FIRST_TURN:
+                if (!robot.drive.isBusy()){
                     currentState = State.SHOOTER_ON;
-                    System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)));
                 }
                 break;
 
@@ -146,6 +157,7 @@ public class TestAuton extends OpMode {
                     targetVelocity = robot.shooter.shooterOn();
                 }
                 if (robot.shooter.isShooterReady(targetVelocity)) {
+                    waitTimer1.reset();
                     currentState = State.SHOOT;
                 } //will need to add a timer later to move on in case we never get up to speed
                 break;
@@ -154,7 +166,7 @@ public class TestAuton extends OpMode {
                 boolean done;
                 System.out.println("SHOOTER_shootInState");
                 System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
-                if (!robot.drive.isBusy()) {//making sure our turn is done
+                if (!robot.drive.isBusy()&& waitTimer1.time()>1000) {//making sure our turn is done  && waitTimer1.time()>1500
                    /* if (isRed==1) {
                         done=robot.drive.getPoseEstimate().getHeading() <= Math.toRadians(PowerTarget);
                     } else {
@@ -203,16 +215,30 @@ public class TestAuton extends OpMode {
                 //add code here to drop the wobble
                 wobblePos=850;
                 if(!robot.drive.isBusy()) {
+                    waitTimer1.reset();
                     wobblePos=850;
                     robot.wobble.openClaw();
                     currentState = State.GET_WOBBLE_2;
                 }
                 break;
             case GET_WOBBLE_2:
-                robot.drive.followTrajectoryAsync(trajectory3);
-                currentState = State.GRAB_WOBBLE_2;
+                if(waitTimer1.time()>1000)
+                {
+                    wobbleState = WobbleState.WOBBLE_LOWER;
+                    wobblePos = 450;
+                    robot.drive.followTrajectoryAsync(trajectory3);
+                    currentState = State.WOBBLE_DOWN;
+                    waitTimer1.reset();
+                }
                 break;
-
+            case WOBBLE_DOWN:
+                if(waitTimer1.time()>1000)
+                {
+                    wobbleState = WobbleState.WOBBLE_RAISE;
+                    wobblePos = 850;
+                    currentState = State.GRAB_WOBBLE_2;
+                }
+                break;
 
             case GRAB_WOBBLE_2:
                 if (!robot.drive.isBusy()) {
@@ -243,9 +269,17 @@ public class TestAuton extends OpMode {
                 if(!robot.drive.isBusy()) {
                     wobblePos = 850;
                     robot.wobble.openClaw();
-                    currentState = State.PARK;
+                    currentState = State.CLAW_WAIT;
+                    waitTimer1.reset();
                 }
                 break;
+            case CLAW_WAIT:
+                if (waitTimer1.milliseconds() > 500){
+                    currentState = State.PARK;
+                }
+
+                break;
+
             case PARK:
                 wobbleState = WobbleState.WOBBLE_LOWER;
                 wobblePos = 0;
@@ -393,23 +427,39 @@ public class TestAuton extends OpMode {
             case 0: //A
                 //TODO: Verify Wobble Goal Position and Ring Height Map
                 trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
-                        .splineToLinearHeading(new Pose2d(12, isRed * -36, Math.toRadians(90)), 0)
+                        .lineToLinearHeading(new Pose2d(12, isRed * -36, Math.toRadians(70)))
+                        .build();
+                misswobble = robot.drive.trajectoryBuilder(trajectory2.end())
+                        //.splineTo(new Vector2d(-55, isRed * -55), 0)
+                        .lineTo(new Vector2d(12, -24*isRed))
                         .build();
                 break;
             case 1: //B
                 //TODO: Verify Wobble Goal Position and Ring Height Map
                 trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
-                        .splineToLinearHeading(new Pose2d(36, isRed * -12, Math.toRadians(90)), 0)
+                        .lineToLinearHeading(new Pose2d(36, isRed * -12, Math.toRadians(70)))
                         .build();
+                misswobble = robot.drive.trajectoryBuilder(trajectory2.end())
+                        //.splineTo(new Vector2d(-55, isRed * -55), 0)
+                        .lineTo(new Vector2d(36, -24*isRed))
+                                .build();
                 break;
             case 2: //C
                 //TODO: Verify Wobble Goal Position and Ring Height Map
                 trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
-                        .splineToLinearHeading(new Pose2d(60, isRed * -36, Math.toRadians(90)), 0)
+                        .lineToLinearHeading(new Pose2d(60, isRed * -36, Math.toRadians(70)))
+                        .build();
+                misswobble = robot.drive.trajectoryBuilder(trajectory2.end())
+                        //.splineTo(new Vector2d(-55, isRed * -55), 0)
+                        .lineTo(new Vector2d(60, -24*isRed))
                         .build();
                 break;
         }
-        trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end(),true)
+
+
+
+
+        trajectory3 = robot.drive.trajectoryBuilder(misswobble.end(),true)
                 //.splineTo(new Vector2d(-55, isRed * -55), 0)
                 .splineToLinearHeading(new Pose2d(-30, -48*isRed, Math.toRadians(0)),0)
                 .build();
@@ -437,8 +487,8 @@ public class TestAuton extends OpMode {
         }
 
 
-       trajectory5 = robot.drive.trajectoryBuilder(trajectory4.end())
-                .splineTo(new Vector2d(12, isRed * -24), 0)
+       trajectory5 = robot.drive.trajectoryBuilder(trajectory4.end(),true)
+                .splineToLinearHeading(new Pose2d(12, isRed * -24,Math.toRadians(0)), 0)
                 .build();
     }
 
