@@ -5,6 +5,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.util.Angle;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -74,10 +75,15 @@ public class TestAuton extends OpMode {
     @Override
 
     public void init(){
+        robot = new Robot(hardwareMap, telemetry);
+        //need this at beginning of each loop for bulk reads. Manual mode set in robot class so must be called after robot init first time
+        for (LynxModule module : robot.allHubs) {
+            module.clearBulkCache();
+        }
         //TODO: Create Pre-Match Selection Using Joystick
         startPos = StartPosEnum.INSIDE_RED;
 
-        robot = new Robot(hardwareMap, telemetry);
+
         switch (startPos){
             case INSIDE_RED:
 
@@ -103,10 +109,10 @@ public class TestAuton extends OpMode {
         robot.drive.setPoseEstimate(startPose);
 
         trajectory1 = robot.drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)), -15)
+                .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)), Math.toRadians(-15))
                 //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
                 .build();
-        robot.shooter.currentTarget=robot.shooter.redPowerShot1;
+        robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
         robot.shooter.update(robot.drive.getPoseEstimate());
         PoseStorage.currentPose = robot.drive.getPoseEstimate();
         currentState=State.TRAJECTORY_1;
@@ -115,6 +121,10 @@ public class TestAuton extends OpMode {
     }
 
     public void init_loop(){
+        //need this at beginning of each loop for bulk reads. Manual mode set in robot class
+        for (LynxModule module : robot.allHubs) {
+            module.clearBulkCache();
+        }
         ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
@@ -123,6 +133,10 @@ public class TestAuton extends OpMode {
     }
 
     public void start(){
+        //need this at beginning of each loop for bulk reads. Manual mode set in robot class
+        for (LynxModule module : robot.allHubs) {
+            module.clearBulkCache();
+        }
         ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
@@ -135,6 +149,10 @@ public class TestAuton extends OpMode {
     }
 
     public void loop() {
+        //need this at beginning of each loop for bulk reads. Manual mode set in robot class
+        for (LynxModule module : robot.allHubs) {
+            module.clearBulkCache();
+        }
 
         switch (currentState) {
             //TODO: CHANGE ORDER FOR OUTSIDE RED
@@ -224,7 +242,7 @@ public class TestAuton extends OpMode {
             case GET_WOBBLE_2:
                 if(waitTimer1.time()>1000)
                 {
-                    wobbleState = WobbleState.WOBBLE_LOWER;
+                    //wobbleState = WobbleState.WOBBLE_LOWER;
                     wobblePos = 450;
                     robot.drive.followTrajectoryAsync(trajectory3);
                     currentState = State.WOBBLE_DOWN;
@@ -234,7 +252,7 @@ public class TestAuton extends OpMode {
             case WOBBLE_DOWN:
                 if(waitTimer1.time()>1000)
                 {
-                    wobbleState = WobbleState.WOBBLE_RAISE;
+                    //wobbleState = WobbleState.WOBBLE_RAISE;
                     wobblePos = 850;
                     currentState = State.GRAB_WOBBLE_2;
                 }
@@ -250,7 +268,7 @@ public class TestAuton extends OpMode {
             case GRAB_WAIT:
                 if (waitTimer1.time()>250) {
                     robot.drive.followTrajectoryAsync(trajectory4);
-                    wobbleState = WobbleState.WOBBLE_LOWER;
+                    //wobbleState = WobbleState.WOBBLE_LOWER;
                     wobblePos = 450;
                     currentState = State.DRIVE_WOBBLE_2;
                     waitTimer1.reset();
@@ -259,7 +277,7 @@ public class TestAuton extends OpMode {
 
             case DRIVE_WOBBLE_2:
                 if (waitTimer1.time()>1500) {
-                    wobbleState = WobbleState.WOBBLE_RAISE;
+                    //wobbleState = WobbleState.WOBBLE_RAISE;
                     wobblePos = 630;
                     currentState = State.DROP_WOBBLE_2;
                 }
@@ -281,7 +299,7 @@ public class TestAuton extends OpMode {
                 break;
 
             case PARK:
-                wobbleState = WobbleState.WOBBLE_LOWER;
+                //wobbleState = WobbleState.WOBBLE_LOWER;
                 wobblePos = 0;
                 robot.drive.followTrajectoryAsync(trajectory5);
                 currentState = State.OFF;
@@ -319,10 +337,12 @@ public class TestAuton extends OpMode {
         {
             case WOBBLE_RAISE:
                 System.out.println("WOBBLE_raiseInState");
-                if(!robot.wobble.isWobbleUp(wobblePos))
+                //if(!robot.wobble.isWobbleUp(wobblePos))
+                if(!robot.wobble.isWobbleThere(wobblePos))
                 {
                     wobbleWait.reset();
-                    robot.wobble.raiseWobbleFromFront();
+                  //  robot.wobble.raiseWobbleFromFront();
+                    robot.wobble.wobbleMovetoPosition(wobblePos);
                     wobbleState = WobbleState.WOBBLE_RAISEWAIT;
                     System.out.println("WOBBLE_raise");
                 }

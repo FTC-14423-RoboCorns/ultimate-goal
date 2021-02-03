@@ -71,6 +71,12 @@ public class Shooter {
     public target bluePowerShot2;
     public target bluePowerShot3;
 
+    public enum LiftState{
+        DYNAMIC,
+        STATIC
+    }
+    public LiftState liftState;
+
     public target currentTarget;
 
     public Shooter(HardwareMap hardwareMap, Telemetry telem) {
@@ -79,7 +85,7 @@ public class Shooter {
         blueGoal= new target(goalX, goalY*-1, goalHeight);
 
         isShooterOn = false;
-
+        liftState=LiftState.STATIC;
         redPowerShot1 = new target(goalX, powerShotY, goalHeight);
         redPowerShot2 = new target(goalX, powerShotY+7, goalHeight);
         redPowerShot3 = new target(goalX, powerShotY+14, goalHeight);
@@ -255,7 +261,18 @@ public class Shooter {
         liftPos = liftPosFromAngle(crankAngle);
         System.out.println("Raise_FTC liftPos "+ liftPos);
         //lift.setPosition(liftPos);*/
-        double distance = (distanceToGoal(robotX , robotY, goal));
+
+        switch (liftState) {
+
+        case STATIC:
+            if (Math.abs(goal.y) < 24) {
+                liftPos = 0.61;
+            } else {
+                liftPos = 0.54;
+            }
+            break;
+        case DYNAMIC:
+        double distance = (distanceToGoal(robotX, robotY, goal));
         if (Math.abs(goal.y) < 24) {
             liftPos = 0.61;
         } else {
@@ -273,6 +290,9 @@ public class Shooter {
                 liftPos = 0.57;
             }
         }
+        break;
+
+    }
         lift.setPosition(liftPos);
 
     }

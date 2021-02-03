@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 //import org.firstinspires.ftc.teamcode.drive.advanced.TeleOpAlignWithPoint;
+import org.firstinspires.ftc.teamcode.drive.Shooter;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
 /**
@@ -45,6 +47,7 @@ public class Driving extends LinearOpMode {
     private boolean driveButtonDown;
     private boolean spitButtonDown;
     private boolean stopShootButtonDown;
+    private boolean liftModeButtonDown;
     private boolean intakeButtonDown;
     private boolean wobbleButtonDown;
     private boolean resetOdomButtonDown;
@@ -84,7 +87,8 @@ public class Driving extends LinearOpMode {
         WOBBLE_DOWN,
         WOBBLE_DOWNWAIT,
         WOBBLE_CLOSE,
-        WOBBLE_OPEN
+        WOBBLE_OPEN,
+        WOBBLE_UPWAIT
     }
 
     enum Shooter_State {
@@ -114,7 +118,10 @@ public class Driving extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         // Initialize SampleMecanumDrive
         robot = new Robot(hardwareMap, telemetry);
-
+        //need this at beginning of each loop for bulk reads. Manual mode set in robot class, so must be first called after initializing class
+        for (LynxModule module : robot.allHubs) {
+            module.clearBulkCache();
+        }
         // We want to turn off velocity control for teleop
         // Velocity control per wheel is not necessary outside of motion profiled auto
         robot.drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -150,6 +157,10 @@ public class Driving extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive() && !isStopRequested()) {
+            //need this at beginning of each loop for bulk reads. Manual mode set in robot class
+            for (LynxModule module : robot.allHubs) {
+                module.clearBulkCache();
+            }
             // Read pose
             Pose2d poseEstimate = robot.drive.getLocalizer().getPoseEstimate();
 
@@ -249,7 +260,7 @@ public class Driving extends LinearOpMode {
                     currentMode = Mode.NORMAL_CONTROL;
                     break;
             }
-
+            handleShootMode();
             handleIntake();
             handleWobble();
             handleChangeHeading();
@@ -386,12 +397,14 @@ public class Driving extends LinearOpMode {
         if (!gamepad1.right_bumper) driveButtonDown=false;
         if (!gamepad1.a) intakeButtonDown=false;
         if (!gamepad1.y) spitButtonDown=false;
-        if (!gamepad2.y) stopShootButtonDown=false;
+
         if (!gamepad1.b) wobbleButtonDown=false;
         if (!gamepad2.right_stick_button) resetOdomButtonDown=false;
 
         if (!gamepad2.x) shootButtonDown=false;
         if (!gamepad2.b) powerShotButtonDown=false;
+        if (!gamepad2.y) stopShootButtonDown=false;
+        if (!gamepad2.a) liftModeButtonDown=false;
         if (!gamepad2.dpad_down) manualShooterDecreaseButtonDown=false;
         if (!gamepad2.dpad_up) manualShooterIncreaseButtonDown=false;
         if (!gamepad2.right_bumper) ringIncreaseButtonDown=false;
@@ -400,6 +413,17 @@ public class Driving extends LinearOpMode {
         if (!gamepad2.dpad_left) psDecreaseButtonDown=false;
         if (!gamepad1.dpad_right) headingRightButtonDown=false;
         if (!gamepad1.dpad_left) headingLeftButtonDown=false;
+    }
+
+    public void handleShootMode() {
+        if (gamepad2.a && !liftModeButtonDown){
+            liftModeButtonDown=true;
+            if (robot.shooter.liftState== Shooter.LiftState.STATIC) {
+                robot.shooter.liftState= Shooter.LiftState.DYNAMIC;
+            } else {
+                robot.shooter.liftState= Shooter.LiftState.STATIC;
+            }
+        }
     }
 
     public void handleIntake() {
@@ -447,19 +471,20 @@ public class Driving extends LinearOpMode {
         switch (wobbleMode){
             case WOBBLE_DOWN:
                 if (gamepad1.b && !wobbleButtonDown){
-                    robot.wobble.lowerWobbleFromFront();
+                   // robot.wobble.lowerWobbleFromFront();
+                    robot.wobble.wobbleMovetoPosition(850);
                     wobbleMode=Wobble_State.WOBBLE_DOWNWAIT;
                 }
                 break;
             case WOBBLE_DOWNWAIT:
-                //if (robot.wobble.isWobbleDown())
-                //{
+                if (robot.wobble.isWobbleThere(850))
+                {
                         wobbleMode = Wobble_State.WOBBLE_OPEN;
-                //}
+                }
                 break;
             case WOBBLE_OPEN:
                 robot.wobble.openClaw();
-                wobbleMode=Wobble_State.WOBBLE_UP;
+                wobbleMode=Wobble_State.WOBBLE_CLOSE;
                 break;
             case WOBBLE_CLOSE:
                 if (gamepad1.b && !wobbleButtonDown){
@@ -472,6 +497,13 @@ public class Driving extends LinearOpMode {
                 if (wobbleWait.time() > 500)
                 {
                     //robot.wobble.raiseWobble();
+                    robot.wobble.wobbleMovetoPosition(450);
+                    wobbleMode = Wobble_State.WOBBLE_UPWAIT;
+                }
+                break;
+
+            case WOBBLE_UPWAIT:
+                if (robot.wobble.isWobbleThere(450)) {
                     wobbleMode = Wobble_State.WOBBLE_DOWN;
                 }
                 break;

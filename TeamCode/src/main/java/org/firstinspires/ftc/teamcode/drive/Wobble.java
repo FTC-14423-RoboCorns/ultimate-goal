@@ -13,7 +13,7 @@ public class Wobble
     private static int STOP_POSITION= 1140;
     private static double SERVO_OPEN = 1;
     private static double SERVO_CLOSED = 0.55;
-
+    private boolean raise =true;
 
     public Wobble(HardwareMap hardwareMap)
     {
@@ -77,6 +77,17 @@ public class Wobble
         }
     }
 
+    public void wobbleMovetoPosition(double newPos){
+        double curPos = wobble.getCurrentPosition();
+        if (newPos>=curPos){
+            raiseWobbleFromFront();
+            raise=true;
+        } else {
+            lowerWobbleFromFront();
+            raise=false;
+        }
+    }
+
     public void wobbleOff()
     {
         wobble.setPower(0);
@@ -94,5 +105,10 @@ public class Wobble
               return true;
            } else return false;
         }
-
+    public boolean isWobbleThere(int pos){
+        if (raise){
+            return isWobbleUp(pos);
+        } else
+            return isWobbleDown(pos);
+    }
 }

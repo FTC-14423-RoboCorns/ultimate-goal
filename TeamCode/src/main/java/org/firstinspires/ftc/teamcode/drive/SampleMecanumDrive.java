@@ -129,10 +129,11 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
-
+        /*unneeded, now handled in robot class
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
+        */
 
         // TODO: adjust the names of the following hardware devices to match your configuration
        /* imu = hardwareMap.get(BNO055IMU.class, "imu");
