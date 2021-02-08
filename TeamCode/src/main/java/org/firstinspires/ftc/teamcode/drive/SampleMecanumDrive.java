@@ -66,7 +66,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(12, 0, 1.5);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(11, 0, 1);
 
-    public static double LATERAL_MULTIPLIER = 2.05;
+    public static double LATERAL_MULTIPLIER = 1.1; //was 2.05;
 
     public static double VX_WEIGHT = .7;
     public static double VY_WEIGHT = .7;
@@ -77,6 +77,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     public enum Mode {
         IDLE,
         TURN,
+        FIXTURN,
         FOLLOW_TRAJECTORY
     }
 
@@ -122,7 +123,9 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         ));
         accelConstraint = new ProfileAccelerationConstraint(MAX_ACCEL);
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
-                new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
+                //new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
+                new Pose2d(0.25, 0.25, Math.toRadians(2.0)), 0.5);
+
 
         poseHistory = new LinkedList<>();
 
@@ -192,6 +195,24 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         return new TrajectoryBuilder(startPose, startHeading, velConstraint, accelConstraint);
     }
 
+    public void fixTurnAsync(double angle) {
+        double heading = getPoseEstimate().getHeading();
+
+        lastPoseOnTurn = getPoseEstimate();
+
+        turnProfile = MotionProfileGenerator.generateSimpleMotionProfile(
+                new MotionState(heading, 0, 0, 0),
+                new MotionState(heading + angle, 0, 0, 0),
+                MAX_ANG_VEL,
+                MAX_ANG_ACCEL
+        );
+
+        turnStart = clock.seconds();
+        mode = Mode.FIXTURN;
+    }
+
+
+
     public void turnAsync(double angle) {
         double heading = getPoseEstimate().getHeading();
 
@@ -228,6 +249,8 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             case FOLLOW_TRAJECTORY:
                 return follower.getLastError();
             case TURN:
+                return new Pose2d(0, 0, turnController.getLastError());
+            case FIXTURN:
                 return new Pose2d(0, 0, turnController.getLastError());
             case IDLE:
                 return new Pose2d();
@@ -290,6 +313,35 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
                 }
+
+                break;
+            }
+            case FIXTURN: {
+                double t = clock.seconds() - turnStart;
+
+                MotionState targetState = turnProfile.get(t);
+
+                turnController.setTargetPosition(targetState.getX());
+
+                double correction = turnController.update(currentPose.getHeading());
+                if (Math.abs(turnController.getLastError())<Math.toRadians(1))//move test to the front to ensure no stale bulk reads
+                {
+                    mode = Mode.IDLE;
+                    setDriveSignal(new DriveSignal());
+                } else {
+                    double targetOmega = targetState.getV();
+                    double targetAlpha = targetState.getA();
+                    setDriveSignal(new DriveSignal(new Pose2d(
+                            0, 0, targetOmega + correction
+                    ), new Pose2d(
+                            0, 0, targetAlpha
+                    )));
+                }
+                Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
+
+                fieldOverlay.setStroke("#4CAF50");
+                DashboardUtil.drawRobot(fieldOverlay, newPose);
+
 
                 break;
             }

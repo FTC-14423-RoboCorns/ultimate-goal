@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -142,7 +143,7 @@ public class Driving extends LinearOpMode {
         robot.drive.getLocalizer().setPoseEstimate(startPose);
 
         shooterMode = Shooter_State.SHOOTER_OFF;
-        wobbleMode = Wobble_State.WOBBLE_UP;
+        wobbleMode = Wobble_State.WOBBLE_DOWN;
 
         // Set input bounds for the heading controller
         // Automatically handles overflow
@@ -184,6 +185,7 @@ public class Driving extends LinearOpMode {
                     // Switch into alignment mode if 'rb` is pressed
                     if (gamepad1.right_bumper && !driveButtonDown) {
                         driveButtonDown = true;
+                        turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal));
                         currentMode = Mode.ALIGN_TO_POINT;
                     }
 
@@ -207,7 +209,13 @@ public class Driving extends LinearOpMode {
                         currentMode = Mode.NORMAL_CONTROL;
                     }
 
+                    if (!robot.drive.isBusy())
+                        {
+                            System.out.println("SHOOTER_Turnto Actual  " + Math.toDegrees(robot.drive.getLocalizer().getPoseEstimate().getHeading()));
+                            currentMode = Mode.NORMAL_CONTROL;
+                        }
 
+                    /* Commenting align to point out to do turn
                     // Create a vector from the gamepad x/y inputs which is the field relative movement
                     // Then, rotate that vector by the inverse of that heading for field centric control
                     Vector2d fieldFrameInput = new Vector2d(
@@ -242,7 +250,7 @@ public class Driving extends LinearOpMode {
                             robotFrameInput,
                             headingInput
                     );
-
+*/
                     // Draw the target on the field
                     fieldOverlay.setStroke("#dd2c00");
                     fieldOverlay.strokeCircle(targetPosition.getX(), targetPosition.getY(), DRAWING_TARGET_RADIUS);
@@ -253,6 +261,10 @@ public class Driving extends LinearOpMode {
                     fieldOverlay.setStroke("#ffce7a");
                     fieldOverlay.strokeLine(targetPosition.getX(), targetPosition.getY(), targetPosition.getX(), poseEstimate.getY());
                     fieldOverlay.strokeLine(targetPosition.getX(), poseEstimate.getY(), poseEstimate.getX(), poseEstimate.getY());
+
+
+
+
                     break;
                 case RESET_ODOMETRY:
                     Pose2d newPose = new Pose2d(-63, -63 * isRed, 0);
@@ -352,7 +364,7 @@ public class Driving extends LinearOpMode {
 
             // Update he localizer
             robot.drive.getLocalizer().update();
-
+            robot.drive.update();
 
             // Send telemetry packet off to dashboard
             FtcDashboard.getInstance().sendTelemetryPacket(packet);
@@ -470,14 +482,19 @@ public class Driving extends LinearOpMode {
     public void handleWobble() {
         switch (wobbleMode){
             case WOBBLE_DOWN:
+                //System.out.println("** Wobble got to case WOBBLE_DOWN");
                 if (gamepad1.b && !wobbleButtonDown){
                    // robot.wobble.lowerWobbleFromFront();
-                    robot.wobble.wobbleMovetoPosition(850);
+                    //System.out.println("Wobble position " + robot.wobble.wobble.getCurrentPosition());
+                    wobbleButtonDown = true;
+                    robot.wobble.wobbleSetRaise(900);
+                    //robot.wobble.fastMovetoPos(900);
                     wobbleMode=Wobble_State.WOBBLE_DOWNWAIT;
                 }
                 break;
             case WOBBLE_DOWNWAIT:
-                if (robot.wobble.isWobbleThere(850))
+                robot.wobble.wobbleMovetoPosition(900);
+                if (robot.wobble.isWobbleThere(900))
                 {
                         wobbleMode = Wobble_State.WOBBLE_OPEN;
                 }
@@ -488,25 +505,57 @@ public class Driving extends LinearOpMode {
                 break;
             case WOBBLE_CLOSE:
                 if (gamepad1.b && !wobbleButtonDown){
+                    wobbleButtonDown = true;
                     robot.wobble.closeClaw();
                     wobbleMode=Wobble_State.WOBBLE_UP;
                     wobbleWait.reset();
                 }
                 break;
             case WOBBLE_UP:
-                if (wobbleWait.time() > 500)
+                if (wobbleWait.milliseconds() > 500)
                 {
                     //robot.wobble.raiseWobble();
-                    robot.wobble.wobbleMovetoPosition(450);
+                    robot.wobble.wobbleSetRaise(450);
+
                     wobbleMode = Wobble_State.WOBBLE_UPWAIT;
                 }
                 break;
 
             case WOBBLE_UPWAIT:
+                robot.wobble.wobbleMovetoPosition(450);
                 if (robot.wobble.isWobbleThere(450)) {
                     wobbleMode = Wobble_State.WOBBLE_DOWN;
                 }
                 break;
         }
     }
+    public void turnTo(double targetAngle, boolean isInputRadians)
+    {
+        double currentHeading = robot.drive.getPoseEstimate().getHeading();
+
+        if(!isInputRadians)
+        {
+            targetAngle = Math.toRadians(targetAngle);
+        }
+
+        double normAngle = Angle.normDelta(targetAngle - currentHeading);
+       /* if (targetAngle < 0)
+        {
+            normAngle = targetAngle + (Math.PI * 2);
+        }*/
+
+        System.out.println("SHOOTER_targetAngle (in Degrees) " + Math.toDegrees(normAngle));
+
+        // double diff= normAngle-currentHeading;
+        System.out.println("SHOOTER_Turnto Current  " + Math.toDegrees(currentHeading));
+        System.out.println("SHOOTER_Turnto Target  " + Math.toDegrees(targetAngle));
+        System.out.println("SHOOTER_Turnto Turn  " + Math.toDegrees(normAngle));
+        robot.drive.turnAsync(normAngle);
+        //robot.drive.turnAsync(targetAngle);
+    }
+    public void turnTo(double targetAngle)
+    {
+        turnTo(targetAngle, true);
+    }
 }
+

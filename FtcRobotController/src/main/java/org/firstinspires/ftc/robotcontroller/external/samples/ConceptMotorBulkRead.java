@@ -174,7 +174,6 @@ public class ConceptMotorBulkRead extends LinearOpMode {
         // In this mode, only one block read is done each control cycle.
         // This is the MOST efficient method, but it does require that the cache is cleared manually each control cycle.
         // --------------------------------------------------------------------------------------
-        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
 
         // Important Step 3: Option B. Set all Expansion hubs to use the MANUAL Bulk Caching mode
         for (LynxModule module : allHubs) {

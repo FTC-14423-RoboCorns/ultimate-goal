@@ -12,7 +12,7 @@ public class Wobble
     private static int START_POSITION = 0;
     private static int STOP_POSITION= 1140;
     private static double SERVO_OPEN = 1;
-    private static double SERVO_CLOSED = 0.55;
+    private static double SERVO_CLOSED = 0.52;
     private boolean raise =true;
 
     public Wobble(HardwareMap hardwareMap)
@@ -57,11 +57,19 @@ public class Wobble
         //TODO: set position that raises the wobble
         if(wobble.getCurrentPosition()<(STOP_POSITION-50))
         {
-            wobble.setTargetPosition(wobble.getCurrentPosition()+30);
+            wobble.setTargetPosition(wobble.getCurrentPosition()+50);
             wobble.setPower(1);
             wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             on=true;
         }
+    }
+
+    public void fastMovetoPos(int pos)
+    {
+        wobble.setTargetPosition(pos);
+        wobble.setPower(1);
+        wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        on=true;
     }
 
     //Moves Wobble Arm to Lowered Position (Extended position)
@@ -70,10 +78,19 @@ public class Wobble
         //TODO: set position that lowers the wobble
         if(wobble.getCurrentPosition()>(START_POSITION+50))
         {
-            wobble.setTargetPosition(wobble.getCurrentPosition()-30);
+            wobble.setTargetPosition(wobble.getCurrentPosition()-50);
             wobble.setPower(1);
             wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             on=true;
+        }
+    }
+
+    public void wobbleSetRaise(double newPos){
+        double curPos = wobble.getCurrentPosition();
+        if (newPos>=curPos){
+            raise=true;
+        } else {
+            raise=false;
         }
     }
 
@@ -95,17 +112,18 @@ public class Wobble
     }
 
     public boolean isWobbleUp(int pos) {
-        if (wobble.getCurrentPosition() >= (pos)) {
+        if (wobble.getCurrentPosition() >= (pos - 30)) {
             return true;
         } else return false;
     }
 
     public boolean isWobbleDown (int pos) {
-        if (wobble.getCurrentPosition() <= (pos)) {
+        if (wobble.getCurrentPosition() <= (pos + 30)) {
               return true;
            } else return false;
         }
     public boolean isWobbleThere(int pos){
+        //double curPos = wobble.getCurrentPosition();
         if (raise){
             return isWobbleUp(pos);
         } else
