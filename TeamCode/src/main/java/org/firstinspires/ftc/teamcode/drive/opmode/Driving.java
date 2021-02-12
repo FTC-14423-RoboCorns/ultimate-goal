@@ -51,6 +51,7 @@ public class Driving extends LinearOpMode {
     private boolean liftModeButtonDown;
     private boolean intakeButtonDown;
     private boolean wobbleButtonDown;
+    private boolean endGameButtonDown;
     private boolean resetOdomButtonDown;
     //private boolean switchGoalButtonDown;
 
@@ -187,6 +188,7 @@ public class Driving extends LinearOpMode {
                         driveButtonDown = true;
                         turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal));
                         currentMode = Mode.ALIGN_TO_POINT;
+
                     }
 
                     if (gamepad2.right_stick_button && !resetOdomButtonDown) {
@@ -206,12 +208,13 @@ public class Driving extends LinearOpMode {
                     // Switch back into normal driver control mode if `rb` is pressed
                     if (gamepad1.right_bumper && !driveButtonDown) {
                         driveButtonDown = true;
+                        robot.drive.cancelFollowing();
                         currentMode = Mode.NORMAL_CONTROL;
                     }
 
                     if (!robot.drive.isBusy())
                         {
-                            System.out.println("SHOOTER_Turnto Actual  " + Math.toDegrees(robot.drive.getLocalizer().getPoseEstimate().getHeading()));
+                            System.out.println("SHOOTER_TURNto Actual  " + Math.toDegrees(robot.drive.getLocalizer().getPoseEstimate().getHeading()));
                             currentMode = Mode.NORMAL_CONTROL;
                         }
 
@@ -409,8 +412,11 @@ public class Driving extends LinearOpMode {
         if (!gamepad1.right_bumper) driveButtonDown=false;
         if (!gamepad1.a) intakeButtonDown=false;
         if (!gamepad1.y) spitButtonDown=false;
-
         if (!gamepad1.b) wobbleButtonDown=false;
+        if (!gamepad1.x) endGameButtonDown=false;
+        if (!gamepad1.dpad_right) headingRightButtonDown=false;
+        if (!gamepad1.dpad_left) headingLeftButtonDown=false;
+
         if (!gamepad2.right_stick_button) resetOdomButtonDown=false;
 
         if (!gamepad2.x) shootButtonDown=false;
@@ -423,8 +429,7 @@ public class Driving extends LinearOpMode {
         if (!gamepad2.left_bumper) ringDecreaseButtonDown=false;
         if (!gamepad2.dpad_right) psIncreaseButtonDown=false;
         if (!gamepad2.dpad_left) psDecreaseButtonDown=false;
-        if (!gamepad1.dpad_right) headingRightButtonDown=false;
-        if (!gamepad1.dpad_left) headingLeftButtonDown=false;
+
     }
 
     public void handleShootMode() {
@@ -510,6 +515,12 @@ public class Driving extends LinearOpMode {
                     wobbleMode=Wobble_State.WOBBLE_UP;
                     wobbleWait.reset();
                 }
+                if (gamepad1.x && !endGameButtonDown){
+                    endGameButtonDown = true;
+                    wobbleMode=Wobble_State.WOBBLE_UP;
+                    wobbleWait.reset();
+                }
+
                 break;
             case WOBBLE_UP:
                 if (wobbleWait.milliseconds() > 500)

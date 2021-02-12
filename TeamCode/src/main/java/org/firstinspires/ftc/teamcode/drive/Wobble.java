@@ -11,8 +11,8 @@ public class Wobble
     public boolean on;
     private static int START_POSITION = 0;
     private static int STOP_POSITION= 1140;
-    private static double SERVO_OPEN = 1;
-    private static double SERVO_CLOSED = 0.52;
+    private static double SERVO_OPEN = 0;
+    private static double SERVO_CLOSED = 0.23;
     private boolean raise =true;
 
     public Wobble(HardwareMap hardwareMap)

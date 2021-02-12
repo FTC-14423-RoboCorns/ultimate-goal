@@ -54,8 +54,13 @@ public class DriveConstants {
      * empirically tuned.
      */
     public static double kV = 0.0125; //used to be 0.0125
-    public static double kA = 0.007;
-    public static double kStatic = 0.015;
+    public static double kA = .005;//0.007;
+    public static double kStatic = 0.1;
+   // public static double kV = 0; //used to be 0.0125
+   // public static double kA = 0;
+    //public static double kStatic = 0;
+
+
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,
@@ -66,8 +71,8 @@ public class DriveConstants {
      */
     public static double MAX_VEL = 40;
     public static double MAX_ACCEL = 40;
-    public static double MAX_ANG_VEL = 2.7;//26.832; //2.3 old
-    public static double MAX_ANG_ACCEL = 2.3;
+    public static double MAX_ANG_VEL = 4;//2.7;//26.832; //2.3 old
+    public static double MAX_ANG_ACCEL = 4;//2.3;
 
 
     public static double encoderTicksToInches(double ticks) {

@@ -163,6 +163,8 @@ public class TestAuton extends OpMode {
                     targetVelocity = robot.shooter.shooterOn();
                 }
                 if (!robot.drive.isBusy()) {
+                    System.out.println("SHOOTER_FIRSTTURN_X "+robot.drive.getPoseEstimate().getX());
+                    System.out.println("SHOOTER_FIRSTTURN_Y "+ robot.drive.getPoseEstimate().getY());
                     turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)-Math.toRadians(5));
                     currentState = State.FIRST_TURN;
                     System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
@@ -176,7 +178,7 @@ public class TestAuton extends OpMode {
                 break;
 
             case SHOOTER_ON:
-                System.out.println("SHOOTER_shooterOn");
+               // System.out.println("SHOOTER_shooterOn");
 
                 if (robot.shooter.isShooterReady(targetVelocity)) {
                     waitTimer1.reset();
@@ -200,14 +202,14 @@ public class TestAuton extends OpMode {
                     {
                         System.out.println("SHOOTER_shoot " + shootCount);
                         System.out.println("SHOOTER_Final heading" + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
-                            System.out.println("SHOOT_Shooter Ready " + robot.shooter.shooter.getVelocity());
-                            System.out.println("SHOOT_Shooter Ready " + robot.shooter.isShooterReady(targetVelocity));
+                         //   System.out.println("SHOOT_Shooter Ready " + robot.shooter.shooter.getVelocity());
+                         //   System.out.println("SHOOT_Shooter Ready " + robot.shooter.isShooterReady(targetVelocity));
                         robot.shooter.pusherIn();
                         shootCount += 1;
                         waitTimer1.reset();
                     }
                     if (shootCount < 3) {
-                        System.out.println("SHOOTER_shootToTurn");
+                        //System.out.println("SHOOTER_shootToTurn");
 
                         currentState = State.TURN;
                     }
@@ -223,7 +225,7 @@ public class TestAuton extends OpMode {
                 break;
 
             case TURN:
-                System.out.println("SHOOTER_turnInState");
+               // System.out.println("SHOOTER_turnInState");
                 if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 1000 ) {
                     System.out.println("SHOOTER_ringShot");
                     robot.shooter.pusherOut();
@@ -243,7 +245,7 @@ public class TestAuton extends OpMode {
                     wobblePos=750;
                     if(robot.wobble.isWobbleThere(wobblePos))
                     {
-                        System.out.println("WOBBLE_POS " + robot.wobble.wobble.getCurrentPosition());
+                     //   System.out.println("WOBBLE_POS " + robot.wobble.wobble.getCurrentPosition());
                         robot.wobble.openClaw();
                         waitTimer1.reset();
                         currentState = State.MISS_WOBBLE;
@@ -252,7 +254,7 @@ public class TestAuton extends OpMode {
                 break;
 
             case MISS_WOBBLE:
-                if(waitTimer1.time()>1000)
+                if(waitTimer1.time()>500)
                 {
                     //wobbleState = WobbleState.WOBBLE_LOWER;
                     wobblePos = 750;
@@ -271,7 +273,7 @@ public class TestAuton extends OpMode {
                 }
                 break;
             case WOBBLE_DOWN:
-                if(waitTimer1.time()>1000)
+                if(waitTimer1.time()>500)
                 {
                     //wobbleState = WobbleState.WOBBLE_RAISE;
                     wobblePos = 900;
@@ -316,7 +318,7 @@ public class TestAuton extends OpMode {
                 break;
 
             case DRIVE_WOBBLE_2:
-                if (waitTimer1.time()>2000) {
+                if (waitTimer1.time()>1750) {
                     //wobbleState = WobbleState.WOBBLE_RAISE;
                     wobblePos = 630;
                     currentState = State.DROP_WOBBLE_2;
@@ -396,7 +398,7 @@ public class TestAuton extends OpMode {
                   //  robot.wobble.raiseWobbleFromFront();
                     robot.wobble.wobbleMovetoPosition(wobblePos);
                     wobbleState = WobbleState.WOBBLE_RAISEWAIT;
-                    System.out.println("WOBBLE_raise " + wobblePos);
+                   // System.out.println("WOBBLE_raise " + wobblePos);
                 }
 
                 break;
@@ -452,9 +454,11 @@ public class TestAuton extends OpMode {
         System.out.println("SHOOTER_targetAngle (in Degrees) " + Math.toDegrees(normAngle));
 
        // double diff= normAngle-currentHeading;
-        System.out.println("SHOOTER_Turnto Current  " + Math.toDegrees(currentHeading));
-        System.out.println("SHOOTER_Turnto Target  " + Math.toDegrees(targetAngle));
-        System.out.println("SHOOTER_Turnto Turn  " + Math.toDegrees(normAngle));
+        System.out.println("SHOOTER_TURN_X "+robot.drive.getPoseEstimate().getX());
+        System.out.println("SHOOTER_TURN_Y "+ robot.drive.getPoseEstimate().getY());
+        System.out.println("SHOOTER_TURNto Current  " + Math.toDegrees(currentHeading));
+        System.out.println("SHOOTER_TURNto Target  " + Math.toDegrees(targetAngle));
+        System.out.println("SHOOTER_TURNto Turn  " + Math.toDegrees(normAngle));
         robot.drive.turnAsync(normAngle);
         //robot.drive.turnAsync(targetAngle);
     }

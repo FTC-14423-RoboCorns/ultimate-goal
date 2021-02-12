@@ -85,7 +85,7 @@ public class Shooter {
         blueGoal= new target(goalX, goalY*-1, goalHeight);
 
         isShooterOn = false;
-        liftState=LiftState.STATIC;
+        liftState=LiftState.DYNAMIC;
         redPowerShot1 = new target(goalX, powerShotY, goalHeight);
         redPowerShot2 = new target(goalX, powerShotY+7.5, goalHeight);
         redPowerShot3 = new target(goalX, powerShotY+14, goalHeight);
@@ -268,7 +268,7 @@ public class Shooter {
             if (Math.abs(goal.y) < 24) {
                 liftPos = 0.61;
             } else {
-                liftPos = 0.54;
+                liftPos = .60;//0.54;
             }
             break;
         case DYNAMIC:
@@ -279,9 +279,9 @@ public class Shooter {
 
             if (distance < 88) {
                 //  liftPos = 0.61;
-                liftPos = .54;
+                liftPos = .60;//.54;
             } else if (distance < 100) {
-                liftPos = 0.57;
+                liftPos = 0.58;//.57
             } else if (distance < 120) {
                 liftPos = 0.59;
             } else if (distance < 140) {
