@@ -327,7 +327,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
 
                 //&& error <Math.toRadians(1) is new here
-                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(2)||t>turnProfile.duration()+.5))
+                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.5))
                 {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
@@ -342,14 +342,14 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                     }
                     else
                     {
-                        targetOmega = Math.signum(correction)*1;
+                        targetOmega = Math.signum(correction)*.5;
                         targetAlpha = 0;
                     }
-                    System.out.println("TURN_V " + targetOmega);
+                  /*  System.out.println("TURN_V " + targetOmega);
                     System.out.println("TURN_A " + targetAlpha);
                     System.out.println("TURN_Correction " + correction);
                     System.out.println("TURN_PID error " + Math.toDegrees(turnController.getLastError()));
-                    System.out.println("TURN_PID target " + Math.toDegrees(turnController.getTargetPosition()));
+                    System.out.println("TURN_PID target " + Math.toDegrees(turnController.getTargetPosition()));*/
 
 
                     setDriveSignal(new DriveSignal(new Pose2d(

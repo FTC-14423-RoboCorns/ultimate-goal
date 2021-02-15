@@ -36,7 +36,7 @@ public class Shooter {
     public boolean isDoneShooting;
 
     public final static double powerShotY = -19;
-    public final double SHOOTER_OFFSET=4.5;
+    public final double SHOOTER_OFFSET=5.5;
     private final int SHOOTER_VELOCITY = 2000;
     private final int MAX_VELOCITY = 2160;
     private final double PUSHER_START=.16;
@@ -198,7 +198,6 @@ public class Shooter {
 
         Vector2d goalVec = new Vector2d(goal.x, goal.y);
         Vector2d botVec = new Vector2d(robotX, robotY+SHOOTER_OFFSET);
-        //Vector2d difference = targetPosition.minus(poseEstimate.vec());
         Vector2d difference = goalVec.minus(botVec);
 
         // Obtain the target angle for feedback and derivative for feedforward
@@ -277,17 +276,26 @@ public class Shooter {
             liftPos = 0.61;
         } else {
 
-            if (distance < 88) {
-                //  liftPos = 0.61;
-                liftPos = .60;//.54;
-            } else if (distance < 100) {
+            if (distance < 78) {
+                liftPos = .56;//.54;
+            } else if (distance < 83) {
                 liftPos = 0.58;//.57
-            } else if (distance < 120) {
-                liftPos = 0.59;
-            } else if (distance < 140) {
-                liftPos = 0.59;
-            } else {
+            } else if (distance < 88) {
                 liftPos = 0.57;
+            } else if (distance < 93) {
+                liftPos = 0.63;
+            } else if (distance < 98) {
+                liftPos = 0.64;
+            } else if (distance < 103) {
+                liftPos = 0.64;
+            } else if (distance < 108) {
+                liftPos = 0.65;
+            } else if (distance < 113) {
+                liftPos = 0.65;
+            } else if (distance < 118) {
+                liftPos = 0.65;
+            } else if (distance < 123) {
+                liftPos = 0.64;
             }
         }
         break;
