@@ -28,9 +28,16 @@ public class TestAuton extends OpMode {
     public Robot robot;
     int ringPosition;
     int wobblePos = 0;
+    /*
     private static final double POWEROFFSET = Math.toRadians(6.5);
     private static final double POWEROFFSET2 = Math.toRadians(6);
     private static final double POWEROFFSET3 = Math.toRadians(5);
+    */
+    private static final double POWEROFFSET = 0;
+    private static final double POWEROFFSET2 = 0;
+    private static final double POWEROFFSET3 = 0;
+
+
     Trajectory trajectory1,trajectory2,trajectory3,pickUpRing, trajectory4,trajectory5,misswobble;
     Pose2d startPose;
     ElapsedTime waitTimer1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);

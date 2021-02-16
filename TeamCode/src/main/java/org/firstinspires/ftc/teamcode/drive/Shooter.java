@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import static android.util.Log.println;
+import static java.lang.Math.cos;
 
 public class Shooter {
     public DcMotorEx shooter;
@@ -195,14 +196,30 @@ public class Shooter {
             //double opposite = robotY - goal.y;
             //double adjacent = robotX - goal.x;
             //targetAngle = Math.atan2(opposite, adjacent);
+        double distance = distanceToGoal(robotX,robotY,goal);
+        double a = Math.acos(SHOOTER_OFFSET/distance);
+        Vector2d goalVec = new Vector2d(goal.x, goal.y);
+        Vector2d botVec = new Vector2d(robotX, robotY);
+        Vector2d difference = goalVec.minus(botVec);
+        double b = difference.angle();
+        double t = b+a;
+        double tanx=robotX+(SHOOTER_OFFSET*Math.cos(a));
+        double tany=robotY+(SHOOTER_OFFSET*Math.sin(a));
+        Vector2d tanVec=new Vector2d(tanx,tany);
+        Vector2d difference2=goalVec.minus(tanVec);
+        double theta = difference2.angle();
 
+
+        /* old angle code
         Vector2d goalVec = new Vector2d(goal.x, goal.y);
         Vector2d botVec = new Vector2d(robotX, robotY+SHOOTER_OFFSET);
         Vector2d difference = goalVec.minus(botVec);
 
         // Obtain the target angle for feedback and derivative for feedforward
         double theta = difference.angle();
-        System.out.println("SHOOTER_angle to goal absolute " + Math.toDegrees(theta));
+
+         */
+        System.out.println("SHOOTER_TURN_angle to goal absolute " + Math.toDegrees(theta));
         return theta;
     }
     //three versions of this method

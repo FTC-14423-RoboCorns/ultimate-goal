@@ -59,6 +59,7 @@ public class Driving extends LinearOpMode {
 
     //Gamepad2
     private boolean powerShotButtonDown;
+    private boolean spinupButtonDown;
     private boolean manualShooterDecreaseButtonDown;
     private boolean manualShooterIncreaseButtonDown;
     private boolean shootButtonDown;
@@ -127,10 +128,14 @@ public class Driving extends LinearOpMode {
    private  ElapsedTime waitTimer1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     int isRed = 1;
     Trajectory powerTraj;
+    /*
     private static final double POWEROFFSET = Math.toRadians(6.5);
     private static final double POWEROFFSET2 = Math.toRadians(6);
     private static final double POWEROFFSET3 = Math.toRadians(5);
-
+*/
+    private static final double POWEROFFSET = 0;
+    private static final double POWEROFFSET2 = 0;
+    private static final double POWEROFFSET3 = 0;
     // Declare a PIDF Controller to regulate heading
     // Use the same gains as SampleMecanumDrive's heading controller
     private PIDFController headingController = new PIDFController(SampleMecanumDrive.HEADING_PID);
@@ -149,9 +154,14 @@ public class Driving extends LinearOpMode {
         // We want to turn off velocity control for teleop
         // Velocity control per wheel is not necessary outside of motion profiled auto
         robot.drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        checkButtons();
+        /*handled in checkButtons
         driveButtonDown = false;
         intakeButtonDown = false;
         shootButtonDown = false;
+        spinupButtonDown=false;
+
+         */
         //Used to wait between button inputs
         buttonWait = new ElapsedTime();
         wobbleWait = new ElapsedTime();
@@ -172,7 +182,9 @@ public class Driving extends LinearOpMode {
         // Automatically handles overflow
         headingController.setInputBounds(-Math.PI, Math.PI);
         //TODO:need to adjust for red or blue
-        Vector2d targetPosition = new Vector2d(robot.shooter.redGoal.x, ((isRed*robot.shooter.redGoal.y) +robot.shooter.SHOOTER_OFFSET)); //offset to adjust for shooter position on robot
+//        Vector2d targetPosition = new Vector2d(robot.shooter.redGoal.x, ((isRed*robot.shooter.redGoal.y) +robot.shooter.SHOOTER_OFFSET)); //offset to adjust for shooter position on robot
+  //new tangent code
+        Vector2d targetPosition = new Vector2d(robot.shooter.redGoal.x, ((isRed*robot.shooter.redGoal.y))); //offset to adjust for shooter position on robot
         if (isRed==1)  robot.shooter.currentTarget = robot.shooter.redGoal;
                 else robot.shooter.currentTarget = robot.shooter.blueGoal;
 
@@ -216,9 +228,20 @@ public class Driving extends LinearOpMode {
 
                     }
 
+                    if (gamepad1.left_bumper && !spinupButtonDown) {
+                        spinupButtonDown = true;
+                        if (!robot.shooter.isShooterOn) {
+                            targetVelocity = robot.shooter.shooterOn();
+                        }
+                    }
+
+
                     if (gamepad2.b&&!powerShotButtonDown) {
 
                         robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
+                        if (!robot.shooter.isShooterOn) {
+                            targetVelocity = robot.shooter.shooterOn();
+                        }
                        powerTraj = robot.drive.trajectoryBuilder(robot.drive.getPoseEstimate())
                                 .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), 0)
                                 //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
@@ -323,7 +346,9 @@ public class Driving extends LinearOpMode {
 
                     break;
                 case RESET_ODOMETRY:
-                    Pose2d newPose = new Pose2d(9, -61 * isRed, 0);
+                    //TODO check Y value for powershot
+                    Pose2d newPose = new Pose2d(33, -61 * isRed, 0); //empty square
+                   // Pose2d newPose = new Pose2d(9, -61 * isRed, 0);//old red square
                     robot.drive.getLocalizer().setPoseEstimate(newPose);
                     currentMode = Mode.NORMAL_CONTROL;
                     break;
@@ -474,6 +499,7 @@ public class Driving extends LinearOpMode {
 
         public void checkButtons(){
         if (!gamepad1.right_bumper) driveButtonDown=false;
+        if (!gamepad1.left_bumper) spinupButtonDown=false;
         if (!gamepad1.a) intakeButtonDown=false;
         if (!gamepad1.y) spitButtonDown=false;
         if (!gamepad1.b) wobbleButtonDown=false;
