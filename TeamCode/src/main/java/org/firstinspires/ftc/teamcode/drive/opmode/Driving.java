@@ -128,7 +128,7 @@ public class Driving extends LinearOpMode {
    private  ElapsedTime waitTimer1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     int isRed = 1;
     Trajectory powerTraj;
-    /*
+/*
     private static final double POWEROFFSET = Math.toRadians(6.5);
     private static final double POWEROFFSET2 = Math.toRadians(6);
     private static final double POWEROFFSET3 = Math.toRadians(5);
@@ -136,6 +136,7 @@ public class Driving extends LinearOpMode {
     private static final double POWEROFFSET = 0;
     private static final double POWEROFFSET2 = 0;
     private static final double POWEROFFSET3 = 0;
+
     // Declare a PIDF Controller to regulate heading
     // Use the same gains as SampleMecanumDrive's heading controller
     private PIDFController headingController = new PIDFController(SampleMecanumDrive.HEADING_PID);
@@ -347,7 +348,7 @@ public class Driving extends LinearOpMode {
                     break;
                 case RESET_ODOMETRY:
                     //TODO check Y value for powershot
-                    Pose2d newPose = new Pose2d(33, -61 * isRed, 0); //empty square
+                    Pose2d newPose = new Pose2d(36, -61 * isRed, 0); //empty square
                    // Pose2d newPose = new Pose2d(9, -61 * isRed, 0);//old red square
                     robot.drive.getLocalizer().setPoseEstimate(newPose);
                     currentMode = Mode.NORMAL_CONTROL;
@@ -480,18 +481,18 @@ public class Driving extends LinearOpMode {
     }
 
     public void handleChangeHeading() {
-        Pose2d adj=new Pose2d(0,0,2);
+        Pose2d adj=new Pose2d(0,0,Math.toRadians(2));
         if(gamepad1.dpad_right &&!headingRightButtonDown)
 
     {
 
-        Pose2d newPose = robot.drive.getLocalizer().getPoseEstimate().plus(adj);
+        Pose2d newPose = robot.drive.getLocalizer().getPoseEstimate().minus(adj);
         robot.drive.getLocalizer().setPoseEstimate(newPose);
     }
         if(gamepad1.dpad_left &&!headingLeftButtonDown)
 
     {
-        Pose2d newPose = robot.drive.getLocalizer().getPoseEstimate().minus(adj);
+        Pose2d newPose = robot.drive.getLocalizer().getPoseEstimate().plus(adj);
         robot.drive.getLocalizer().setPoseEstimate(newPose);
     }
 
@@ -586,6 +587,13 @@ public class Driving extends LinearOpMode {
                     //robot.wobble.fastMovetoPos(900);
                     wobbleMode=Wobble_State.WOBBLE_DOWNWAIT;
                 }
+                if (gamepad1.x && !endGameButtonDown){
+                    endGameButtonDown = true;
+                    robot.wobble.openClaw();
+                    wobbleMode=Wobble_State.WOBBLE_UP;
+                    wobbleWait.reset();
+                }
+
                 break;
             case WOBBLE_DOWNWAIT:
                 robot.wobble.wobbleMovetoPosition(900);
@@ -607,6 +615,7 @@ public class Driving extends LinearOpMode {
                 }
                 if (gamepad1.x && !endGameButtonDown){
                     endGameButtonDown = true;
+                    robot.wobble.openClaw();
                     wobbleMode=Wobble_State.WOBBLE_UP;
                     wobbleWait.reset();
                 }
@@ -679,7 +688,7 @@ public class Driving extends LinearOpMode {
                 if (!robot.drive.isBusy()) {
                     System.out.println("SHOOTER_FIRSTTURN_X "+robot.drive.getPoseEstimate().getX());
                     System.out.println("SHOOTER_FIRSTTURN_Y "+ robot.drive.getPoseEstimate().getY());
-                    turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)-Math.toRadians(5));
+                    turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)-POWEROFFSET);
                     endGame=powershotState.FIRST_TURN;
                     System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
                 }
@@ -695,7 +704,7 @@ public class Driving extends LinearOpMode {
 
             case SHOOTER_ON:
                 // System.out.println("SHOOTER_shooterOn");
-                System.out.println("SHOOTER Waiting for target vel");
+                //System.out.println("SHOOTER Waiting for target vel");
                 if (robot.shooter.isShooterReady(targetVelocity)) {
                     System.out.println("SHOOTER target vel " + targetVelocity);
                     waitTimer1.reset();

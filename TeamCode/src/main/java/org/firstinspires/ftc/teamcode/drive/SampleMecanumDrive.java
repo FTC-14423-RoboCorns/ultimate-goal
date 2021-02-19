@@ -73,7 +73,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     public static PIDCoefficients TURN_PID = new PIDCoefficients(15, 0.05, .01);
     //public static PIDCoefficients Y_PID = new PIDCoefficients(12, 0, 0);
 
-
+    public static int USE_IMU=0;
     public static double LATERAL_MULTIPLIER = 1.1; //was 2.05;
 
     public static double VX_WEIGHT = .7;
@@ -150,11 +150,13 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         */
 
         // TODO: adjust the names of the following hardware devices to match your configuration
-       /* imu = hardwareMap.get(BNO055IMU.class, "imu");
+        if (USE_IMU==1)
+        {
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
-        */
+        }
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
         // upward (normal to the floor) using a command like the following:
         // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
@@ -190,8 +192,12 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         //leftFront.setDirection(DcMotor.Direction.REVERSE);
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
-        setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
+        if (USE_IMU==1) {
+            setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap));
+        } else {
+            setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
+        }
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
@@ -508,9 +514,11 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
     @Override
     public double getRawExternalHeading() {
-        //return imu.getAngularOrientation().firstAngle;
-        return 0;
-
+        if (USE_IMU==1) {
+            return imu.getAngularOrientation().firstAngle;
+        } else{
+            return 0;
+        }
 
     }
 

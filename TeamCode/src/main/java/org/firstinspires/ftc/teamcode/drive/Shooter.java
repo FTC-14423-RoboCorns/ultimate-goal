@@ -37,7 +37,7 @@ public class Shooter {
     public boolean isDoneShooting;
 
     public final static double powerShotY = -19;
-    public final double SHOOTER_OFFSET=5.5;
+    public final double SHOOTER_OFFSET=7;
     private final int SHOOTER_VELOCITY = 2000;
     private final int MAX_VELOCITY = 2160;
     private final double PUSHER_START=.16;
@@ -87,13 +87,13 @@ public class Shooter {
 
         isShooterOn = false;
         liftState=LiftState.DYNAMIC;
-        redPowerShot1 = new target(goalX, powerShotY, goalHeight);
-        redPowerShot2 = new target(goalX, powerShotY+7.5, goalHeight);
-        redPowerShot3 = new target(goalX, powerShotY+14, goalHeight);
+        redPowerShot1 = new target(goalX-4, powerShotY, goalHeight);
+        redPowerShot2 = new target(goalX-4, powerShotY+7, goalHeight);
+        redPowerShot3 = new target(goalX-4, powerShotY+15, goalHeight);
 
-        bluePowerShot1 = new target(goalX, (powerShotY*-1), goalHeight);
-        bluePowerShot2 = new target(goalX, (powerShotY*-1)-7, goalHeight);
-        bluePowerShot3 = new target(goalX, (powerShotY*-1)-14, goalHeight);
+        bluePowerShot1 = new target(goalX-4, (powerShotY*-1), goalHeight);
+        bluePowerShot2 = new target(goalX-4, (powerShotY*-1)-7, goalHeight);
+        bluePowerShot3 = new target(goalX-4, (powerShotY*-1)-15, goalHeight);
 
         this.telemetry = telem;
     }
@@ -289,8 +289,10 @@ public class Shooter {
             break;
         case DYNAMIC:
         double distance = (distanceToGoal(robotX, robotY, goal));
+        //System.out.println("SHOOTER_TURN_distance: "+distance);
         if (Math.abs(goal.y) < 24) {
-            liftPos = 0.61;
+           // liftPos = 0.61;
+            liftPos=0.64;
         } else {
 
             if (distance < 78) {

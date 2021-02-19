@@ -42,5 +42,6 @@ public class Robot
         shooter = new Shooter(hardwareMap,telemetry);
         drive = new SampleMecanumDrive(hardwareMap);
         pixy = new PixyAnalog(hardwareMap);
+
     }
 }
