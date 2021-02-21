@@ -51,13 +51,16 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     private Encoder parallelEncoder, perpendicularEncoder;
 
     private SampleMecanumDrive drive;
-
-    //public TwoWheelTrackingLocalizer(HardwareMap hardwareMap, SampleMecanumDrive drive)
-    public TwoWheelTrackingLocalizer(HardwareMap hardwareMap){
-        super(Arrays.asList(
+    private GyroAnalog gyro;
+    public TwoWheelTrackingLocalizer(HardwareMap hardwareMap, SampleMecanumDrive robotdrive){
+   // public TwoWheelTrackingLocalizer(HardwareMap hardwareMap){
+         super(Arrays.asList(
             new Pose2d(PARALLEL_X, PARALLEL_Y, 0),
             new Pose2d(PERPENDICULAR_X, PERPENDICULAR_Y, Math.toRadians(90))
         ));
+        drive = robotdrive;
+        gyro = new GyroAnalog(hardwareMap);
+        //System.out.println("GYRO_angle "+());
 
         parallelEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "LF"));
         perpendicularEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "RF"));
@@ -73,7 +76,7 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
 
     @Override
     public double getHeading() {
-        return drive.getRawExternalHeading();
+        return gyro.readGyro();//drive.getRawExternalHeading();
     }
 
     @NonNull

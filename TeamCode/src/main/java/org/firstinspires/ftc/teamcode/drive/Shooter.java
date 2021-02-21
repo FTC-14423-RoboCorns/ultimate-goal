@@ -22,7 +22,7 @@ public class Shooter {
     public Servo lift;
     public Telemetry telemetry;
     //TODO: confirm mag
-
+    private boolean debug=false;
     public double angle;
     public double shooterHeight;
     public double crankAngle;
@@ -38,7 +38,7 @@ public class Shooter {
 
     public final static double powerShotY = -19;
     public final double SHOOTER_OFFSET=7;
-    private final int SHOOTER_VELOCITY = 2000;
+    private final int SHOOTER_VELOCITY = 1900;//2000;
     private final int MAX_VELOCITY = 2160;
     private final double PUSHER_START=.16;
     private final double PUSHER_STOP=.43;
@@ -219,7 +219,7 @@ public class Shooter {
         double theta = difference.angle();
 
          */
-        System.out.println("SHOOTER_TURN_angle to goal absolute " + Math.toDegrees(theta));
+       if (debug) System.out.println("SHOOTER_TURN_angle to goal absolute " + Math.toDegrees(theta));
         return theta;
     }
     //three versions of this method
@@ -298,9 +298,9 @@ public class Shooter {
             if (distance < 78) {
                 liftPos = .56;//.54;
             } else if (distance < 83) {
-                liftPos = 0.58;//.57
+                liftPos = 0.57;//.57
             } else if (distance < 88) {
-                liftPos = 0.57;
+                liftPos = 0.56;
             } else if (distance < 93) {
                 liftPos = 0.63;
             } else if (distance < 98) {

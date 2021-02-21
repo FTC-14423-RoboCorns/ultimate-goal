@@ -12,14 +12,14 @@ public class PixyAnalog
     public double sensorHeight;
     public double oneRing;
     private AnalogInput pixy;
-    private PixyDigital pixydig;
+   // private PixyDigital pixydig;
     public PixyAnalog(HardwareMap hardwareMap) {
         init(hardwareMap);
     }
 
     private void init(HardwareMap hardwareMap) {
         pixy = hardwareMap.get(AnalogInput.class, "PixyAnalog");
-        pixydig = new PixyDigital(hardwareMap);
+  //      pixydig = new PixyDigital(hardwareMap);
         oneRing = pixy.getVoltage();
     }
     private double readPixy()
@@ -28,27 +28,25 @@ public class PixyAnalog
     }
     public int getStackHeight()
     {
-        /* New Code to test
+/*
         if (!pixydig.ringSensed())
-        {return 0}
+        {return 0;}
         else {
             sensorHeight = readPixy();
-            if(sensorHeight<(oneRing - 0.01))
-            {
+            if (sensorHeight < (oneRing - 0.01)) {
                 return 1;
-            }
-            else
-            {
+            } else {
                 return 2;
             }
+        }
+*/
 
-        }*/
         sensorHeight = readPixy();
-        if(sensorHeight<(oneRing - 0.01))
+        if(sensorHeight<(oneRing - 1))
         {
             return 0;
         }
-        else if(sensorHeight<(oneRing + 0.02))
+        else if(sensorHeight<(oneRing -.05))
         {
             return 1;
         }

@@ -18,12 +18,12 @@ public class Robot
     public SampleMecanumDrive drive;
     public PixyAnalog pixy;
     public List<LynxModule> allHubs;
+    public boolean imu;
 
 
 
 
-
-    public Robot(HardwareMap hardwareMap, Telemetry telem) {
+    public Robot(HardwareMap hardwareMap, Telemetry telem,boolean imu) {
         allHubs=hardwareMap.getAll(LynxModule.class);
         for (LynxModule module : allHubs){
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -33,6 +33,7 @@ public class Robot
         }
         Init(hardwareMap);
         this.telemetry = telem;
+        this.imu=imu;
     }
 
     public void Init(HardwareMap hardwareMap) {
@@ -41,6 +42,10 @@ public class Robot
         intake = new IntakeAndRamp(hardwareMap);
         shooter = new Shooter(hardwareMap,telemetry);
         drive = new SampleMecanumDrive(hardwareMap);
+        if (this.imu)
+        drive.USE_IMU=1;
+        else
+            drive.USE_IMU=0;
         pixy = new PixyAnalog(hardwareMap);
 
     }

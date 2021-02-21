@@ -43,9 +43,10 @@ public class Driving extends LinearOpMode {
     public static double DRAWING_TARGET_RADIUS = 2;
     private ElapsedTime buttonWait;
     private ElapsedTime wobbleWait;
-    private boolean debug = true;
+    private boolean debug = false;
+    private boolean dashboard =true;
     int oneShoot = 0;
-
+    public int wobblePos;
     //Gamepad1
     private boolean driveButtonDown;
     private boolean spitButtonDown;
@@ -60,8 +61,8 @@ public class Driving extends LinearOpMode {
     //Gamepad2
     private boolean powerShotButtonDown;
     private boolean spinupButtonDown;
-    private boolean manualShooterDecreaseButtonDown;
-    private boolean manualShooterIncreaseButtonDown;
+    private boolean manualWobbleDecreaseButtonDown;
+    private boolean manualWobbleIncreaseButtonDown;
     private boolean shootButtonDown;
     private boolean ringIncreaseButtonDown;
     private boolean ringDecreaseButtonDown;
@@ -136,6 +137,8 @@ public class Driving extends LinearOpMode {
     private static final double POWEROFFSET = 0;
     private static final double POWEROFFSET2 = 0;
     private static final double POWEROFFSET3 = 0;
+    private TelemetryPacket packet;
+    private Canvas fieldOverlay;
 
     // Declare a PIDF Controller to regulate heading
     // Use the same gains as SampleMecanumDrive's heading controller
@@ -147,7 +150,7 @@ public class Driving extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Initialize SampleMecanumDrive
-        robot = new Robot(hardwareMap, telemetry);
+        robot = new Robot(hardwareMap, telemetry,true);
         //need this at beginning of each loop for bulk reads. Manual mode set in robot class, so must be first called after initializing class
         for (LynxModule module : robot.allHubs) {
             module.clearBulkCache();
@@ -210,10 +213,11 @@ public class Driving extends LinearOpMode {
 
             telemetry.addData("mode", currentMode);
 
-            // Declare telemetry packet for dashboard field drawing
-            TelemetryPacket packet = new TelemetryPacket();
-            Canvas fieldOverlay = packet.fieldOverlay();
-
+            if (dashboard) {
+                // Declare telemetry packet for dashboard field drawing
+                packet = new TelemetryPacket();
+                fieldOverlay = packet.fieldOverlay();
+            }
             checkButtons();
 
             switch (currentMode) {
@@ -291,7 +295,9 @@ public class Driving extends LinearOpMode {
 
                     if (!robot.drive.isBusy())
                         {
-                            System.out.println("SHOOTER_TURNto Actual  " + Math.toDegrees(robot.drive.getLocalizer().getPoseEstimate().getHeading()));
+                            if (debug) {
+                                System.out.println("SHOOTER_TURNto Actual  " + Math.toDegrees(robot.drive.getLocalizer().getPoseEstimate().getHeading()));
+                            }
                             currentMode = Mode.NORMAL_CONTROL;
                         }
 
@@ -364,6 +370,7 @@ public class Driving extends LinearOpMode {
             {
                 stopShootButtonDown=true;
                 shooterMode = Shooter_State.SHOOTER_RESET;
+                endGame=powershotState.IDLE;
             }
             switch (shooterMode) {
 
@@ -391,7 +398,7 @@ public class Driving extends LinearOpMode {
                 case RAMP_UP:
                     if (debug)
                         System.out.println("SHOOT_Ramp In " + robot.shooter.shooter.getVelocity());
-                    if (!robot.shooter.isShooterReady(targetVelocity - 200)) {
+                    if (!robot.shooter.isShooterReady(targetVelocity - 200)||waitTimer.milliseconds()>500) {
                         if (debug)
                             System.out.println("SHOOT_Check Shoot " + targetVelocity + " " + robot.shooter.shooter.getVelocity());
                         robot.shooter.pusherOut();
@@ -426,6 +433,7 @@ public class Driving extends LinearOpMode {
 
                 case SHOOT:
                     robot.shooter.pusherIn();
+                    waitTimer.reset();
                     shooterMode = Shooter_State.RAMP_UP;
                     if (debug) System.out.println("SHOOT_Done");
                     break;
@@ -445,11 +453,11 @@ public class Driving extends LinearOpMode {
                 ringDecreaseButtonDown = true;
                 shootNumber += 1;
             }
-
-            // Draw bot on canvas
-            fieldOverlay.setStroke("#3F51B5");
-            DashboardUtil.drawRobot(fieldOverlay, poseEstimate);
-
+    if (dashboard) {
+        // Draw bot on canvas
+        fieldOverlay.setStroke("#3F51B5");
+        DashboardUtil.drawRobot(fieldOverlay, poseEstimate);
+    }
 
 
             // Update the heading controller with our current heading
@@ -458,9 +466,10 @@ public class Driving extends LinearOpMode {
             // Update he localizer
             robot.drive.getLocalizer().update();
             robot.drive.update();
-
+        if(dashboard) {
             // Send telemetry packet off to dashboard
             FtcDashboard.getInstance().sendTelemetryPacket(packet);
+        }
             /*telemetry.addData("angle", robot.shooter.angle);
             telemetry.addData("shooter Height", robot.shooter.shooterHeight);
             telemetry.addData("crank Angle", robot.shooter.crankAngle);*/
@@ -514,8 +523,8 @@ public class Driving extends LinearOpMode {
         if (!gamepad2.b) powerShotButtonDown=false;
         if (!gamepad2.y) stopShootButtonDown=false;
         if (!gamepad2.a) liftModeButtonDown=false;
-        if (!gamepad2.dpad_down) manualShooterDecreaseButtonDown=false;
-        if (!gamepad2.dpad_up) manualShooterIncreaseButtonDown=false;
+        if (!gamepad2.dpad_down) manualWobbleDecreaseButtonDown=false;
+        if (!gamepad2.dpad_up) manualWobbleIncreaseButtonDown=false;
         if (!gamepad2.right_bumper) ringIncreaseButtonDown=false;
         if (!gamepad2.left_bumper) ringDecreaseButtonDown=false;
         if (!gamepad2.dpad_right) psIncreaseButtonDown=false;
@@ -533,6 +542,8 @@ public class Driving extends LinearOpMode {
             }
         }
     }
+
+
 
     public void handleIntake() {
         switch (intakeMode) {
@@ -576,6 +587,20 @@ public class Driving extends LinearOpMode {
     }
 
     public void handleWobble() {
+
+        if (gamepad2.dpad_down&& !manualWobbleDecreaseButtonDown){
+            manualWobbleDecreaseButtonDown=true;
+            wobblePos+=50;
+            robot.wobble.wobbleMovetoPosition(wobblePos);
+        }
+
+        if (gamepad2.dpad_up&& !manualWobbleIncreaseButtonDown){
+            manualWobbleIncreaseButtonDown=true;
+            wobblePos-=50;
+            robot.wobble.wobbleMovetoPosition(wobblePos);
+        }
+
+
         switch (wobbleMode){
             case WOBBLE_DOWN:
                 //System.out.println("** Wobble got to case WOBBLE_DOWN");
@@ -583,7 +608,8 @@ public class Driving extends LinearOpMode {
                    // robot.wobble.lowerWobbleFromFront();
                     //System.out.println("Wobble position " + robot.wobble.wobble.getCurrentPosition());
                     wobbleButtonDown = true;
-                    robot.wobble.wobbleSetRaise(900);
+                    wobblePos=900;
+                    robot.wobble.wobbleSetRaise(wobblePos);
                     //robot.wobble.fastMovetoPos(900);
                     wobbleMode=Wobble_State.WOBBLE_DOWNWAIT;
                 }
@@ -596,8 +622,10 @@ public class Driving extends LinearOpMode {
 
                 break;
             case WOBBLE_DOWNWAIT:
-                robot.wobble.wobbleMovetoPosition(900);
-                if (robot.wobble.isWobbleThere(900))
+                //wobblePos=900;
+
+                robot.wobble.wobbleMovetoPosition(wobblePos);
+                if (robot.wobble.isWobbleThere(wobblePos))
                 {
                         wobbleMode = Wobble_State.WOBBLE_OPEN;
                 }
@@ -625,15 +653,18 @@ public class Driving extends LinearOpMode {
                 if (wobbleWait.milliseconds() > 500)
                 {
                     //robot.wobble.raiseWobble();
-                    robot.wobble.wobbleSetRaise(450);
+                    wobblePos=450;
+                    robot.wobble.wobbleSetRaise(wobblePos);
 
                     wobbleMode = Wobble_State.WOBBLE_UPWAIT;
                 }
                 break;
 
             case WOBBLE_UPWAIT:
-                robot.wobble.wobbleMovetoPosition(450);
-                if (robot.wobble.isWobbleThere(450)) {
+                //wobblePos=500
+
+                robot.wobble.wobbleMovetoPosition(wobblePos);
+                if (robot.wobble.isWobbleThere(wobblePos)) {
                     wobbleMode = Wobble_State.WOBBLE_DOWN;
                 }
                 break;
@@ -654,12 +685,14 @@ public class Driving extends LinearOpMode {
             normAngle = targetAngle + (Math.PI * 2);
         }*/
 
-        System.out.println("SHOOTER_targetAngle (in Degrees) " + Math.toDegrees(normAngle));
+        if (debug)  System.out.println("SHOOTER_targetAngle (in Degrees) " + Math.toDegrees(normAngle));
 
         // double diff= normAngle-currentHeading;
-      /*  System.out.println("SHOOTER_Turnto Current  " + Math.toDegrees(currentHeading));
+      /* if (debug) {
+      System.out.println("SHOOTER_Turnto Current  " + Math.toDegrees(currentHeading));
         System.out.println("SHOOTER_Turnto Target  " + Math.toDegrees(targetAngle));
-        System.out.println("SHOOTER_Turnto Turn  " + Math.toDegrees(normAngle));*/
+        System.out.println("SHOOTER_Turnto Turn  " + Math.toDegrees(normAngle));
+        }*/
         robot.drive.turnAsync(normAngle);
         //robot.drive.turnAsync(targetAngle);
     }
@@ -677,7 +710,7 @@ public class Driving extends LinearOpMode {
                 robot.drive.followTrajectoryAsync(powerTraj);
                 if (!robot.shooter.isShooterOn) {
                     targetVelocity = robot.shooter.shooterOn();
-                    System.out.println("SHOOTER ON target vel " + targetVelocity);
+                    if (debug) System.out.println("SHOOTER ON target vel " + targetVelocity);
                 }
                 endGame=powershotState.TRAJECTORY_1;
                 break;
@@ -686,18 +719,18 @@ public class Driving extends LinearOpMode {
             case TRAJECTORY_1:
 
                 if (!robot.drive.isBusy()) {
-                    System.out.println("SHOOTER_FIRSTTURN_X "+robot.drive.getPoseEstimate().getX());
-                    System.out.println("SHOOTER_FIRSTTURN_Y "+ robot.drive.getPoseEstimate().getY());
+                    if (debug) System.out.println("SHOOTER_FIRSTTURN_X "+robot.drive.getPoseEstimate().getX());
+                    if (debug) System.out.println("SHOOTER_FIRSTTURN_Y "+ robot.drive.getPoseEstimate().getY());
                     turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)-POWEROFFSET);
                     endGame=powershotState.FIRST_TURN;
-                    System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
+                    if (debug) System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
                 }
                 break;
 
             case FIRST_TURN:
                // System.out.println("SHOOTER Waiting for turn");
                 if (!robot.drive.isBusy()){
-                    System.out.println("SHOOTER Turn done moving to on");
+                    if (debug) System.out.println("SHOOTER Turn done moving to on");
                     endGame=powershotState.SHOOTER_ON;
                 }
                 break;
@@ -706,7 +739,7 @@ public class Driving extends LinearOpMode {
                 // System.out.println("SHOOTER_shooterOn");
                 //System.out.println("SHOOTER Waiting for target vel");
                 if (robot.shooter.isShooterReady(targetVelocity)) {
-                    System.out.println("SHOOTER target vel " + targetVelocity);
+                    if (debug) System.out.println("SHOOTER target vel " + targetVelocity);
                     waitTimer1.reset();
                     endGame=powershotState.SHOOT;
                 } //will need to add a timer later to move on in case we never get up to speed
@@ -715,8 +748,8 @@ public class Driving extends LinearOpMode {
             case SHOOT:
                 boolean done;
 
-                // System.out.println("SHOOTER_shootInState");
-                // System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
+                // if (debug) System.out.println("SHOOTER_shootInState");
+                // if (debug) System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                 if (!robot.drive.isBusy()&& waitTimer1.milliseconds()>1000) {//making sure our turn is done  && waitTimer1.time()>1500
                    /* if (isRed==1) {
                         done=robot.drive.getPoseEstimate().getHeading() <= Math.toRadians(PowerTarget);
@@ -724,11 +757,11 @@ public class Driving extends LinearOpMode {
                         done=robot.drive.getPoseEstimate().getHeading()>= Math.toRadians(PowerTarget);
                     }
                     if (done) {*/
-                    //System.out.println("SHOOTER_now shooting heading " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
+                    //if (debug) System.out.println("SHOOTER_now shooting heading " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                     if(shootCount<4)
                     {
-                        System.out.println("SHOOTER_shoot " + shootCount);
-                        System.out.println("SHOOTER_Final heading" + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
+                        if (debug) System.out.println("SHOOTER_shoot " + shootCount);
+                        if (debug) System.out.println("SHOOTER_Final heading" + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                         //   System.out.println("SHOOT_Shooter Ready " + robot.shooter.shooter.getVelocity());
                         //   System.out.println("SHOOT_Shooter Ready " + robot.shooter.isShooterReady(targetVelocity));
                         robot.shooter.pusherIn();
@@ -755,7 +788,7 @@ public class Driving extends LinearOpMode {
             case TURN:
                 // System.out.println("SHOOTER_turnInState");
                 if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 1000 ) {
-                    System.out.println("SHOOTER_ringShot");
+                    if (debug) System.out.println("SHOOTER_ringShot");
                     robot.shooter.pusherOut();
                     powerTurn();
                     endGame=powershotState.SHOOTER_ON;

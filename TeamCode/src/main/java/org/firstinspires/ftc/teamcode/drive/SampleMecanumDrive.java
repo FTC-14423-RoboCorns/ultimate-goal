@@ -36,6 +36,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.advanced.SampleMecanumDriveCancelable;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 import org.firstinspires.ftc.teamcode.util.Encoder;
@@ -73,12 +76,12 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     public static PIDCoefficients TURN_PID = new PIDCoefficients(15, 0.05, .01);
     //public static PIDCoefficients Y_PID = new PIDCoefficients(12, 0, 0);
 
-    public static int USE_IMU=0;
+    public  int USE_IMU=0;
     public static double LATERAL_MULTIPLIER = 1.1; //was 2.05;
 
     public static double VX_WEIGHT = .7;
-    public static double VY_WEIGHT = .7;
-    public static double OMEGA_WEIGHT = .7;
+    public static double VY_WEIGHT = .9;
+    public static double OMEGA_WEIGHT = .5;
 
     public static int POSE_HISTORY_LIMIT = 100;
 
@@ -88,8 +91,13 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         FIXTURN,
         FOLLOW_TRAJECTORY
     }
-
+    private boolean debug=false;
+    private boolean usedashboard=true;
     private FtcDashboard dashboard;
+    private TelemetryPacket packet;
+    private Canvas fieldOverlay;
+
+
     private NanoClock clock;
 
     public Mode mode;
@@ -107,16 +115,19 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
-
+    private BNO055IMU imu1;
+   // public GyroAnalog gyro;
     private VoltageSensor batteryVoltageSensor;
 
     private Pose2d lastPoseOnTurn;
 
     public SampleMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
+        if (usedashboard) {
+            dashboard = FtcDashboard.getInstance();
+            dashboard.setTelemetryTransmissionInterval(25);
+        }
 
-        dashboard = FtcDashboard.getInstance();
-        dashboard.setTelemetryTransmissionInterval(25);
 
         clock = NanoClock.system();
 
@@ -152,10 +163,16 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         // TODO: adjust the names of the following hardware devices to match your configuration
         if (USE_IMU==1)
         {
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        // gyro = new GyroAnalog(hardwareMap);
+         // gyro.gyro.resetDeviceConfigurationForOpMode();
+        /*imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
+
+
+            imu1 = hardwareMap.get(BNO055IMU.class, "imu1");
+            imu1.initialize(parameters);*/
         }
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
         // upward (normal to the floor) using a command like the following:
@@ -193,12 +210,14 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
         if (USE_IMU==1) {
-            setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap));
+            setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap,this));
         } else {
             setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
         }
     }
+
+
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
         return new TrajectoryBuilder(startPose, velConstraint, accelConstraint);
@@ -295,20 +314,20 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         if (POSE_HISTORY_LIMIT > -1 && poseHistory.size() > POSE_HISTORY_LIMIT) {
             poseHistory.removeFirst();
         }
+        if (usedashboard) {
+            packet = new TelemetryPacket();
+            fieldOverlay = packet.fieldOverlay();
 
-        TelemetryPacket packet = new TelemetryPacket();
-        Canvas fieldOverlay = packet.fieldOverlay();
+            packet.put("mode", mode);
 
-        packet.put("mode", mode);
+            packet.put("x", currentPose.getX());
+            packet.put("y", currentPose.getY());
+            packet.put("heading (deg)", Math.toDegrees(currentPose.getHeading()));
 
-        packet.put("x", currentPose.getX());
-        packet.put("y", currentPose.getY());
-        packet.put("heading (deg)", Math.toDegrees(currentPose.getHeading()));
-
-        packet.put("xError", lastError.getX());
-        packet.put("yError", lastError.getY());
-        packet.put("headingError (deg)", Math.toDegrees(lastError.getHeading()));
-
+            packet.put("xError", lastError.getX());
+            packet.put("yError", lastError.getY());
+            packet.put("headingError (deg)", Math.toDegrees(lastError.getHeading()));
+        }
         switch (mode) {
             case IDLE:
                 // do nothing
@@ -323,17 +342,18 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                 MotionState endState = turnProfile.end();
 
                 double error = Angle.normDelta(endState.getX() - currentPose.getHeading());
-                System.out.println("TURN_Error " + Math.toDegrees(error));
-                System.out.println("TURN_Heading " + Math.toDegrees(currentPose.getHeading()));
-                System.out.println("TURN_Final Target " + Math.toDegrees(endState.getX()));
-                System.out.println("TURN_Int Target " + Math.toDegrees(targetState.getX()));
-                System.out.println("TURN_time " + t);
-                System.out.println("TURN_duration " + turnProfile.duration());
-
+                if (debug) {
+                    System.out.println("TURN_Error " + Math.toDegrees(error));
+                    System.out.println("TURN_Heading " + Math.toDegrees(currentPose.getHeading()));
+                    System.out.println("TURN_Final Target " + Math.toDegrees(endState.getX()));
+                    System.out.println("TURN_Int Target " + Math.toDegrees(targetState.getX()));
+                    System.out.println("TURN_time " + t);
+                    System.out.println("TURN_duration " + turnProfile.duration());
+                }
 
 
                 //&& error <Math.toRadians(1) is new here
-                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.5))
+                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.25))
                 {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
@@ -348,14 +368,17 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                     }
                     else
                     {
-                        targetOmega = Math.signum(correction)*.5;
+                        targetOmega = Math.signum(correction)*.6;
                         targetAlpha = 0;
                     }
-                  /*  System.out.println("TURN_V " + targetOmega);
+                  /*
+                    if (debug) {
+                    System.out.println("TURN_V " + targetOmega);
                     System.out.println("TURN_A " + targetAlpha);
                     System.out.println("TURN_Correction " + correction);
                     System.out.println("TURN_PID error " + Math.toDegrees(turnController.getLastError()));
-                    System.out.println("TURN_PID target " + Math.toDegrees(turnController.getTargetPosition()));*/
+                    System.out.println("TURN_PID target " + Math.toDegrees(turnController.getTargetPosition()));
+                    }*/
 
 
                     setDriveSignal(new DriveSignal(new Pose2d(
@@ -366,10 +389,10 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
                 }
                     Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
-
+                if (usedashboard) {
                     fieldOverlay.setStroke("#4CAF50");
                     DashboardUtil.drawRobot(fieldOverlay, newPose);
-
+                }
 
                 break;
             }
@@ -378,11 +401,13 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
                 MotionState targetState = turnProfile.get(t);
 
-
-                System.out.println("TURN_Target " + turnController.getTargetPosition());
-
                 double correction = turnController.update(currentPose.getHeading());
-                System.out.println("TURN_Error " + Math.toDegrees(turnController.getLastError())+" "+Math.toDegrees(turnController.getTargetPosition()));
+                if (debug) {
+                    System.out.println("TURN_Target " + turnController.getTargetPosition());
+
+
+                    System.out.println("TURN_Error " + Math.toDegrees(turnController.getLastError()) + " " + Math.toDegrees(turnController.getTargetPosition()));
+                }
                 if (Math.abs(turnController.getLastError())<Math.toRadians(1))//move test to the front to ensure no stale bulk reads
                 {
                     mode = Mode.IDLE;
@@ -397,10 +422,10 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                     )));
                 }
                 Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
-
-                fieldOverlay.setStroke("#4CAF50");
-                DashboardUtil.drawRobot(fieldOverlay, newPose);
-
+                if (usedashboard) {
+                    fieldOverlay.setStroke("#4CAF50");
+                    DashboardUtil.drawRobot(fieldOverlay, newPose);
+                }
 
                 break;
             }
@@ -409,15 +434,19 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
                 Trajectory trajectory = follower.getTrajectory();
 
-                fieldOverlay.setStrokeWidth(1);
-                fieldOverlay.setStroke("#4CAF50");
-                DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
+                if (usedashboard) {
+                    fieldOverlay.setStrokeWidth(1);
+                    fieldOverlay.setStroke("#4CAF50");
+                    DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
+                }
                 double t = follower.elapsedTime();
-                DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t));
 
-                fieldOverlay.setStroke("#3F51B5");
-                DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
+                if (usedashboard) {
+                    DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t));
 
+                    fieldOverlay.setStroke("#3F51B5");
+                    DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
+                }
                 if (!follower.isFollowing()) {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
@@ -426,11 +455,12 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                 break;
             }
         }
+        if (usedashboard) {
+            fieldOverlay.setStroke("#3F51B5");
+            DashboardUtil.drawRobot(fieldOverlay, currentPose);
 
-        fieldOverlay.setStroke("#3F51B5");
-        DashboardUtil.drawRobot(fieldOverlay, currentPose);
-
-        dashboard.sendTelemetryPacket(packet);
+            dashboard.sendTelemetryPacket(packet);
+        }
     }
 
     public void waitForIdle() {
@@ -514,11 +544,26 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
     @Override
     public double getRawExternalHeading() {
-        if (USE_IMU==1) {
-            return imu.getAngularOrientation().firstAngle;
+       /*if (USE_IMU==1) {
+           //double angle1 = gyro.readGyro();
+           double angle1= (TwoWheelTrackingLocalizer)getLocalizer().getHeading();
+          //double angle1 = imu.getAngularOrientation().firstAngle;
+          /* double angle2 = imu1.getAngularOrientation().firstAngle;
+           if(angle1 < Math.toRadians(180))
+           {
+               angle1 += Math.toRadians(360);
+           }
+           if(angle2 < Math.toRadians(180))
+           {
+               angle2 += Math.toRadians(360);
+           }
+            return ((angle1+angle2)/2) % Math.toRadians(360);
+           return angle1;
         } else{
             return 0;
         }
+*/
+    return 0;
 
     }
 
