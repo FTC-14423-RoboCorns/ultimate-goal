@@ -173,7 +173,7 @@ public class ALessAggressiveAuton extends OpMode {
         telemetry.addData("key", robot.pixy.sensorHeight);
         telemetry.addData("key", robot.pixy.oneRing);
         telemetry.update();
-        if (ringPosition==0) {
+        if (ringPosition==0||ringPosition==2) {
             shootX=-10;
             shootY=-22;
             trajectory1 = robot.drive.trajectoryBuilder(startPose)
@@ -195,24 +195,6 @@ public class ALessAggressiveAuton extends OpMode {
             //robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
             robot.shooter.currentTarget=robot.shooter.redGoal; //affects lift height - change if we shoot for goal
 
-        } else {
-            shootX=-45;
-            shootY=-22;
-            trajectory1 = robot.drive.trajectoryBuilder(startPose)
-                    //TODO Change shooting position?
-                    //.lineToLinearHeading(new Pose2d(shootX, isRed * -24, 0))
-                    .lineToLinearHeading(new Pose2d(shootX, isRed * shootY, robot.shooter.angleToGoal(shootX, shootY, robot.shooter.redGoal)-POWEROFFSET))
-                    /*prior code
-                        .splineTo(new Vector2d(-24.0,-20.0),Math.toRadians(-15.0))
-                        .splineToSplineHeading(new Pose2d(-7.0,-30.0,robot.shooter.angleToGoal(-7, -30, robot.shooter.redGoal)-POWEROFFSET),Math.toRadians(0))
-
-                     */
-                    //.splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redGoal)-POWEROFFSET), Math.toRadians(-15))
-                    //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
-                    .build();
-            //robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
-            robot.shooter.currentTarget=robot.shooter.redGoal;
-            //robot.shooter.liftState= Shooter.LiftState.DYNAMIC;
         }
         robot.shooter.update(robot.drive.getPoseEstimate());
         robot.drive.followTrajectoryAsync(trajectory1);
@@ -230,8 +212,8 @@ public class ALessAggressiveAuton extends OpMode {
             //TODO: CHANGE ORDER FOR OUTSIDE RED
             case TRAJECTORY_1:
                 if (!robot.shooter.isShooterOn) {
-                    if (ringPosition==0) targetVelocity = robot.shooter.shooterOn(1950);
-                        else  targetVelocity = robot.shooter.shooterOn(2100);
+                    if (ringPosition==0||ringPosition==2) targetVelocity = robot.shooter.shooterOn(1950);
+                        else  targetVelocity = robot.shooter.shooterOn(2000);
                 }
                 if (!robot.drive.isBusy()) {
                     if (debug) {
@@ -239,7 +221,7 @@ public class ALessAggressiveAuton extends OpMode {
                         System.out.println("SHOOTER_FIRSTTURN_Y " + robot.drive.getPoseEstimate().getY());
                     }
                     //turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1) - POWEROFFSET);
-                  if (ringPosition==0) turnTo(Math.toRadians(0));
+                  if (ringPosition==0||ringPosition==2) turnTo(Math.toRadians(0));
                   else turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal)-POWEROFFSET);
 
                     currentState = State.FIRST_TURN;
@@ -318,7 +300,7 @@ public class ALessAggressiveAuton extends OpMode {
                         System.out.println("SHOOTER_ringShot");
                     }
                     robot.shooter.pusherOut();
-                    if (ringPosition<1) powerTurn();
+                    if (ringPosition==1||ringPosition==2) powerTurn();
                     currentState = State.TURN2;
                 }
                 break;
@@ -334,14 +316,14 @@ public class ALessAggressiveAuton extends OpMode {
                 //wobblePos=630;
                 setDriveWobble1();
                 robot.drive.followTrajectoryAsync(trajectory2);
-                if (ringPosition>0) robot.intake.turnOn();
+                if (ringPosition==1) robot.intake.turnOn();
                 //wobblePos=650;now in trajectory
-
-                if (ringPosition<2) currentState = State.DROP_WOBBLE_1;
-                else currentState= State.RING2;//DONE_RING;//State.RING2;
+                currentState = State.DROP_WOBBLE_1;
+               // if (ringPosition<2) currentState = State.DROP_WOBBLE_1;
+               // else currentState= State.RING2;//DONE_RING;//State.RING2;
 
                 break;
-            case RING2:
+            /*case RING2:
                 if(!robot.drive.isBusy()) {
                     robot.drive.followTrajectoryAsync(ring2);
                     currentState= State.DONE_RING;//RING3;
@@ -360,10 +342,12 @@ public class ALessAggressiveAuton extends OpMode {
                     currentState= State.DROP_WOBBLE_1;
                 }
                 break;
+
+             */
             case DROP_WOBBLE_1:
                 wobblePos=630;
                 if(!robot.drive.isBusy()) {
-                    if (ringPosition>0) robot.intake.turnOn();
+                    //if (ringPosition==1) robot.intake.turnOn();
                     wobblePos=900;
                     if(robot.wobble.isWobbleThere(wobblePos))
                     {
@@ -393,7 +377,7 @@ public class ALessAggressiveAuton extends OpMode {
                 if (!robot.drive.isBusy()) {
                     robot.wobble.closeClaw();
                     waitTimer1.reset();
-                    if(ringPosition > 0 )
+                    if(ringPosition ==1 )
                     {
                         currentState = State.RELOAD_WAIT;
 
@@ -457,7 +441,7 @@ public class ALessAggressiveAuton extends OpMode {
                // System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                }
                  */
-                if (!robot.drive.isBusy()&& waitTimer1.milliseconds()>500) {//making sure our turn is done  && waitTimer1.time()>1500
+                if (!robot.drive.isBusy()&& waitTimer1.milliseconds()>50) {//making sure our turn is done  && waitTimer1.time()>1500
                    /* if (isRed==1) {
                         done=robot.drive.getPoseEstimate().getHeading() <= Math.toRadians(PowerTarget);
                     } else {
@@ -523,9 +507,9 @@ public class ALessAggressiveAuton extends OpMode {
                 break;
 
             case DRIVE_WOBBLE_2:
-                if (waitTimer1.time()>1000) {
+                if (waitTimer1.time()>750) {
                     //wobbleState = WobbleState.WOBBLE_RAISE;
-                    wobblePos = 630;
+                    wobblePos = 850;//630;
                     currentState = State.DROP_WOBBLE_2;
                 }
                 break;
@@ -537,7 +521,7 @@ public class ALessAggressiveAuton extends OpMode {
                         robot.intake.turnOff();
                     }*/
 
-                    wobblePos = 900;
+                    //wobblePos = 900;
                     if(robot.wobble.isWobbleThere(wobblePos)) {
                         robot.wobble.openClaw();
                         currentState = State.CLAW_WAIT;
@@ -614,7 +598,7 @@ public class ALessAggressiveAuton extends OpMode {
                 break;
             case WOBBLE_RAISEWAIT:
                 //System.out.println("WOBBLE_raiseWaitInState");
-                if(wobbleWait.time() >= 20)
+                if(wobbleWait.milliseconds() >= 20)
                 {
                     wobbleState = WobbleState.WOBBLE_RAISE;
                     //System.out.println("WOBBLE_raiseWait");
@@ -827,12 +811,23 @@ public class ALessAggressiveAuton extends OpMode {
                         new MecanumVelocityConstraint(17, TRACK_WIDTH)
                 ));
                 ProfileAccelerationConstraint accelConstraint = new ProfileAccelerationConstraint(MAX_ACCEL);
+                MinVelocityConstraint velConstraint2 = new MinVelocityConstraint(Arrays.asList(
+                        new AngularVelocityConstraint(MAX_ANG_VEL),
+                        new MecanumVelocityConstraint(55, TRACK_WIDTH)
+                ));
+                ProfileAccelerationConstraint accelConstraint2 = new ProfileAccelerationConstraint(55);
+
                 Vector2d vec =new Vector2d (-20,-43);
 
+
+
+
                 trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
+
+                        .lineToSplineHeading(new Pose2d(56.0,-45.0,Math.toRadians(110.0)))
                         //.lineToLinearHeading(new Pose2d(-26.0,-31.0,Math.toRadians(300.0)))
                         //.lineToLinearHeading(new Pose2d(-26.0,-33.0,Math.toRadians(320.0)))
-                        .lineToLinearHeading(new Pose2d(-20.0,-45.0,Math.toRadians(325.0)),velConstraint,accelConstraint)
+                       // .lineToLinearHeading(new Pose2d(-20.0,-45.0,Math.toRadians(325.0)),velConstraint,accelConstraint)
                       //  .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(320)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
                         /*.lineToSplineHeading(new Pose2d(-28.0,-20.0,Math.toRadians(307)))
                         .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(307)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
@@ -841,63 +836,21 @@ public class ALessAggressiveAuton extends OpMode {
                         })
                         .splineToSplineHeading(new Pose2d(48.0,-45.0,Math.toRadians(110.0)),Math.toRadians(320.0))*/
                         .build();
-                ring2 = robot.drive.trajectoryBuilder(trajectory2.end())
-                        .lineToSplineHeading(new Pose2d(-20,-30.0,Math.toRadians(240.0)))
-                        //.lineToLinearHeading(new Pose2d(-24.0,-39.0,Math.toRadians(320.0)))
-                       /* .lineToSplineHeading(new Pose2d(-28.0,-20.0,Math.toRadians(307)))
-                        .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(307)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                        .addDisplacementMarker(() -> {
-                            wobblePos = 650;
-                        })
-                        .splineToSplineHeading(new Pose2d(48.0,-45.0,Math.toRadians(110.0)),Math.toRadians(320.0))
 
-                        */
-                        .build();
 
-                ring3 = robot.drive.trajectoryBuilder(ring2.end())
-
-                        .lineToLinearHeading(new Pose2d(-20.0,-44.0,Math.toRadians(330.0)))
-                      /*  .lineToSplineHeading(new Pose2d(-28.0,-20.0,Math.toRadians(307)))
-                        .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(307)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                        .addDisplacementMarker(() -> {
-                            wobblePos = 650;
-                        })
-                        .splineToSplineHeading(new Pose2d(48.0,-45.0,Math.toRadians(110.0)),Math.toRadians(320.0))
-                        */
-                        .build();
-                MinVelocityConstraint velConstraint2 = new MinVelocityConstraint(Arrays.asList(
-                        new AngularVelocityConstraint(MAX_ANG_VEL),
-                        new MecanumVelocityConstraint(55, TRACK_WIDTH)
-                ));
-                ProfileAccelerationConstraint accelConstraint2 = new ProfileAccelerationConstraint(55);
               //  drop1 = robot.drive.trajectoryBuilder(trajectory2.end())
-                drop1 = robot.drive.trajectoryBuilder(ring2.end())
-                      //  .splineToSplineHeading(new Pose2d(-20,-43.0,Math.toRadians(270.0)),0)
-                        //.splineToSplineHeading(new Pose2d(48.0,-45.0,Math.toRadians(110.0)),Math.toRadians(320.0))
-                      //  .lineToSplineHeading(new Pose2d(53.0,-45.0,Math.toRadians(110.0)))
 
-                       // .lineToSplineHeading(new Pose2d(53.0,-45.0,Math.toRadians(110.0)),velConstraint2,accelConstraint2)
-                        .lineToSplineHeading(new Pose2d(56.0,-45.0,Math.toRadians(110.0)),velConstraint2,accelConstraint2)
-                        /*.addDisplacementMarker(2,() -> {
-                            wobblePos = 650;
-                        })*/
 
-                        .build();
-/*
-                trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
-                        .lineToLinearHeading(new Pose2d(48, isRed * -45, Math.toRadians(110)))
-                        .build();
-  */
-                trajectory3 = robot.drive.trajectoryBuilder(drop1.end())
+                trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
                         //.splineTo(new Vector2d(-55, isRed * -55), 0) -20, 44
-                        .splineToSplineHeading(new Pose2d(-8, -47 * isRed, Math.toRadians(0)),Math.toRadians(180))
+                        .splineToSplineHeading(new Pose2d(-8, -49 * isRed, Math.toRadians(0)),Math.toRadians(180),velConstraint2,accelConstraint2)
                         .addTemporalMarker(.5, () -> {
                             wobblePos=700;
                         })
                         .addDisplacementMarker(() -> {
                             wobblePos = 900;
                         })
-                        .splineToLinearHeading(new Pose2d(-34, -45 * isRed,Math.toRadians(0)),Math.toRadians(180))
+                        .splineToLinearHeading(new Pose2d(-34, -47 * isRed,Math.toRadians(0)),Math.toRadians(180))
                         .build();
                 /*
                 trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
@@ -917,20 +870,8 @@ public class ALessAggressiveAuton extends OpMode {
                         .build();
 
                  */
-                misswobble = robot.drive.trajectoryBuilder(trajectory3.end())
-                        .splineToLinearHeading(new Pose2d(-8.0, -39.0, Math.toRadians(0.0)),Math.toRadians(90.0),velConstraint2,accelConstraint2)
-                        /*.splineToSplineHeading(new Pose2d(-12.0, -30.0, Math.toRadians(40.0)),Math.toRadians(45.0))
-                        .addDisplacementMarker(() -> {
-                            if (!robot.shooter.isShooterOn) {
-                                targetVelocity = robot.shooter.shooterOn();
-                            }
-                        })
-                    .splineToSplineHeading(new Pose2d(-9.0, -22.0, robot.shooter.angleToGoal(-9, -22, robot.shooter.redGoal)),Math.toRadians(90.0))
-
-                         */
-                        .build();
-
-                trajectory4 = robot.drive.trajectoryBuilder(misswobble.end())
+               
+                trajectory4 = robot.drive.trajectoryBuilder(trajectory3.end())
                         .lineToLinearHeading(new Pose2d(38, isRed * -52, Math.toRadians(165)),velConstraint2,accelConstraint2)
                         .build();
                 trajectory5 = robot.drive.trajectoryBuilder(trajectory4.end())

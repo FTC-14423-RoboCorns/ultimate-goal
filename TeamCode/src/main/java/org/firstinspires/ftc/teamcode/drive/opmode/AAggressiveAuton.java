@@ -233,7 +233,7 @@ public class AAggressiveAuton extends OpMode {
             case TRAJECTORY_1:
                 if (!robot.shooter.isShooterOn) {
                     if (ringPosition==0) targetVelocity = robot.shooter.shooterOn(1950);
-                        else  targetVelocity = robot.shooter.shooterOn(2100);
+                        else  targetVelocity = robot.shooter.shooterOn(2000);
                 }
                 if (!robot.drive.isBusy()) {
                     if (debug) {
@@ -366,7 +366,7 @@ public class AAggressiveAuton extends OpMode {
                 wobblePos=630;
                 if(!robot.drive.isBusy()) {
                     if (ringPosition>0) robot.intake.turnOn();
-                    wobblePos=900;
+                    wobblePos=850;
                     if(robot.wobble.isWobbleThere(wobblePos))
                     {
                      //   System.out.println("WOBBLE_POS " + robot.wobble.wobble.getCurrentPosition());
@@ -525,9 +525,9 @@ public class AAggressiveAuton extends OpMode {
                 break;
 
             case DRIVE_WOBBLE_2:
-                if (waitTimer1.time()>1000) {
+                if (waitTimer1.time()>750) {
                     //wobbleState = WobbleState.WOBBLE_RAISE;
-                    wobblePos = 630;
+                    wobblePos = 850;//630;
                     currentState = State.DROP_WOBBLE_2;
                 }
                 break;
@@ -539,7 +539,7 @@ public class AAggressiveAuton extends OpMode {
                         robot.intake.turnOff();
                     }*/
 
-                    wobblePos = 900;
+                   // wobblePos = 850;
                     if(robot.wobble.isWobbleThere(wobblePos)) {
                         robot.wobble.openClaw();
                         currentState = State.CLAW_WAIT;
@@ -826,15 +826,18 @@ public class AAggressiveAuton extends OpMode {
                 //TODO: Verify Wobble Goal Position and Ring Height Map
                 MinVelocityConstraint velConstraint = new MinVelocityConstraint(Arrays.asList(
                         new AngularVelocityConstraint(MAX_ANG_VEL),
-                        new MecanumVelocityConstraint(17, TRACK_WIDTH)
+                        new MecanumVelocityConstraint(20, TRACK_WIDTH)
                 ));
                 ProfileAccelerationConstraint accelConstraint = new ProfileAccelerationConstraint(MAX_ACCEL);
-                Vector2d vec =new Vector2d (-20,-43);
+                Vector2d ringVec =new Vector2d (-20,-45);
+                Vector2d nowVec=new Vector2d(CurrentP.getX(),CurrentP.getY());
+                Vector2d difference=ringVec.minus(nowVec);
+                double goAngle = difference.angle();
 
                 trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
                         //.lineToLinearHeading(new Pose2d(-26.0,-31.0,Math.toRadians(300.0)))
                         //.lineToLinearHeading(new Pose2d(-26.0,-33.0,Math.toRadians(320.0)))
-                        .lineToLinearHeading(new Pose2d(-20.0,-45.0,Math.toRadians(325.0)),velConstraint,accelConstraint)
+                        .lineToLinearHeading(new Pose2d(ringVec,goAngle),velConstraint,accelConstraint)//goAngle was 325
                       //  .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(320)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
                         /*.lineToSplineHeading(new Pose2d(-28.0,-20.0,Math.toRadians(307)))
                         .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(307)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
