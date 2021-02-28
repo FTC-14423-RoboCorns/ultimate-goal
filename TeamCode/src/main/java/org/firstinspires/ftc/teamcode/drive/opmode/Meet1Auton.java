@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.drive.PoseStorage;
  */
 @Config
 @Autonomous(group = "drive")
-public class TestAuton extends OpMode {
+public class Meet1Auton extends OpMode {
     private boolean debug=false;
     public static double DISTANCE = 60; // in
     double PowerTarget;
@@ -127,7 +127,7 @@ public class TestAuton extends OpMode {
         robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
         robot.shooter.update(robot.drive.getPoseEstimate());
         PoseStorage.currentPose = robot.drive.getPoseEstimate();
-        currentState=State.TRAJECTORY_1;
+        currentState= State.TRAJECTORY_1;
 
         robot.wobble.closeClaw();
     }
@@ -219,8 +219,7 @@ public class TestAuton extends OpMode {
                     System.out.println("SHOOTER_now shooting heading " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                     }
                      */
-
-                  if(shootCount<3)
+                    if(shootCount<4)
                     {
                         if (debug) {
                             System.out.println("SHOOTER_shoot " + shootCount);

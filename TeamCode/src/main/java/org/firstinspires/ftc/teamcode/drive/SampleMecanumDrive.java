@@ -67,12 +67,19 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
  */
 @Config
 public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive {
-    //public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(20, 0, 0);
-    //public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0, 0);
-//    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(12, 0, 1.5);
-  //  public static PIDCoefficients HEADING_PID = new PIDCoefficients(11, 0, 1);
+
+    //public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(12, 0.002, 0.75);
+    //public static PIDCoefficients HEADING_PID = new PIDCoefficients(12, 0.002, 0);
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(12, 0.002, 0.75);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(12, 0.002, 0);
+    /*faster try
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(8, 0.001, 2);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(20, 0.004, 0.75);
+  */
+  // public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
+
+   // public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
+
     public static PIDCoefficients TURN_PID = new PIDCoefficients(15, 0.05, .01);
     //public static PIDCoefficients Y_PID = new PIDCoefficients(12, 0, 0);
 
@@ -143,7 +150,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         accelConstraint = new ProfileAccelerationConstraint(MAX_ACCEL);
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
                 //new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
-                new Pose2d(0.25, 0.25, Math.toRadians(2.0)), .5);
+                new Pose2d(0.5, 0.5, Math.toRadians(.5)), .5);
         /*follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, Y_PID, HEADING_PID,
                 //new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
                 new Pose2d(0.25, 0.25, Math.toRadians(2.0)), 0.5);*/

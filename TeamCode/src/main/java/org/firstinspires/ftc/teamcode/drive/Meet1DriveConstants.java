@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  * and op modes themselves.
  */
 @Config
-public class DriveConstants {
+public class Meet1DriveConstants {
 
     /*
      * These are motor constants that should be listed online for your motors.
@@ -56,12 +56,6 @@ public class DriveConstants {
     public static double kV = 0.0125; //used to be 0.0125
     public static double kA = .005;//0.007;
     public static double kStatic = 0.1;
-    /*faster try
-    public static double kV = .013;//.007;//0.0125; //used to be 0.0125
-    public static double kA = .0023;//.0075;//0.005;
-    public static double kStatic = .11;//0.08;//.1
-
-     */
    // public static double kV = 0; //used to be 0.0125
    // public static double kA = 0;
     //public static double kStatic = 0;
@@ -75,10 +69,10 @@ public class DriveConstants {
      * small and gradually increase them later after everything is working. All distance units are
      * inches.
      */
-    public static double MAX_VEL = 40;//55;//40
-    public static double MAX_ACCEL = 40;//65;//40
-    public static double MAX_ANG_VEL =4;// 4;//4//2.7;//26.832; //2.3 old
-    public static double MAX_ANG_ACCEL = 4;//4;//4//2.3;
+    public static double MAX_VEL = 40;//40
+    public static double MAX_ACCEL = 40;//40
+    public static double MAX_ANG_VEL = 4;//4//2.7;//26.832; //2.3 old
+    public static double MAX_ANG_ACCEL = 4;//4//2.3;
 
 
     public static double encoderTicksToInches(double ticks) {

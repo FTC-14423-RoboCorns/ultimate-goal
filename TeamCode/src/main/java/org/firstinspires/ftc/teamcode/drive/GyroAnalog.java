@@ -20,7 +20,7 @@ public class GyroAnalog
     public double readGyro()
     {
         rawAngle=gyro.getVoltage();
-        finalAngle=((2*Math.PI*(3.225-(rawAngle-0.003)))/3.225);
+        finalAngle=((2*Math.PI*(3.3-(rawAngle)))/3.3);//old range .003,3.225
         return finalAngle;
     }
 

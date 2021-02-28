@@ -7,11 +7,13 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
+import org.firstinspires.ftc.teamcode.drive.PoseStorage;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
@@ -27,6 +29,7 @@ import org.firstinspires.ftc.teamcode.util.DashboardUtil;
  * want that to interfere with our graph so we just directly update localizer instead
  */
 @Config
+@Disabled
 @TeleOp(group = "advanced")
 public class TeleOpAlignWithPoint extends LinearOpMode {
 

@@ -36,8 +36,8 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
     public static double FORWARD_OFFSET = 2; // in; offset of the lateral wheel
 
     private Encoder leftEncoder, rightEncoder, frontEncoder;
-    public static double X_MULTIPLIER = 1.0059; //1.0163 was oldF
-    public static double Y_MULTIPLIER = 1.0095;
+    public static double X_MULTIPLIER =1.01694915;// 1.0059; //1.0163 was oldF
+    public static double Y_MULTIPLIER =1.021276;// 1.0095;
 
     public StandardTrackingWheelLocalizer(HardwareMap hardwareMap) {
         super(Arrays.asList(

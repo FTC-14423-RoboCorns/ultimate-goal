@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.advanced;
+package org.firstinspires.ftc.teamcode.drive;
 
 import androidx.annotation.NonNull;
 
@@ -24,10 +24,9 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
+import com.acmerobotics.roadrunner.util.Angle;
 import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -56,33 +55,44 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 
 /*
- * This is a modified SampleMecanumDrive class that implements the ability to cancel a trajectory
- * following. Essentially, it just forces the mode to IDLE.
+ * Simple mecanum drive hardware implementation for REV hardware.
  */
 @Config
-@Disabled
-public class SampleMecanumDriveCancelable extends MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
+public class Meet1SampleMecanumDrive extends MecanumDrive {
+    //public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(20, 0, 0);
+    //public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0, 0);
+//    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(12, 0, 1.5);
+  //  public static PIDCoefficients HEADING_PID = new PIDCoefficients(11, 0, 1);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(12, 0.002, 0.75);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(12, 0.002, 0);
+    public static PIDCoefficients TURN_PID = new PIDCoefficients(15, 0.05, .01);
+    //public static PIDCoefficients Y_PID = new PIDCoefficients(12, 0, 0);
 
-    public static double LATERAL_MULTIPLIER = 1;
+    public  int USE_IMU=0;
+    public static double LATERAL_MULTIPLIER = 1.1; //was 2.05;
 
-    public static double VX_WEIGHT = 1;
-    public static double VY_WEIGHT = 1;
-    public static double OMEGA_WEIGHT = 1;
+    public static double VX_WEIGHT = .7;
+    public static double VY_WEIGHT = .9;
+    public static double OMEGA_WEIGHT = .5;
 
     public static int POSE_HISTORY_LIMIT = 100;
 
     public enum Mode {
         IDLE,
         TURN,
+        FIXTURN,
         FOLLOW_TRAJECTORY
     }
-
+    private boolean debug=false;
+    private boolean usedashboard=true;
     private FtcDashboard dashboard;
+    private TelemetryPacket packet;
+    private Canvas fieldOverlay;
+
+
     private NanoClock clock;
 
-    private Mode mode;
+    public Mode mode;
 
     private PIDFController turnController;
     private MotionProfile turnProfile;
@@ -97,22 +107,25 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
-
+    private BNO055IMU imu1;
+   // public GyroAnalog gyro;
     private VoltageSensor batteryVoltageSensor;
 
     private Pose2d lastPoseOnTurn;
 
-    public SampleMecanumDriveCancelable(HardwareMap hardwareMap) {
+    public Meet1SampleMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
+        if (usedashboard) {
+            dashboard = FtcDashboard.getInstance();
+            dashboard.setTelemetryTransmissionInterval(25);
+        }
 
-        dashboard = FtcDashboard.getInstance();
-        dashboard.setTelemetryTransmissionInterval(25);
 
         clock = NanoClock.system();
 
         mode = Mode.IDLE;
 
-        turnController = new PIDFController(HEADING_PID);
+        turnController = new PIDFController(TURN_PID);
         turnController.setInputBounds(0, 2 * Math.PI);
 
         velConstraint = new MinVelocityConstraint(Arrays.asList(
@@ -121,32 +134,46 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
         ));
         accelConstraint = new ProfileAccelerationConstraint(MAX_ACCEL);
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
-                new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
+                //new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
+                new Pose2d(0.25, 0.25, Math.toRadians(1)), .5);
+        /*follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, Y_PID, HEADING_PID,
+                //new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
+                new Pose2d(0.25, 0.25, Math.toRadians(2.0)), 0.5);*/
+
 
         poseHistory = new LinkedList<>();
 
         LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
-
+        /*unneeded, now handled in robot class
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
+        */
 
         // TODO: adjust the names of the following hardware devices to match your configuration
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        if (USE_IMU==1)
+        {
+        // gyro = new GyroAnalog(hardwareMap);
+         // gyro.gyro.resetDeviceConfigurationForOpMode();
+        /*imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
+
+            imu1 = hardwareMap.get(BNO055IMU.class, "imu1");
+            imu1.initialize(parameters);*/
+        }
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
         // upward (normal to the floor) using a command like the following:
         // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
 
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
-        rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront = hardwareMap.get(DcMotorEx.class, "LF");
+        leftRear = hardwareMap.get(DcMotorEx.class, "LR");
+        rightRear = hardwareMap.get(DcMotorEx.class, "RR");
+        rightFront = hardwareMap.get(DcMotorEx.class, "RF");
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
@@ -167,10 +194,24 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
         }
 
         // TODO: reverse any motors using DcMotor.setDirection()
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        leftRear.setDirection(DcMotor.Direction.REVERSE);
 
+        //rightRear.setDirection(DcMotor.Direction.REVERSE);
+        //leftFront.setDirection(DcMotor.Direction.REVERSE);
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
+        //TODO: Removed in backup
+
+        //if (USE_IMU==1) {
+          //  setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap,this);
+        //} else {
+            setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
+
+        //}
     }
+
+
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
         return new TrajectoryBuilder(startPose, velConstraint, accelConstraint);
@@ -183,6 +224,33 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose, double startHeading) {
         return new TrajectoryBuilder(startPose, startHeading, velConstraint, accelConstraint);
     }
+
+    public void fixTurnAsync(double angle) {
+        double heading = getPoseEstimate().getHeading();
+
+        lastPoseOnTurn = getPoseEstimate();
+
+        turnProfile = MotionProfileGenerator.generateSimpleMotionProfile(
+                new MotionState(heading, 0, 0, 0),
+                new MotionState(heading + angle, 0, 0, 0),
+                MAX_ANG_VEL,
+                MAX_ANG_ACCEL
+        );
+        turnController.setTargetPosition(heading+angle); //moved from TURN State - only set target once
+
+        turnStart = clock.seconds();
+        mode = Mode.FIXTURN;
+    }
+
+    public void cancelFollowing() {
+        mode = Mode.IDLE;
+    }
+
+    public void fixTurn(double angle) {
+        fixTurnAsync(angle);
+        waitForIdle();
+    }
+
 
     public void turnAsync(double angle) {
         double heading = getPoseEstimate().getHeading();
@@ -215,15 +283,13 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
         waitForIdle();
     }
 
-    public void cancelFollowing() {
-        mode = Mode.IDLE;
-    }
-
     public Pose2d getLastError() {
         switch (mode) {
             case FOLLOW_TRAJECTORY:
                 return follower.getLastError();
             case TURN:
+                return new Pose2d(0, 0, turnController.getLastError());
+            case FIXTURN:
                 return new Pose2d(0, 0, turnController.getLastError());
             case IDLE:
                 return new Pose2d();
@@ -242,20 +308,20 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
         if (POSE_HISTORY_LIMIT > -1 && poseHistory.size() > POSE_HISTORY_LIMIT) {
             poseHistory.removeFirst();
         }
+        if (usedashboard) {
+            packet = new TelemetryPacket();
+            fieldOverlay = packet.fieldOverlay();
 
-        TelemetryPacket packet = new TelemetryPacket();
-        Canvas fieldOverlay = packet.fieldOverlay();
+            packet.put("mode", mode);
 
-        packet.put("mode", mode);
+            packet.put("x", currentPose.getX());
+            packet.put("y", currentPose.getY());
+            packet.put("heading (deg)", Math.toDegrees(currentPose.getHeading()));
 
-        packet.put("x", currentPose.getX());
-        packet.put("y", currentPose.getY());
-        packet.put("heading (deg)", Math.toDegrees(currentPose.getHeading()));
-
-        packet.put("xError", lastError.getX());
-        packet.put("yError", lastError.getY());
-        packet.put("headingError (deg)", Math.toDegrees(lastError.getHeading()));
-
+            packet.put("xError", lastError.getX());
+            packet.put("yError", lastError.getY());
+            packet.put("headingError (deg)", Math.toDegrees(lastError.getHeading()));
+        }
         switch (mode) {
             case IDLE:
                 // do nothing
@@ -267,24 +333,92 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
 
                 turnController.setTargetPosition(targetState.getX());
 
-                double correction = turnController.update(currentPose.getHeading());
+                MotionState endState = turnProfile.end();
 
-                double targetOmega = targetState.getV();
-                double targetAlpha = targetState.getA();
-                setDriveSignal(new DriveSignal(new Pose2d(
-                        0, 0, targetOmega + correction
-                ), new Pose2d(
-                        0, 0, targetAlpha
-                )));
+                double error = Angle.normDelta(endState.getX() - currentPose.getHeading());
+                if (debug) {
+                    System.out.println("TURN_Error " + Math.toDegrees(error));
+                    System.out.println("TURN_Heading " + Math.toDegrees(currentPose.getHeading()));
+                    System.out.println("TURN_Final Target " + Math.toDegrees(endState.getX()));
+                    System.out.println("TURN_Int Target " + Math.toDegrees(targetState.getX()));
+                    System.out.println("TURN_time " + t);
+                    System.out.println("TURN_duration " + turnProfile.duration());
+                }
 
-                Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
 
-                fieldOverlay.setStroke("#4CAF50");
-                DashboardUtil.drawRobot(fieldOverlay, newPose);
-
-                if (t >= turnProfile.duration()) {
+                //&& error <Math.toRadians(1) is new here
+                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.25))
+                {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
+                } else {
+                    double correction = turnController.update(currentPose.getHeading());
+                    double targetOmega;
+                    double targetAlpha;
+                    if(t<=turnProfile.duration())
+                    {
+                        targetOmega = targetState.getV();
+                        targetAlpha = targetState.getA();
+                    }
+                    else
+                    {
+                        targetOmega = Math.signum(correction)*.6;
+                        targetAlpha = 0;
+                    }
+                  /*
+                    if (debug) {
+                    System.out.println("TURN_V " + targetOmega);
+                    System.out.println("TURN_A " + targetAlpha);
+                    System.out.println("TURN_Correction " + correction);
+                    System.out.println("TURN_PID error " + Math.toDegrees(turnController.getLastError()));
+                    System.out.println("TURN_PID target " + Math.toDegrees(turnController.getTargetPosition()));
+                    }*/
+
+
+                    setDriveSignal(new DriveSignal(new Pose2d(
+                            0, 0, targetOmega + correction
+                    ), new Pose2d(
+                            0, 0, targetAlpha
+                    )));
+
+                }
+                    Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
+                if (usedashboard) {
+                    fieldOverlay.setStroke("#4CAF50");
+                    DashboardUtil.drawRobot(fieldOverlay, newPose);
+                }
+
+                break;
+            }
+            case FIXTURN: {
+                double t = clock.seconds() - turnStart;
+
+                MotionState targetState = turnProfile.get(t);
+
+                double correction = turnController.update(currentPose.getHeading());
+                if (debug) {
+                    System.out.println("TURN_Target " + turnController.getTargetPosition());
+
+
+                    System.out.println("TURN_Error " + Math.toDegrees(turnController.getLastError()) + " " + Math.toDegrees(turnController.getTargetPosition()));
+                }
+                if (Math.abs(turnController.getLastError())<Math.toRadians(1))//move test to the front to ensure no stale bulk reads
+                {
+                    mode = Mode.IDLE;
+                    setDriveSignal(new DriveSignal());
+                } else {
+                    double targetOmega = targetState.getV();
+                    double targetAlpha = targetState.getA();
+                    setDriveSignal(new DriveSignal(new Pose2d(
+                            0, 0, targetOmega + correction
+                    ), new Pose2d(
+                            0, 0, targetAlpha
+                    )));
+                }
+                Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
+                if (usedashboard) {
+                    fieldOverlay.setStroke("#4CAF50");
+                    DashboardUtil.drawRobot(fieldOverlay, newPose);
                 }
 
                 break;
@@ -294,15 +428,19 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
 
                 Trajectory trajectory = follower.getTrajectory();
 
-                fieldOverlay.setStrokeWidth(1);
-                fieldOverlay.setStroke("#4CAF50");
-                DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
+                if (usedashboard) {
+                    fieldOverlay.setStrokeWidth(1);
+                    fieldOverlay.setStroke("#4CAF50");
+                    DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
+                }
                 double t = follower.elapsedTime();
-                DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t));
 
-                fieldOverlay.setStroke("#3F51B5");
-                DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
+                if (usedashboard) {
+                    DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t));
 
+                    fieldOverlay.setStroke("#3F51B5");
+                    DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
+                }
                 if (!follower.isFollowing()) {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
@@ -311,11 +449,12 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
                 break;
             }
         }
+        if (usedashboard) {
+            fieldOverlay.setStroke("#3F51B5");
+            DashboardUtil.drawRobot(fieldOverlay, currentPose);
 
-        fieldOverlay.setStroke("#3F51B5");
-        DashboardUtil.drawRobot(fieldOverlay, currentPose);
-
-        dashboard.sendTelemetryPacket(packet);
+            dashboard.sendTelemetryPacket(packet);
+        }
     }
 
     public void waitForIdle() {
@@ -399,7 +538,27 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
 
     @Override
     public double getRawExternalHeading() {
-        return imu.getAngularOrientation().firstAngle;
+       /*if (USE_IMU==1) {
+           //double angle1 = gyro.readGyro();
+           double angle1= (TwoWheelTrackingLocalizer)getLocalizer().getHeading();
+          //double angle1 = imu.getAngularOrientation().firstAngle;
+          /* double angle2 = imu1.getAngularOrientation().firstAngle;
+           if(angle1 < Math.toRadians(180))
+           {
+               angle1 += Math.toRadians(360);
+           }
+           if(angle2 < Math.toRadians(180))
+           {
+               angle2 += Math.toRadians(360);
+           }
+            return ((angle1+angle2)/2) % Math.toRadians(360);
+           return angle1;
+        } else{
+            return 0;
+        }
+*/
+    return 0;
+
     }
 
     double getBatteryVoltage(HardwareMap hardwareMap) {

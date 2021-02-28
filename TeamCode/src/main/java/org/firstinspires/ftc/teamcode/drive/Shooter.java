@@ -40,7 +40,7 @@ public class Shooter {
     public final double SHOOTER_OFFSET=7;
     private final int SHOOTER_VELOCITY = 1900;//2000;
     private final int MAX_VELOCITY = 2160;
-    private final double PUSHER_START=.16;
+    private final double PUSHER_START=.20;//was .16; testing faster time
     private final double PUSHER_STOP=.43;
     private final double RAMP_DISTANCE = 6;
     private final double CRANK_RADIUS=1.111;
@@ -281,10 +281,14 @@ public class Shooter {
         switch (liftState) {
 
         case STATIC:
-            if (Math.abs(goal.y) < 24) {
-                liftPos = 0.61;
+            if (Math.abs(goal.y) < 26) {
+                if (Math.abs(robotX)<24) liftPos = .68;//0.7;
+                else liftPos = .76;
             } else {
-                liftPos = .60;//0.54;
+               // liftPos = .58;//0.54;
+                if (Math.abs(robotX)<24) liftPos = .58;
+                else
+                liftPos=.68;
             }
             break;
         case DYNAMIC:
@@ -312,7 +316,7 @@ public class Shooter {
             } else if (distance < 113) {
                 liftPos = 0.65;
             } else if (distance < 118) {
-                liftPos = 0.65;
+                liftPos = 0.64;
             } else if (distance < 123) {
                 liftPos = 0.64;
             }

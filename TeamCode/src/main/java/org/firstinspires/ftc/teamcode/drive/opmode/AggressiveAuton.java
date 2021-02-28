@@ -2,27 +2,33 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.PoseStorage;
+import org.firstinspires.ftc.teamcode.drive.Robot;
+
+import Unused.trclib.trclib.TrcPixyCam2;
 
 /*
  * This is a simple routine to test translational drive capabilities.
  */
 @Config
+@Disabled
 @Autonomous(group = "drive")
-public class TestAuton extends OpMode {
+public class AggressiveAuton extends OpMode {
     private boolean debug=false;
     public static double DISTANCE = 60; // in
     double PowerTarget;
     int isRed; // BLUE = -1; RED = 1
     int shootCount = 0;
+    int secondShootTotal =0;
     double targetVelocity = 1900;
     boolean shooterReady;
     public Robot robot;
@@ -38,7 +44,7 @@ public class TestAuton extends OpMode {
     private static final double POWEROFFSET3 = 0;
 
 
-    Trajectory trajectory1,trajectory2,trajectory3,pickUpRing, trajectory4,trajectory5,misswobble;
+    Trajectory trajectory1,trajectory2,trajectory3,pickUpRing, trajectory4,trajectory5,misswobble,strafe1,strafe2;
     Pose2d startPose;
     ElapsedTime waitTimer1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     ElapsedTime wobbleWait = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -68,11 +74,13 @@ public class TestAuton extends OpMode {
         TURN,
         DRIVE_WOBBLE_1,
         DROP_WOBBLE_1,
-        WOBBLE_DOWN,
+        SHOOT_SECOND_BATCH,
         MISS_WOBBLE,
-        GET_WOBBLE_2,
+        PICKUP_RING,
         GRAB_WOBBLE_2,
-        PICK_UP_RING,
+        BACKUP,
+        SHOOTAGAIN,
+        RELOADAGAIN,
         GRAB_WAIT,
         DRIVE_WOBBLE_2,
         DROP_WOBBLE_2,
@@ -120,14 +128,9 @@ public class TestAuton extends OpMode {
 
         robot.drive.setPoseEstimate(startPose);
 
-        trajectory1 = robot.drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), Math.toRadians(-15))
-                //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
-                .build();
-        robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
-        robot.shooter.update(robot.drive.getPoseEstimate());
+
         PoseStorage.currentPose = robot.drive.getPoseEstimate();
-        currentState=State.TRAJECTORY_1;
+        currentState= State.TRAJECTORY_1;
 
         robot.wobble.closeClaw();
     }
@@ -155,7 +158,33 @@ public class TestAuton extends OpMode {
         telemetry.addData("key", robot.pixy.sensorHeight);
         telemetry.addData("key", robot.pixy.oneRing);
         telemetry.update();
+        if (ringPosition==0) {
+            trajectory1 = robot.drive.trajectoryBuilder(startPose)
+                    .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), Math.toRadians(-15))
+                    //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
+                    .build();
+            robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
+        } else if (ringPosition==1)
+        {
+            trajectory1 = robot.drive.trajectoryBuilder(startPose)
+                  //  .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), Math.toRadians(-15))
+                    .splineToLinearHeading(new Pose2d(-7, isRed * -24.5, 0), Math.toRadians(-15))
+                    //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
+                    .build();
+            robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
 
+        } else {
+            trajectory1 = robot.drive.trajectoryBuilder(startPose)
+                    //TODO Change shooting position?
+                        .splineTo(new Vector2d(-24.0,-20.0),Math.toRadians(-15.0))
+                        .splineToSplineHeading(new Pose2d(-7.0,-30.0,robot.shooter.angleToGoal(-7, -30, robot.shooter.redGoal)-POWEROFFSET),Math.toRadians(0))
+                    //.splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redGoal)-POWEROFFSET), Math.toRadians(-15))
+                    //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
+                    .build();
+            robot.shooter.currentTarget=robot.shooter.redGoal; //affects lift height - change if we shoot for goal
+
+        }
+        robot.shooter.update(robot.drive.getPoseEstimate());
         robot.drive.followTrajectoryAsync(trajectory1);
         wobblePos = 450;
         wobbleState = WobbleState.WOBBLE_RAISE;
@@ -178,7 +207,8 @@ public class TestAuton extends OpMode {
                         System.out.println("SHOOTER_FIRSTTURN_X " + robot.drive.getPoseEstimate().getX());
                         System.out.println("SHOOTER_FIRSTTURN_Y " + robot.drive.getPoseEstimate().getY());
                     }
-                    turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1) - POWEROFFSET);
+                    //turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1) - POWEROFFSET);
+                    turnTo(0);
                     currentState = State.FIRST_TURN;
                     if (debug) {
                         System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
@@ -219,8 +249,7 @@ public class TestAuton extends OpMode {
                     System.out.println("SHOOTER_now shooting heading " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                     }
                      */
-
-                  if(shootCount<3)
+                    if(shootCount<3)
                     {
                         if (debug) {
                             System.out.println("SHOOTER_shoot " + shootCount);
@@ -232,6 +261,7 @@ public class TestAuton extends OpMode {
                         shootCount += 1;
                         waitTimer1.reset();
                     }
+
                     if (shootCount < 3) {
                         //System.out.println("SHOOTER_shootToTurn");
 
@@ -239,7 +269,7 @@ public class TestAuton extends OpMode {
                     }
                     else
                     {
-                        if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 1000) {
+                        if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 500) {
                             robot.shooter.shooterOff();
                             robot.shooter.pusherOut();
                             currentState = State.DRIVE_WOBBLE_1;
@@ -250,12 +280,12 @@ public class TestAuton extends OpMode {
 
             case TURN:
                // System.out.println("SHOOTER_turnInState");
-                if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 1000 ) {
+                if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 500 ) {
                     if (debug) {
                         System.out.println("SHOOTER_ringShot");
                     }
                     robot.shooter.pusherOut();
-                    powerTurn();
+                    if (ringPosition<2) powerTurn();
                     currentState = State.SHOOTER_ON;
                 }
                 break;
@@ -268,7 +298,7 @@ public class TestAuton extends OpMode {
                 currentState = State.DROP_WOBBLE_1;
             case DROP_WOBBLE_1:
                 if(!robot.drive.isBusy()) {
-                    wobblePos=850;
+                    wobblePos=800;
                     if(robot.wobble.isWobbleThere(wobblePos))
                     {
                      //   System.out.println("WOBBLE_POS " + robot.wobble.wobble.getCurrentPosition());
@@ -285,35 +315,20 @@ public class TestAuton extends OpMode {
                     //wobbleState = WobbleState.WOBBLE_LOWER;
                     wobblePos = 700;
                     //robot.drive.followTrajectoryAsync(misswobble);
-                    waitTimer1.reset();
+                    //waitTimer1.reset();
                     robot.drive.followTrajectoryAsync(trajectory3);
-                    currentState = State.GET_WOBBLE_2;
-                }
-                break;
-            case GET_WOBBLE_2:
-                if(!robot.drive.isBusy())
-                {
-                    wobblePos = 900;
-                    robot.drive.followTrajectoryAsync(misswobble);
-                    currentState = State.WOBBLE_DOWN;
-                }
-                break;
-            case WOBBLE_DOWN:
-                if(waitTimer1.time()>500)
-                {
-                    //wobbleState = WobbleState.WOBBLE_RAISE;
-                    wobblePos = 900;
                     currentState = State.GRAB_WOBBLE_2;
                 }
                 break;
 
             case GRAB_WOBBLE_2:
+                wobblePos = 900;
                 if (!robot.drive.isBusy()) {
                     robot.wobble.closeClaw();
                     waitTimer1.reset();
                     if(ringPosition > 0 )
                     {
-                        currentState = State.PICK_UP_RING;
+                        currentState = State.BACKUP;
 
                     }
                     else
@@ -323,22 +338,115 @@ public class TestAuton extends OpMode {
                 }
                 break;
 
-            case PICK_UP_RING:
+            case BACKUP:
                 if (waitTimer1.time()>250) {
                     //robot.intake.turnOn();
                     wobblePos = 450;
                     robot.drive.followTrajectoryAsync(pickUpRing);
-                    currentState = State.GRAB_WAIT;
+                    currentState = State.PICKUP_RING;
                  }
                 break;
 
+            case PICKUP_RING:
+                if (!robot.drive.isBusy()) {
+                    robot.intake.turnOn();
+                    robot.drive.followTrajectoryAsync(misswobble);
+                    shootCount=0;
+                    robot.shooter.currentTarget=robot.shooter.redGoal;
+                    if(ringPosition ==1 )
+                    {
+                        secondShootTotal =1;
+                    }
+                    else
+                    {
+                        secondShootTotal =3;
+                    }
+                    currentState = State.SHOOT_SECOND_BATCH;
+                }
+                break;
+
+            case SHOOT_SECOND_BATCH:
+
+                // System.out.println("SHOOTER_shooterSecond");
+                if (!robot.drive.isBusy()) {
+                    robot.intake.turnOff();
+
+                    if (robot.shooter.isShooterReady(targetVelocity)) {
+                        waitTimer1.reset();
+                        currentState = State.SHOOTAGAIN;
+                    } //will need to add a timer later to move on in case we never get up to speed
+                }
+                break;
+
+
+            case SHOOTAGAIN:
+               // boolean done;
+                /*if (debug) {
+               // System.out.println("SHOOTER_shootInState");
+               // System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
+               }
+                 */
+                if (!robot.drive.isBusy()&& waitTimer1.time()>500) {//making sure our turn is done  && waitTimer1.time()>1500
+                   /* if (isRed==1) {
+                        done=robot.drive.getPoseEstimate().getHeading() <= Math.toRadians(PowerTarget);
+                    } else {
+                        done=robot.drive.getPoseEstimate().getHeading()>= Math.toRadians(PowerTarget);
+                    }
+                    if (done) {*/
+                    /*if (debug) {
+                    System.out.println("SHOOTER_now shooting heading " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
+                    }
+                     */
+                    if(shootCount<secondShootTotal)
+                    {
+                        if (debug) {
+                            System.out.println("SHOOTER_shoot " + shootCount);
+                            System.out.println("SHOOTER_TURN_Final heading" + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
+                            //   System.out.println("SHOOT_Shooter Ready " + robot.shooter.shooter.getVelocity());
+                            //   System.out.println("SHOOT_Shooter Ready " + robot.shooter.isShooterReady(targetVelocity));
+                        }
+                        robot.shooter.pusherIn();
+                        shootCount += 1;
+                        waitTimer1.reset();
+                    }
+
+                    if (shootCount < secondShootTotal) {
+                        //System.out.println("SHOOTER_shootToTurn");
+                        currentState = State.RELOADAGAIN;
+                    }
+                    else
+                    {
+                        if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 500) {
+                            robot.shooter.shooterOff();
+                            robot.shooter.pusherOut();
+                            currentState = State.GRAB_WAIT;
+                        }
+                    }
+                }
+                break;
+
+            case RELOADAGAIN:
+                // System.out.println("SHOOTER_turnInState");
+                if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 500 ) {
+                    if (debug) {
+                        System.out.println("SHOOTER_ringShot");
+                    }
+                    robot.shooter.pusherOut();
+                    currentState = State.SHOOT_SECOND_BATCH;
+                }
+                break;
+
+
+
+
+
             case GRAB_WAIT:
                 if (waitTimer1.time()>250 && !robot.drive.isBusy()) {
-                    robot.intake.turnOff();
+
                     robot.drive.followTrajectoryAsync(trajectory4);
                     //wobbleState = WobbleState.WOBBLE_LOWER;
                     wobblePos = 450;
-                    currentState = State.DRIVE_WOBBLE_2;
+                    currentState = State.DROP_WOBBLE_2;
                     waitTimer1.reset();
                 }
                 break;
@@ -351,12 +459,12 @@ public class TestAuton extends OpMode {
                 }
                 break;
             case DROP_WOBBLE_2:
-                wobblePos=850;
+
                 if(!robot.drive.isBusy()) {
-                    if(ringPosition ==1 )
+                   /* if(ringPosition >0)
                     {
                         robot.intake.turnOff();
-                    }
+                    }*/
                     wobblePos = 850;
                     robot.wobble.openClaw();
                     currentState = State.CLAW_WAIT;
@@ -502,11 +610,20 @@ public class TestAuton extends OpMode {
         {
             if(shootCount == 1)
             {
-                turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot2)-POWEROFFSET2);
+                strafe1 = robot.drive.trajectoryBuilder(trajectory1.end())
+                        .strafeLeft(7.5)
+                        .build();
+                robot.drive.followTrajectoryAsync(strafe1);
+
+                //turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot2)-POWEROFFSET2);
             }
             else
             {
-                turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot3)-POWEROFFSET3);
+                strafe2 = robot.drive.trajectoryBuilder(strafe1.end())
+                        .strafeLeft(7.5)
+                        .build();
+                robot.drive.followTrajectoryAsync(strafe2);
+                //turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot3)-POWEROFFSET3);
             }
         }
         else
@@ -536,47 +653,6 @@ public class TestAuton extends OpMode {
                         //.splineTo(new Vector2d(-55, isRed * -55), 0) -20, 44
                         .splineToLinearHeading(new Pose2d(-8, -48 * isRed, Math.toRadians(0)),0)
                         .build();
-                /*misswobble = robot.drive.trajectoryBuilder(trajectory2.end())
-                        //.splineTo(new Vector2d(-55, isRed * -55), 0)
-                        .lineTo(new Vector2d(-18, -60*isRed))
-                        .build(); */
-                break;
-            case 1: //B
-                //TODO: Verify Wobble Goal Position and Ring Height Map
-                trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
-                        .lineToLinearHeading(new Pose2d(20, isRed * -32, Math.toRadians(175)))
-                        .build();
-                trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
-                        //.splineTo(new Vector2d(-55, isRed * -55), 0) -20, 44
-                        .splineToLinearHeading(new Pose2d(-8, -48 * isRed, Math.toRadians(0)),0)
-                        .build();
-                break;
-            case 2: //C
-                //TODO: Verify Wobble Goal Position and Ring Height Map
-                trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
-                        .lineToLinearHeading(new Pose2d(48, isRed * -45, Math.toRadians(110)))
-                        .build();
-                trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
-                        //.splineTo(new Vector2d(-55, isRed * -55), 0) -20, 44
-                        //.splineToLinearHeading(new Pose2d(10, -51 * isRed, Math.toRadians(0)),0)
-                        //.splineToLinearHeading(new Pose2d(0, -52 * isRed, Math.toRadians(0)),0)
-                        .lineToLinearHeading(new Pose2d(-8, -50 * isRed, Math.toRadians(0)))
-                        .build();
-                /*misswobble = robot.drive.trajectoryBuilder(trajectory2.end())
-                        //.splineTo(new Vector2d(-55, isRed * -55), 0)
-                        .lineTo(new Vector2d(30, -60*isRed))
-                        .build();*/
-                break;
-        }
-        misswobble = robot.drive.trajectoryBuilder(trajectory3.end(),true)
-                //.splineTo(new Vector2d(-55, isRed * -55), 0)
-                .splineToLinearHeading(new Pose2d(-32, -47 * isRed,Math.toRadians(0)),0)
-                .build();
-
-        switch (ringPosition)
-        {
-            case 0: //A
-                //TODO: Verify Wobble Goal Position and Ring Height Map
                 misswobble = robot.drive.trajectoryBuilder(trajectory3.end(),true)
                         //.splineTo(new Vector2d(-55, isRed * -55), 0)
                         .splineToLinearHeading(new Pose2d(-32, -47 * isRed,Math.toRadians(0)),0)
@@ -591,23 +667,61 @@ public class TestAuton extends OpMode {
                 break;
             case 1: //B
                 //TODO: Verify Wobble Goal Position and Ring Height Map
-                misswobble = robot.drive.trajectoryBuilder(trajectory3.end(),true)
+                trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
+                        .lineToLinearHeading(new Pose2d(20, isRed * -32, Math.toRadians(175)))
+                        .build();
+                trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
+                        //.splineTo(new Vector2d(-55, isRed * -55), 0) -20, 44
+                        .splineToSplineHeading(new Pose2d(-8, -48 * isRed, Math.toRadians(0)),Math.toRadians(180))
+                        .addDisplacementMarker(() -> {
+                            wobblePos = 900;
+                        })
+                        .splineToLinearHeading(new Pose2d(-34, -47 * isRed,Math.toRadians(0)),Math.toRadians(180))
+                        .build();
+               /* misswobble = robot.drive.trajectoryBuilder(trajectory3.end(),true)
                         //.splineTo(new Vector2d(-55, isRed * -55), 0)
                         .splineToLinearHeading(new Pose2d(-32, -47 * isRed,Math.toRadians(0)),0)
                         .build();
 
-                pickUpRing = robot.drive.trajectoryBuilder(misswobble.end())
-                        .lineToLinearHeading(new Pose2d(-25, isRed * -55, Math.toRadians(355)))
+                */
+
+                pickUpRing = robot.drive.trajectoryBuilder(trajectory3.end())
+                        .lineToLinearHeading(new Pose2d(-44, isRed * -55, Math.toRadians(45)))
                         .build();
-                trajectory4 = robot.drive.trajectoryBuilder(pickUpRing.end())
+                misswobble = robot.drive.trajectoryBuilder(pickUpRing.end())
+                 .splineToSplineHeading(new Pose2d(-12.0, -30.0, Math.toRadians(40.0)),Math.toRadians(45.0))
+                        .addDisplacementMarker(() -> {
+                            if (!robot.shooter.isShooterOn) {
+                                targetVelocity = robot.shooter.shooterOn();
+                            }
+                        })
+                    .splineToSplineHeading(new Pose2d(-9.0, -22.0, robot.shooter.angleToGoal(-9, -22, robot.shooter.redGoal)),Math.toRadians(90.0))
+                        .build();
+
+                trajectory4 = robot.drive.trajectoryBuilder(misswobble.end())
                         .splineToLinearHeading(new Pose2d(28, isRed * -56, Math.toRadians(260)), 0)
+                        .addDisplacementMarker(20, () -> {
+                            wobblePos = 630;
+                        })
+                        .addDisplacementMarker(new Vector2d(-8,-22).distTo(new Vector2d(28,-56))*.8, () -> {
+                            wobblePos=850;
+                        })
                         .build();
                 trajectory5 = robot.drive.trajectoryBuilder(trajectory4.end())
-                        .splineToLinearHeading(new Pose2d(12, isRed * -58, Math.toRadians(90)), 0)
+                        .splineToLinearHeading(new Pose2d(12, isRed * -55, Math.toRadians(90)), 0)
                         .build();
                 break;
             case 2: //C
                 //TODO: Verify Wobble Goal Position and Ring Height Map
+                trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
+                        .lineToLinearHeading(new Pose2d(48, isRed * -45, Math.toRadians(110)))
+                        .build();
+                trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
+                        //.splineTo(new Vector2d(-55, isRed * -55), 0) -20, 44
+                        //.splineToLinearHeading(new Pose2d(10, -51 * isRed, Math.toRadians(0)),0)
+                        //.splineToLinearHeading(new Pose2d(0, -52 * isRed, Math.toRadians(0)),0)
+                        .lineToLinearHeading(new Pose2d(-8, -50 * isRed, Math.toRadians(0)))
+                        .build();
                 misswobble = robot.drive.trajectoryBuilder(trajectory3.end(),true)
                         //.splineTo(new Vector2d(-55, isRed * -55), 0)
                         .splineToLinearHeading(new Pose2d(-32, -48 * isRed,Math.toRadians(0)),0)
