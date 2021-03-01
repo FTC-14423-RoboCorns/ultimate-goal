@@ -585,6 +585,8 @@ public class ALessAggressiveAuton extends OpMode {
             case WOBBLE_RAISE:
                // System.out.println("WOBBLE_raiseInState");
                 //if(!robot.wobble.isWobbleUp(wobblePos))
+                robot.wobble.wobbleMovetoPosition(wobblePos);
+                /*
                 robot.wobble.wobbleSetRaise(wobblePos);
                 if(!robot.wobble.isWobbleThere(wobblePos))
                 {
@@ -593,7 +595,7 @@ public class ALessAggressiveAuton extends OpMode {
                     robot.wobble.wobbleMovetoPosition(wobblePos);
                     wobbleState = WobbleState.WOBBLE_RAISEWAIT;
                    // System.out.println("WOBBLE_raise " + wobblePos);
-                }
+                }*/
 
                 break;
             case WOBBLE_RAISEWAIT:

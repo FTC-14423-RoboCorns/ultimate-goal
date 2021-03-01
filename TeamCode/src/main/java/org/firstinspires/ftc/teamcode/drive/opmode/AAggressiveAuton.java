@@ -216,7 +216,7 @@ public class AAggressiveAuton extends OpMode {
             robot.shooter.currentTarget=robot.shooter.redGoal;
             //robot.shooter.liftState= Shooter.LiftState.DYNAMIC;
         }
-        robot.shooter.update(robot.drive.getPoseEstimate());
+     //   robot.shooter.update(robot.drive.getPoseEstimate());//don't need yet
         robot.drive.followTrajectoryAsync(trajectory1);
         wobblePos = 450;
         wobbleState = WobbleState.WOBBLE_RAISE;
@@ -252,6 +252,7 @@ public class AAggressiveAuton extends OpMode {
                 break;
 
             case FIRST_TURN:
+                waitTimer1.reset();
                 if (!robot.drive.isBusy()){
                     currentState = State.SHOOTER_ON;
                 }
@@ -261,7 +262,7 @@ public class AAggressiveAuton extends OpMode {
                // System.out.println("SHOOTER_shooterOn");
 
                 if (robot.shooter.isShooterReady(targetVelocity)) {
-                    waitTimer1.reset();
+
                     currentState = State.SHOOT;
                 } //will need to add a timer later to move on in case we never get up to speed
                 break;
@@ -273,7 +274,7 @@ public class AAggressiveAuton extends OpMode {
                // System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                }
                  */
-                if (!robot.drive.isBusy()&& waitTimer1.time()>100) {//500//making sure our turn is done  && waitTimer1.time()>1500
+                if (!robot.drive.isBusy()&& waitTimer1.time()>500) {//500//making sure our turn is done  && waitTimer1.time()>1500
                    /* if (isRed==1) {
                         done=robot.drive.getPoseEstimate().getHeading() <= Math.toRadians(PowerTarget);
                     } else {
@@ -410,7 +411,7 @@ public class AAggressiveAuton extends OpMode {
             case RELOAD_WAIT:
                 if (waitTimer1.milliseconds()>250) {
                     //robot.intake.turnOn();
-
+                    robot.drive.followTrajectoryAsync(misswobble);
                     wobblePos = 450;
                     //robot.drive.followTrajectoryAsync(pickUpRing);
                     if (!robot.shooter.isShooterOn) {
@@ -421,9 +422,9 @@ public class AAggressiveAuton extends OpMode {
                 break;
 
             case GO_SHOOT:
-                if (!robot.drive.isBusy()) {
+                //if (!robot.drive.isBusy()) {
                     //robot.intake.turnOn();
-                    robot.drive.followTrajectoryAsync(misswobble);
+
                     shootCount=0;
                     robot.shooter.currentTarget=robot.shooter.redGoal;
                     if(ringPosition ==1 )
@@ -435,17 +436,18 @@ public class AAggressiveAuton extends OpMode {
                         secondShootTotal =3;
                     }
                     currentState = State.SHOOT_SECOND_BATCH;
-                }
+                //}
                 break;
 
             case SHOOT_SECOND_BATCH:
 
                 // System.out.println("SHOOTER_shooterSecond");
                 if (!robot.drive.isBusy()) {
+                    waitTimer1.reset();
                     robot.intake.turnOff();
 
                     if (robot.shooter.isShooterReady(targetVelocity)) {
-                        waitTimer1.reset();
+
                         currentState = State.SHOOTAGAIN;
                     } //will need to add a timer later to move on in case we never get up to speed
                 }
@@ -459,7 +461,7 @@ public class AAggressiveAuton extends OpMode {
                // System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                }
                  */
-                if (!robot.drive.isBusy()&& waitTimer1.milliseconds()>500) {//making sure our turn is done  && waitTimer1.time()>1500
+                if (!robot.drive.isBusy()&& waitTimer1.milliseconds()>500) {//500//making sure our turn is done  && waitTimer1.time()>1500
                    /* if (isRed==1) {
                         done=robot.drive.getPoseEstimate().getHeading() <= Math.toRadians(PowerTarget);
                     } else {
@@ -603,7 +605,9 @@ public class AAggressiveAuton extends OpMode {
             case WOBBLE_RAISE:
                // System.out.println("WOBBLE_raiseInState");
                 //if(!robot.wobble.isWobbleUp(wobblePos))
-                robot.wobble.wobbleSetRaise(wobblePos);
+                //robot.wobble.wobbleSetRaise(wobblePos); //shouldn't need
+                robot.wobble.wobbleMovetoPosition(wobblePos);
+                /*
                 if(!robot.wobble.isWobbleThere(wobblePos))
                 {
                     wobbleWait.reset();
@@ -611,7 +615,7 @@ public class AAggressiveAuton extends OpMode {
                     robot.wobble.wobbleMovetoPosition(wobblePos);
                     wobbleState = WobbleState.WOBBLE_RAISEWAIT;
                    // System.out.println("WOBBLE_raise " + wobblePos);
-                }
+                }*/
 
                 break;
             case WOBBLE_RAISEWAIT:

@@ -3,9 +3,8 @@ package org.firstinspires.ftc.teamcode.drive;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
-public class Wobble
+public class Meet2Wobble
 {
     public DcMotorEx wobble;
     public Servo wobbleServo;
@@ -17,7 +16,7 @@ public class Wobble
     private boolean raise =true;
     public boolean override=false;
 
-    public Wobble(HardwareMap hardwareMap)
+    public Meet2Wobble(HardwareMap hardwareMap)
     {
         Init(hardwareMap);
     }
@@ -68,10 +67,7 @@ public class Wobble
 
     public void fastMovetoPos(int pos)
     {
-        int newPos;
-        if (!override) newPos = Range.clip(pos,START_POSITION,STOP_POSITION);
-        else  newPos=pos;
-        wobble.setTargetPosition(newPos);
+        wobble.setTargetPosition(pos);
         wobble.setPower(1);
         wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         on=true;
@@ -99,8 +95,8 @@ public class Wobble
         }
     }
 
-    public void wobbleMovetoPosition(int newPos){
-        /*double curPos = wobble.getCurrentPosition();
+    public void wobbleMovetoPosition(double newPos){
+        double curPos = wobble.getCurrentPosition();
         if (newPos>=curPos){
             raiseWobbleFromFront();
             raise=true;
@@ -108,9 +104,6 @@ public class Wobble
             lowerWobbleFromFront();
             raise=false;
         }
-
-         */
-        fastMovetoPos(newPos);
     }
 
     public void wobbleOff()
@@ -135,16 +128,10 @@ public class Wobble
            } else return false;
         }
     public boolean isWobbleThere(int pos){
-        double curPos = wobble.getCurrentPosition();
-        /*if (raise){
+        //double curPos = wobble.getCurrentPosition();
+        if (raise){
             return isWobbleUp(pos);
         } else
             return isWobbleDown(pos);
-
-         */
-        double lower = curPos -30;
-        double upper= curPos + 30;
-        if (curPos > lower && curPos < upper) return true;
-        else return false;
     }
 }
