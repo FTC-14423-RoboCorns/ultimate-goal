@@ -3,12 +3,10 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
-import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -29,7 +27,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
  */
 @Config
 @Autonomous(group = "drive")
-public class ATestAuton extends OpMode {
+public class ATestLessAggressiveAuton extends OpMode {
     private boolean debug=false;
     public static double DISTANCE = 60; // in
     double PowerTarget;
@@ -178,8 +176,8 @@ public class ATestAuton extends OpMode {
              */
 
         } else {
-            autonPath.firstShot=new Vector2d(-45,isRed*-22);
-            autonPath.setCurrentTarget(AutonPath.CurrentTarget.RED_GOAL);
+            autonPath.firstShot=new Vector2d(-10,isRed*-22);
+            autonPath.setCurrentTarget(AutonPath.CurrentTarget.RED_POWERSHOT);
             //shootX=-45;
             //shootY=-22;
             /*
@@ -241,7 +239,7 @@ public class ATestAuton extends OpMode {
             case FIRST_TURN:
                 waitTimer1.reset();
                 if (!robot.drive.isBusy()){
-                    currentState=State.DRIVE_WOBBLE_1;
+                    currentState= State.DRIVE_WOBBLE_1;
                     autonShooting.shootingState = AutonShooting.ShootingState.SHOOTER_ON;
                 }
                 break;
@@ -253,13 +251,14 @@ public class ATestAuton extends OpMode {
                 if (!autonShooting.isBusy()) {
                     setDriveWobble1();
                     robot.drive.followTrajectoryAsync(autonPath.trajectory2);
-                    if (autonPath.ringPosition > 0) robot.intake.turnOn();
+                    if (autonPath.ringPosition ==1) robot.intake.turnOn();
                     //wobblePos=650;now in trajectory
-
                     if (autonPath.ringPosition < 2) currentState = State.DROP_WOBBLE_1;
-                    else currentState = State.RING2;//DONE_RING;//State.RING2;
+                  //  if (autonPath.ringPosition < 2) currentState = State.DROP_WOBBLE_1;
+                   // else currentState = State.RING2;//DONE_RING;//State.RING2;
                 }
                 break;
+                /*
             case RING2:
                 if(!robot.drive.isBusy()) {
                     robot.drive.followTrajectoryAsync(autonPath.ring2);
@@ -279,10 +278,12 @@ public class ATestAuton extends OpMode {
                     currentState= State.DROP_WOBBLE_1;
                 }
                 break;
+
+                 */
             case DROP_WOBBLE_1:
                 autonWobble.setWobblePos(630);
                 if(!robot.drive.isBusy()) {
-                    if (autonPath.ringPosition>0) robot.intake.turnOn();
+                   // if (autonPath.ringPosition>0) robot.intake.turnOn();
                     autonWobble.setWobblePos(850);
                     if(!autonWobble.isBusy())
                     {
@@ -312,7 +313,7 @@ public class ATestAuton extends OpMode {
                 if (!robot.drive.isBusy()) {
                     autonWobble.closeClaw();
                     waitTimer1.reset();
-                    if(autonPath.ringPosition > 0 )
+                    if(autonPath.ringPosition ==1 )
                     {
                         currentState = State.RELOAD_WAIT;
 
@@ -477,14 +478,14 @@ public class ATestAuton extends OpMode {
             case 1: //B
                 //TODO: Verify Wobble Goal Position and Ring Height Map
                 autonPath.trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
-                    .splineTo(new Vector2d(-8.0,-50.0),Math.toRadians(0.0))
+                        .splineTo(new Vector2d(-8.0,-50.0),Math.toRadians(0.0))
                         .addDisplacementMarker(() -> {
                             autonWobble.setWobblePos(450);
                         })
-                   .splineToSplineHeading(new Pose2d(22.0,-32.0,Math.toRadians(175.0)),Math.toRadians(0.0))
-                    //    .lineToSplineHeading(new Pose2d(22.0,-32.0,Math.toRadians(175.0)))
-                //.lineToLinearHeading(new Pose2d(20, isRed * -32, Math.toRadians(175)))
-                     .build();
+                        .splineToSplineHeading(new Pose2d(22.0,-32.0,Math.toRadians(175.0)),Math.toRadians(0.0))
+                        //    .lineToSplineHeading(new Pose2d(22.0,-32.0,Math.toRadians(175.0)))
+                        //.lineToLinearHeading(new Pose2d(20, isRed * -32, Math.toRadians(175)))
+                        .build();
                 autonPath.trajectory3 = robot.drive.trajectoryBuilder(autonPath.trajectory2.end())
                         //.splineTo(new Vector2d(-55, isRed * -55), 0) -20, 44
                         .splineToSplineHeading(new Pose2d(-8, -48 * isRed, Math.toRadians(0)),Math.toRadians(180))
@@ -538,19 +539,27 @@ public class ATestAuton extends OpMode {
                 //TODO: Verify Wobble Goal Position and Ring Height Map
                 MinVelocityConstraint velConstraint = new MinVelocityConstraint(Arrays.asList(
                         new AngularVelocityConstraint(MAX_ANG_VEL),
-                        new MecanumVelocityConstraint(20, TRACK_WIDTH)
+                        new MecanumVelocityConstraint(17, TRACK_WIDTH)
                 ));
                 ProfileAccelerationConstraint accelConstraint = new ProfileAccelerationConstraint(MAX_ACCEL);
-                Vector2d ringVec =new Vector2d (-20,-45);
-                Vector2d nowVec=new Vector2d(CurrentP.getX(),CurrentP.getY());
-                Vector2d difference=ringVec.minus(nowVec);
-                double goAngle = difference.angle();
+                MinVelocityConstraint velConstraint2 = new MinVelocityConstraint(Arrays.asList(
+                        new AngularVelocityConstraint(MAX_ANG_VEL),
+                        new MecanumVelocityConstraint(55, TRACK_WIDTH)
+                ));
+                ProfileAccelerationConstraint accelConstraint2 = new ProfileAccelerationConstraint(55);
+
+                Vector2d vec =new Vector2d (-20,-43);
+
+
+
 
                 autonPath.trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
+
+                        .lineToSplineHeading(new Pose2d(56.0,-45.0,Math.toRadians(110.0)))
                         //.lineToLinearHeading(new Pose2d(-26.0,-31.0,Math.toRadians(300.0)))
                         //.lineToLinearHeading(new Pose2d(-26.0,-33.0,Math.toRadians(320.0)))
-                        .lineToLinearHeading(new Pose2d(ringVec,goAngle),velConstraint,accelConstraint)//goAngle was 325
-                      //  .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(320)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                        // .lineToLinearHeading(new Pose2d(-20.0,-45.0,Math.toRadians(325.0)),velConstraint,accelConstraint)
+                        //  .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(320)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
                         /*.lineToSplineHeading(new Pose2d(-28.0,-20.0,Math.toRadians(307)))
                         .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(307)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
                         .addDisplacementMarker(() -> {
@@ -558,63 +567,21 @@ public class ATestAuton extends OpMode {
                         })
                         .splineToSplineHeading(new Pose2d(48.0,-45.0,Math.toRadians(110.0)),Math.toRadians(320.0))*/
                         .build();
-                autonPath.ring2 = robot.drive.trajectoryBuilder(autonPath.trajectory2.end())
-                        .lineToSplineHeading(new Pose2d(-20,-30.0,Math.toRadians(240.0)))
-                        //.lineToLinearHeading(new Pose2d(-24.0,-39.0,Math.toRadians(320.0)))
-                       /* .lineToSplineHeading(new Pose2d(-28.0,-20.0,Math.toRadians(307)))
-                        .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(307)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                        .addDisplacementMarker(() -> {
-                            wobblePos = 650;
-                        })
-                        .splineToSplineHeading(new Pose2d(48.0,-45.0,Math.toRadians(110.0)),Math.toRadians(320.0))
 
-                        */
-                        .build();
 
-                autonPath.ring3 = robot.drive.trajectoryBuilder(autonPath.ring2.end())
+                //  drop1 = robot.drive.trajectoryBuilder(trajectory2.end())
 
-                        .lineToLinearHeading(new Pose2d(-20.0,-44.0,Math.toRadians(330.0)))
-                      /*  .lineToSplineHeading(new Pose2d(-28.0,-20.0,Math.toRadians(307)))
-                        .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(307)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                        .addDisplacementMarker(() -> {
-                            wobblePos = 650;
-                        })
-                        .splineToSplineHeading(new Pose2d(48.0,-45.0,Math.toRadians(110.0)),Math.toRadians(320.0))
-                        */
-                        .build();
-                MinVelocityConstraint velConstraint2 = new MinVelocityConstraint(Arrays.asList(
-                        new AngularVelocityConstraint(MAX_ANG_VEL),
-                        new MecanumVelocityConstraint(55, TRACK_WIDTH)
-                ));
-                ProfileAccelerationConstraint accelConstraint2 = new ProfileAccelerationConstraint(55);
-              //  drop1 = robot.drive.trajectoryBuilder(trajectory2.end())
-                autonPath.drop1 = robot.drive.trajectoryBuilder(autonPath.ring2.end())
-                      //  .splineToSplineHeading(new Pose2d(-20,-43.0,Math.toRadians(270.0)),0)
-                        //.splineToSplineHeading(new Pose2d(48.0,-45.0,Math.toRadians(110.0)),Math.toRadians(320.0))
-                      //  .lineToSplineHeading(new Pose2d(53.0,-45.0,Math.toRadians(110.0)))
 
-                       // .lineToSplineHeading(new Pose2d(53.0,-45.0,Math.toRadians(110.0)),velConstraint2,accelConstraint2)
-                        .lineToSplineHeading(new Pose2d(56.0,-45.0,Math.toRadians(110.0)),velConstraint2,accelConstraint2)
-                        /*.addDisplacementMarker(2,() -> {
-                            wobblePos = 650;
-                        })*/
-
-                        .build();
-/*
-                trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
-                        .lineToLinearHeading(new Pose2d(48, isRed * -45, Math.toRadians(110)))
-                        .build();
-  */
-                autonPath.trajectory3 = robot.drive.trajectoryBuilder(autonPath.drop1.end())
+                autonPath.trajectory3 = robot.drive.trajectoryBuilder(autonPath.trajectory2.end())
                         //.splineTo(new Vector2d(-55, isRed * -55), 0) -20, 44
-                        .splineToSplineHeading(new Pose2d(-8, -47 * isRed, Math.toRadians(0)),Math.toRadians(180))
+                        .splineToSplineHeading(new Pose2d(-8, -49 * isRed, Math.toRadians(0)),Math.toRadians(180),velConstraint2,accelConstraint2)
                         .addTemporalMarker(.5, () -> {
                             autonWobble.setWobblePos(700);
                         })
                         .addDisplacementMarker(() -> {
                             autonWobble.setWobblePos(900);
                         })
-                        .splineToLinearHeading(new Pose2d(-34, -45 * isRed,Math.toRadians(0)),Math.toRadians(180))
+                        .splineToLinearHeading(new Pose2d(-34, -47 * isRed,Math.toRadians(0)),Math.toRadians(180))
                         .build();
                 /*
                 trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
@@ -634,20 +601,8 @@ public class ATestAuton extends OpMode {
                         .build();
 
                  */
-                autonPath.misswobble = robot.drive.trajectoryBuilder(autonPath.trajectory3.end())
-                        .splineToLinearHeading(new Pose2d(-8.0, -39.0, Math.toRadians(0.0)),Math.toRadians(90.0),velConstraint2,accelConstraint2)
-                        /*.splineToSplineHeading(new Pose2d(-12.0, -30.0, Math.toRadians(40.0)),Math.toRadians(45.0))
-                        .addDisplacementMarker(() -> {
-                            if (!robot.shooter.isShooterOn) {
-                                targetVelocity = robot.shooter.shooterOn();
-                            }
-                        })
-                    .splineToSplineHeading(new Pose2d(-9.0, -22.0, robot.shooter.angleToGoal(-9, -22, robot.shooter.redGoal)),Math.toRadians(90.0))
 
-                         */
-                        .build();
-
-                autonPath.trajectory4 = robot.drive.trajectoryBuilder(autonPath.misswobble.end())
+                autonPath.trajectory4 = robot.drive.trajectoryBuilder(autonPath.trajectory3.end())
                         .lineToLinearHeading(new Pose2d(38, isRed * -52, Math.toRadians(165)),velConstraint2,accelConstraint2)
                         .build();
                 autonPath.trajectory5 = robot.drive.trajectoryBuilder(autonPath.trajectory4.end())
@@ -655,7 +610,6 @@ public class ATestAuton extends OpMode {
                         .build();
                 break;
         }
-
 
 
     }

@@ -222,6 +222,11 @@ public class Shooter {
        if (debug) System.out.println("SHOOTER_TURN_angle to goal absolute " + Math.toDegrees(theta));
         return theta;
     }
+
+    public double angleToGoal(Vector2d vec, target goal){
+         return angleToGoal(vec.getX(),vec.getY(),goal);
+    }
+
     //three versions of this method
     //no parameter: go to default velocity
     //int parameter: sets velocity to the parameter

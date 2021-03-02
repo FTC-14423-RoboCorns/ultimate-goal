@@ -18,6 +18,7 @@ public class AutonWobble {
     public int wobblePos = 0;
     public AutonWobble (Robot robot) {
         robot=robot;
+        closeClaw();
     }
 
     public void closeClaw(){
