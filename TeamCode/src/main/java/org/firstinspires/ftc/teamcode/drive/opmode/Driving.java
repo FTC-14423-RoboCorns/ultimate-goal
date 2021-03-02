@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -157,7 +158,7 @@ public class Driving extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         // Initialize SampleMecanumDrive
         robot = new Robot(hardwareMap, telemetry,true);
-        robot.drive.speedMult=.7;//use this to modulate speed
+        robot.drive.speedMult=1;//use this to modulate speed
         //need this at beginning of each loop for bulk reads. Manual mode set in robot class, so must be first called after initializing class
         for (LynxModule module : robot.allHubs) {
             module.clearBulkCache();
@@ -291,6 +292,7 @@ public class Driving extends LinearOpMode {
                             -gamepad1.left_stick_x,
                             -gamepad1.right_stick_x
                     );
+                 //   robot.drive.speedMult= Range.clip(.8+(.4-gamepad1.right_trigger),1,.4);//two numbers should add to 1, subtraction is the min drive multiplier
                     robot.drive.setWeightedDrivePower(driveDirection);
                     break;
 
@@ -908,13 +910,14 @@ public class Driving extends LinearOpMode {
                 if (gamepad1.left_bumper && !onePowershotButtonDown){
                     onePowershotButtonDown =true;
                     manualPowershot=true;
+                    shootCount=0;
                     robot.shooter.currentTarget=robot.shooter.redPowerShot1;
                     powershootNumber=1;
                     if (!robot.shooter.isShooterOn) {
                         targetVelocity = robot.shooter.shooterOn();
                         if (debug) System.out.println("SHOOTER ON target vel " + targetVelocity);
                     }
-                    endGame=powershotState.START;
+                    endGame=powershotState.SHOOTER_ON;
                 }
                 break;
 
