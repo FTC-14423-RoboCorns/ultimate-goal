@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.teamcode.drive.PoseStorage;
  */
 @Config
 @Autonomous(group = "drive")
+@Disabled
 public class TestAuton extends OpMode {
     private boolean debug=false;
     public static double DISTANCE = 60; // in

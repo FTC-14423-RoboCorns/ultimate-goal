@@ -31,9 +31,10 @@ public class Robot
         for (LynxModule module : allHubs) {
             module.clearBulkCache();
         }
-        Init(hardwareMap);
         this.telemetry = telem;
         this.imu=imu;
+        Init(hardwareMap);
+
     }
 
     public void Init(HardwareMap hardwareMap) {
@@ -42,7 +43,7 @@ public class Robot
         intake = new IntakeAndRamp(hardwareMap);
         shooter = new Shooter(hardwareMap,telemetry);
         drive = new SampleMecanumDrive(hardwareMap);
-        if (this.imu)
+        if (imu)
         drive.USE_IMU=1;
         else
             drive.USE_IMU=0;

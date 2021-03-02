@@ -346,13 +346,13 @@ public class Shooter {
         lift.setPosition(lift.getPosition()-.01);
 
     }
-
+/*
     public void pushRing()
     {
         pusher.setPosition(PUSHER_STOP);
         pusher.setPosition(PUSHER_START);
     }
-
+*/
     public void pusherIn(){
         pusher.setPosition(PUSHER_STOP);
         shooting = true;
