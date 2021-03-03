@@ -35,9 +35,11 @@ public    enum StartPosEnum {
 public    StartPosEnum startPos;
 public CurrentTarget currentTarget;
     public int ringPosition=2;
-    public AutonPath(Robot robot){
-        robot=robot;
+
+    public AutonPath(Robot theRobot){
+        robot=theRobot;
     }
+
     public Pose2d startPose;
     public enum PowershotTurnMode {
         TURN,

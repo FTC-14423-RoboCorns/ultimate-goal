@@ -96,6 +96,7 @@ public class ALessAggressiveAuton extends OpMode {
         RELOADAGAIN,
         GRAB_WAIT,
         DRIVE_WOBBLE_2,
+        DROP_WOBBLE_WAIT_2,
         DROP_WOBBLE_2,
         CLAW_WAIT,
         PARK,
@@ -108,7 +109,7 @@ public class ALessAggressiveAuton extends OpMode {
     @Override
 
     public void init(){
-        robot = new Robot(hardwareMap, telemetry,false);
+        robot = new Robot(hardwareMap, telemetry,true);
         robot.shooter.liftState= Shooter.LiftState.STATIC;
         //need this at beginning of each loop for bulk reads. Manual mode set in robot class so must be called after robot init first time
         for (LynxModule module : robot.allHubs) {
@@ -175,7 +176,7 @@ public class ALessAggressiveAuton extends OpMode {
         telemetry.update();
         if (ringPosition==0||ringPosition==2) {
             shootX=-10;
-            shootY=-22;
+            shootY=-23;
             trajectory1 = robot.drive.trajectoryBuilder(startPose)
                     //.splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), Math.toRadians(-15))
                     .lineToLinearHeading(new Pose2d(shootX, isRed * shootY, 0))
@@ -266,9 +267,10 @@ public class ALessAggressiveAuton extends OpMode {
                      */
                     if(shootCount<3)
                     {
+                        System.out.println("SHOOTER_TURN_Final heading" + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                         if (debug) {
                             System.out.println("SHOOTER_shoot " + shootCount);
-                            System.out.println("SHOOTER_TURN_Final heading" + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
+
                             //   System.out.println("SHOOT_Shooter Ready " + robot.shooter.shooter.getVelocity());
                             //   System.out.println("SHOOT_Shooter Ready " + robot.shooter.isShooterReady(targetVelocity));
                         }
@@ -300,14 +302,14 @@ public class ALessAggressiveAuton extends OpMode {
                         System.out.println("SHOOTER_ringShot");
                     }
                     robot.shooter.pusherOut();
-                    if (ringPosition==1||ringPosition==2) powerTurn();
+                    if (ringPosition==0||ringPosition==2) powerTurn();
                     currentState = State.TURN2;
                 }
                 break;
 
             case TURN2:
                 if (!robot.drive.isBusy()) {
-                    //if (ringPosition<2) turnTo(0);
+                    if (ringPosition==0||ringPosition==2) turnTo(0);
                     currentState = State.SHOOTER_ON;
                 }
                 break;
@@ -390,7 +392,7 @@ public class ALessAggressiveAuton extends OpMode {
                 break;
 
             case RELOAD_WAIT:
-                if (waitTimer1.milliseconds()>250) {
+                if (waitTimer1.milliseconds()>500) {
                     //robot.intake.turnOn();
 
                     wobblePos = 450;
@@ -496,7 +498,7 @@ public class ALessAggressiveAuton extends OpMode {
 
 
             case GRAB_WAIT:
-                if (waitTimer1.time()>250 && !robot.drive.isBusy()) {
+                if (waitTimer1.time()>500 && !robot.drive.isBusy()) {
 
                     robot.drive.followTrajectoryAsync(trajectory4);
                     //wobbleState = WobbleState.WOBBLE_LOWER;
@@ -507,9 +509,17 @@ public class ALessAggressiveAuton extends OpMode {
                 break;
 
             case DRIVE_WOBBLE_2:
-                if (waitTimer1.time()>750) {
+                if (waitTimer1.time()>300) {
                     //wobbleState = WobbleState.WOBBLE_RAISE;
-                    wobblePos = 850;//630;
+                    //630;
+                    currentState = State.DROP_WOBBLE_WAIT_2;
+
+                }
+                break;
+
+            case DROP_WOBBLE_WAIT_2:
+                if(!robot.drive.isBusy()) {
+                    waitTimer1.reset();
                     currentState = State.DROP_WOBBLE_2;
                 }
                 break;
@@ -521,8 +531,8 @@ public class ALessAggressiveAuton extends OpMode {
                         robot.intake.turnOff();
                     }*/
 
-                    //wobblePos = 900;
-                    if(robot.wobble.isWobbleThere(wobblePos)) {
+                    wobblePos = 800;
+                    if(robot.wobble.isWobbleThere(wobblePos) && waitTimer1.milliseconds() > 500) {
                         robot.wobble.openClaw();
                         currentState = State.CLAW_WAIT;
                         waitTimer1.reset();
@@ -874,7 +884,7 @@ public class ALessAggressiveAuton extends OpMode {
                  */
                
                 trajectory4 = robot.drive.trajectoryBuilder(trajectory3.end())
-                        .lineToLinearHeading(new Pose2d(38, isRed * -52, Math.toRadians(165)),velConstraint2,accelConstraint2)
+                        .lineToLinearHeading(new Pose2d(35, isRed * -52, Math.toRadians(155)),velConstraint2,accelConstraint2)
                         .build();
                 trajectory5 = robot.drive.trajectoryBuilder(trajectory4.end())
                         .lineToLinearHeading(new Pose2d(12, isRed * -46,Math.toRadians(90)), velConstraint2,accelConstraint2)

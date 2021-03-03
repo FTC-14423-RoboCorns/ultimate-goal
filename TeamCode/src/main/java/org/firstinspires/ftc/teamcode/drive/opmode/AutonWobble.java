@@ -16,9 +16,10 @@ public class AutonWobble {
     WobbleState wobbleState;
     ElapsedTime wobbleWait = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     public int wobblePos = 0;
-    public AutonWobble (Robot robot) {
-        robot=robot;
+    public AutonWobble (Robot theRobot) {
+        robot=theRobot;
         closeClaw();
+        wobbleState=WobbleState.WOBBLE_RAISE;
     }
 
     public void closeClaw(){

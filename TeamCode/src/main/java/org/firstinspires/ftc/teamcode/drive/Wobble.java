@@ -72,7 +72,7 @@ public class Wobble
         if (!override) newPos = Range.clip(pos,START_POSITION,STOP_POSITION);
         else  newPos=pos;
         wobble.setTargetPosition(newPos);
-        wobble.setPower(1);
+        wobble.setPower(.5);
         wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         on=true;
     }
@@ -142,8 +142,8 @@ public class Wobble
             return isWobbleDown(pos);
 
          */
-        double lower = curPos -30;
-        double upper= curPos + 30;
+        double lower = pos -30;
+        double upper= pos + 30;
         if (curPos > lower && curPos < upper) return true;
         else return false;
     }

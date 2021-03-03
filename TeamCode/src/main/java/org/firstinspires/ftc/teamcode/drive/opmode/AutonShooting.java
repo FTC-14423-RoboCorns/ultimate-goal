@@ -54,9 +54,9 @@ private int shootCount;
     public ShootingState shootingState;
 
 
-    public AutonShooting (Robot robot, AutonPath autonPath) {
-        robot=robot;
-        autonPath=autonPath;
+    public AutonShooting (Robot theRobot, AutonPath theAutonPath) {
+        robot=theRobot;
+        autonPath=theAutonPath;
         pusherOut();
     }
 
