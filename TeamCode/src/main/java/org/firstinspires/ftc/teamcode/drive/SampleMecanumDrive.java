@@ -76,7 +76,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     //public static PIDCoefficients Y_PID = new PIDCoefficients(12, 0, 0);
 
     public  int USE_IMU=0;
-    public static double LATERAL_MULTIPLIER = 1.1; //was 2.05;
+    public static double LATERAL_MULTIPLIER = 1.3;//1.1; //was 2.05;
 
     public static double VX_WEIGHT = .7;
     public static double VY_WEIGHT = .9;
@@ -353,7 +353,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
 
                 //&& error <Math.toRadians(1) is new here
-                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.25))
+                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(.5)||t>turnProfile.duration()+.25))
                 {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());

@@ -36,7 +36,7 @@ public class AutonWobble {
     }
 
     public boolean isBusy() {
-        return robot.wobble.isWobbleThere(wobblePos);
+        return !robot.wobble.isWobbleThere(wobblePos);
     }
 
     public void handleWobble() {

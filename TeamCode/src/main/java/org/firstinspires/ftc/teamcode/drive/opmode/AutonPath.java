@@ -35,7 +35,7 @@ public    enum StartPosEnum {
 public    StartPosEnum startPos;
 public CurrentTarget currentTarget;
     public int ringPosition=2;
-
+    public double firstAngle;
     public AutonPath(Robot theRobot){
         robot=theRobot;
     }
@@ -126,19 +126,23 @@ public CurrentTarget currentTarget;
     public void setFirstTrajectory(){
         switch (currentTarget) {
             case RED_POWERSHOT:
+                //firstAngle=robot.shooter.angleToGoal(firstShot, robot.shooter.redPowerShot1);
+                firstAngle=robot.shooter.angleToGoal(firstShot, robot.shooter.redPowerShot1);//0
             trajectory1 = robot.drive.trajectoryBuilder(startPose)
+
                     //.splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), Math.toRadians(-15))
                     //.lineToLinearHeading(new Pose2d(firstShot, 0))
-                    .lineToLinearHeading(new Pose2d(firstShot, robot.shooter.angleToGoal(firstShot, robot.shooter.redPowerShot1)))
+                    .lineToLinearHeading(new Pose2d(firstShot, firstAngle))
                     .build();
              //affects lift height - change if we shoot for goal
                 break;
             case RED_GOAL:
+                firstAngle=robot.shooter.angleToGoal(firstShot, robot.shooter.redGoal)-AutonShooting.POWEROFFSET;
                 trajectory1 = robot.drive.trajectoryBuilder(startPose)
                         //  .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), Math.toRadians(-15))
                         // .splineToLinearHeading(new Pose2d(-7, isRed * -24.5, 0), Math.toRadians(-15))
                         //.lineToLinearHeading(new Pose2d(shootX, isRed * shootY, Math.toRadians(0)))
-                        .lineToLinearHeading(new Pose2d(firstShot, robot.shooter.angleToGoal(firstShot, robot.shooter.redGoal)-AutonShooting.POWEROFFSET))
+                        .lineToLinearHeading(new Pose2d(firstShot, firstAngle))
                         //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
                         .build();
                 //robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
@@ -149,8 +153,9 @@ public CurrentTarget currentTarget;
     public void aimFirst() {
         switch (currentTarget) {
             case RED_POWERSHOT:
-                turnTo(Math.toRadians(robot.shooter.angleToGoal(firstShot, robot.shooter.redPowerShot1)));
-                if (debug) System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
+                turnTo(firstAngle);
+               // if (debug) System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
+                if (debug) System.out.println("SHOOTER_firstAngle " + firstAngle);
                 //turnTo(Math.toRadians(0));
                 break;
             case RED_GOAL:

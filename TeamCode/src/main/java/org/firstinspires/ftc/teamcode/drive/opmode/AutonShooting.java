@@ -17,8 +17,8 @@ public class AutonShooting {
     ElapsedTime waitTimer1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 boolean debug=false;
 
-    public static final double POWEROFFSET = Math.toRadians(3)*-1;
-    public static final double POWEROFFSET2 = 0;
+    public static final double POWEROFFSET = Math.toRadians(1)*-1;//0;// Math.toRadians(3)*-1;
+    public static final double POWEROFFSET2 =0;// Math.toRadians(1.5)*-1;
     public static final double POWEROFFSET3 = 0;
 
 private int shootCount;
@@ -51,7 +51,7 @@ private int shootCount;
         //IDLE            // Our bot will enter the IDLE state when done
     }
 
-    public ShootingState shootingState;
+    public ShootingState shootingState=ShootingState.IDLE;
 
 
     public AutonShooting (Robot theRobot, AutonPath theAutonPath) {
@@ -141,7 +141,7 @@ private int shootCount;
             }
             else
             {
-                if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 400) {//500
+                if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 300) {//500
                     robot.shooter.shooterOff();
                     pusherOut();
                     isBusy=false;
@@ -167,6 +167,9 @@ private int shootCount;
         case TURN2:
         if (!robot.drive.isBusy()) {
             //if (ringPosition<2) turnTo(0);
+            if ((autonPath.currentTarget== AutonPath.CurrentTarget.RED_POWERSHOT||autonPath.currentTarget== AutonPath.CurrentTarget.BLUE_POWERSHOT)&&(autonPath.powershotTurnMode==AutonPath.PowershotTurnMode.STRAFE)){
+                autonPath.turnTo(0);
+            }
             shootingState = ShootingState.SHOOTER_ON;
         }
         break;

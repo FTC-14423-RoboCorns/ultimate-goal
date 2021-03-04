@@ -41,7 +41,7 @@ public class Shooter {
     private final int SHOOTER_VELOCITY = 1900;//2000;
     private final int MAX_VELOCITY = 2160;
     private final double PUSHER_START=.20;//was .16; testing faster time
-    private final double PUSHER_STOP=.43;
+    private final double PUSHER_STOP=.41;
     private final double RAMP_DISTANCE = 6;
     private final double CRANK_RADIUS=1.111;
     private final double ROD_LENGTH=3.75;
@@ -88,11 +88,11 @@ public class Shooter {
         isShooterOn = false;
         liftState=LiftState.DYNAMIC;
         redPowerShot1 = new target(goalX-4, powerShotY, goalHeight);
-        redPowerShot2 = new target(goalX-4, powerShotY+7, goalHeight);
+        redPowerShot2 = new target(goalX-4, powerShotY+7.5, goalHeight);
         redPowerShot3 = new target(goalX-4, powerShotY+15, goalHeight);
 
         bluePowerShot1 = new target(goalX-4, (powerShotY*-1), goalHeight);
-        bluePowerShot2 = new target(goalX-4, (powerShotY*-1)-7, goalHeight);
+        bluePowerShot2 = new target(goalX-4, (powerShotY*-1)-7.5, goalHeight);
         bluePowerShot3 = new target(goalX-4, (powerShotY*-1)-15, goalHeight);
 
         this.telemetry = telem;
@@ -104,7 +104,7 @@ public class Shooter {
         pusher = hardwareMap.get(Servo.class, "pusher");
         lift= hardwareMap.get(Servo.class, "lift");
         lift.scaleRange(.12,.6);//lift servo now goes from 0,1
-        lift.setPosition(.56);
+        lift.setPosition(.6);
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         pusher.setPosition(PUSHER_START);
         currentTarget=redGoal;
@@ -293,7 +293,7 @@ public class Shooter {
                // liftPos = .58;//0.54;
                 if (Math.abs(robotX)<24) liftPos = .58;
                 else
-                liftPos=.68;
+                liftPos=.71;
             }
             break;
         case DYNAMIC:
