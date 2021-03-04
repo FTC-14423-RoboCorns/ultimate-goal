@@ -3,12 +3,10 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
-import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -29,7 +27,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
  */
 @Config
 @Autonomous(group = "drive")
-public class ATestAuton extends OpMode {
+public class AModerateAuton extends OpMode {
     private boolean debug=false;
     public static double DISTANCE = 60; // in
     double PowerTarget;
@@ -180,8 +178,8 @@ public class ATestAuton extends OpMode {
              */
 
         } else {
-            autonPath.firstShot=new Vector2d(-45,isRed*-22);
-            autonPath.setCurrentTarget(AutonPath.CurrentTarget.RED_GOAL);
+            autonPath.firstShot=new Vector2d(-8,isRed*-23);
+            autonPath.setCurrentTarget(AutonPath.CurrentTarget.RED_POWERSHOT);
             //shootX=-45;
             //shootY=-22;
             /*
@@ -243,7 +241,7 @@ public class ATestAuton extends OpMode {
             case FIRST_TURN:
                 waitTimer1.reset();
                 if (!robot.drive.isBusy()){
-                    currentState=State.DRIVE_WOBBLE_1;
+                    currentState= State.DRIVE_WOBBLE_1;
                     autonShooting.shootingState = AutonShooting.ShootingState.SHOOTER_ON;
 
                 }
@@ -256,11 +254,11 @@ public class ATestAuton extends OpMode {
                 if (!autonShooting.isBusy()) {
                     setDriveWobble1();
                     robot.drive.followTrajectoryAsync(autonPath.trajectory2);
-                    if (autonPath.ringPosition ==2) robot.intake.turnOn();
+                  //  if (autonPath.ringPosition ==2) robot.intake.turnOn();
                     //wobblePos=650;now in trajectory
-
-                    if (autonPath.ringPosition < 2) currentState = State.DROP_WOBBLE_1;
-                    else currentState = State.RING2;//DONE_RING;//State.RING2;
+                    currentState = State.DROP_WOBBLE_1;
+                   // if (autonPath.ringPosition < 2) currentState = State.DROP_WOBBLE_1;
+                   // else currentState = State.RING2;//DONE_RING;//State.RING2;
                 }
                 break;
             case RING2:
@@ -317,7 +315,7 @@ public class ATestAuton extends OpMode {
                     waitTimer1.reset();
                     if(autonPath.ringPosition == 2 )
                     {
-                        currentState = State.RELOAD_WAIT;
+                        currentState = State.GRAB_WAIT;
                     }
                     else if (autonPath.ringPosition == 1 )
                     {
@@ -617,17 +615,13 @@ public class ATestAuton extends OpMode {
                 ));
                 ProfileAccelerationConstraint accelConstraint2 = new ProfileAccelerationConstraint(55);
               //  drop1 = robot.drive.trajectoryBuilder(trajectory2.end())
-                Vector2d dropVec =new Vector2d(56,-45);
                 autonPath.drop1 = robot.drive.trajectoryBuilder(autonPath.ring2.end())
                       //  .splineToSplineHeading(new Pose2d(-20,-43.0,Math.toRadians(270.0)),0)
                         //.splineToSplineHeading(new Pose2d(48.0,-45.0,Math.toRadians(110.0)),Math.toRadians(320.0))
                       //  .lineToSplineHeading(new Pose2d(53.0,-45.0,Math.toRadians(110.0)))
 
                        // .lineToSplineHeading(new Pose2d(53.0,-45.0,Math.toRadians(110.0)),velConstraint2,accelConstraint2)
-                        .lineToSplineHeading(new Pose2d(dropVec,Math.toRadians(110.0)),velConstraint2,accelConstraint2)
-                            .addSpatialMarker(new Vector2d(dropVec.getX()-10, dropVec.getY()), () -> {
-                                autonWobble.setWobblePos(850);
-                        })
+                        .lineToSplineHeading(new Pose2d(56.0,-45.0,Math.toRadians(110.0)),velConstraint2,accelConstraint2)
                         /*.addDisplacementMarker(2,() -> {
                             wobblePos = 650;
                         })*/
@@ -679,12 +673,9 @@ public class ATestAuton extends OpMode {
 
                          */
                         .build();
-                Vector2d drop2Vec= new Vector2d(38,-52);
+
                 autonPath.trajectory4 = robot.drive.trajectoryBuilder(autonPath.misswobble.end())
-                        .lineToLinearHeading(new Pose2d(drop2Vec, Math.toRadians(165)),velConstraint2,accelConstraint2)
-                        .addSpatialMarker(new Vector2d(drop2Vec.getX()-10, drop2Vec.getY()), () -> {
-                            autonWobble.setWobblePos(850);
-                        })
+                        .lineToLinearHeading(new Pose2d(38, isRed * -52, Math.toRadians(165)),velConstraint2,accelConstraint2)
                         .build();
                 autonPath.trajectory5 = robot.drive.trajectoryBuilder(autonPath.trajectory4.end())
                         .lineToLinearHeading(new Pose2d(12, isRed * -46,Math.toRadians(90)), velConstraint2,accelConstraint2)
