@@ -178,7 +178,7 @@ public class AModerateAuton extends OpMode {
              */
 
         } else {
-            autonPath.firstShot=new Vector2d(-8,isRed*-23);
+            autonPath.firstShot=new Vector2d(-10,isRed*-23);
             autonPath.setCurrentTarget(AutonPath.CurrentTarget.RED_POWERSHOT);
             //shootX=-45;
             //shootY=-22;
@@ -413,7 +413,7 @@ public class AModerateAuton extends OpMode {
             case PARK:
                 //wobbleState = WobbleState.WOBBLE_LOWER;
                 if (waitTimer1.milliseconds() > 400) {
-                    autonWobble.setWobblePos(0);
+                    //autonWobble.setWobblePos(0);
                     robot.drive.followTrajectoryAsync(autonPath.trajectory5);
 
                     currentState = State.OFF;
@@ -497,6 +497,9 @@ public class AModerateAuton extends OpMode {
                         .build();
                 autonPath.trajectory5 = robot.drive.trajectoryBuilder(autonPath.trajectory4.end())
                         .splineToLinearHeading(new Pose2d(3, isRed * -30,Math.toRadians(90)), 0)
+                        .addTemporalMarker(.5, () -> {
+                            autonWobble.setWobblePos(0);
+                        })
                         .build();
                 break;
             case 1: //B
@@ -559,6 +562,9 @@ public class AModerateAuton extends OpMode {
                 autonPath.trajectory5 = robot.drive.trajectoryBuilder(autonPath.trajectory4.end())
                         //.splineToLinearHeading(new Pose2d(12, isRed * -52, Math.toRadians(90)), 0)
                         .lineToLinearHeading(new Pose2d(8, isRed * -38, Math.toRadians(180)))
+                        .addTemporalMarker(.5, () -> {
+                            autonWobble.setWobblePos(0);
+                        })
                         .build();
                 break;
             case 2: //C
@@ -576,8 +582,9 @@ public class AModerateAuton extends OpMode {
                 autonPath.trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
                         //.lineToLinearHeading(new Pose2d(-26.0,-31.0,Math.toRadians(300.0)))
                         //.lineToLinearHeading(new Pose2d(-26.0,-33.0,Math.toRadians(320.0)))
-                        .lineToLinearHeading(new Pose2d(ringVec,goAngle),velConstraint,accelConstraint)//goAngle was 325
-                      //  .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(320)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                       // .lineToLinearHeading(new Pose2d(ringVec,goAngle),velConstraint,accelConstraint)//goAngle was 325
+                        .lineToSplineHeading(new Pose2d(52.0,-46.0,Math.toRadians(130.0)))
+                        //  .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(320)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
                         /*.lineToSplineHeading(new Pose2d(-28.0,-20.0,Math.toRadians(307)))
                         .splineToSplineHeading(new Pose2d(-12.0,-52.0,Math.toRadians(307)),0, new MinVelocityConstraint(Arrays.asList(new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),new MecanumVelocityConstraint(10,DriveConstants.TRACK_WIDTH))),new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
                         .addDisplacementMarker(() -> {
@@ -632,9 +639,9 @@ public class AModerateAuton extends OpMode {
                         .lineToLinearHeading(new Pose2d(48, isRed * -45, Math.toRadians(110)))
                         .build();
   */
-                autonPath.trajectory3 = robot.drive.trajectoryBuilder(autonPath.drop1.end())
+                autonPath.trajectory3 = robot.drive.trajectoryBuilder(autonPath.trajectory2.end())
                         //.splineTo(new Vector2d(-55, isRed * -55), 0) -20, 44
-                        .splineToSplineHeading(new Pose2d(-8, -47 * isRed, Math.toRadians(0)),Math.toRadians(180))
+                  /*      .splineToSplineHeading(new Pose2d(-8, -47 * isRed, Math.toRadians(0)),Math.toRadians(180))
                         .addTemporalMarker(.5, () -> {
                             autonWobble.setWobblePos(700);
                         })
@@ -642,6 +649,17 @@ public class AModerateAuton extends OpMode {
                             autonWobble.setWobblePos(900);
                         })
                         .splineToLinearHeading(new Pose2d(-34, -45 * isRed,Math.toRadians(0)),Math.toRadians(180))
+                        .build();
+
+                   */
+                        .splineToSplineHeading(new Pose2d(-8, -49 * isRed, Math.toRadians(0)),Math.toRadians(180),velConstraint2,accelConstraint2)
+                        .addTemporalMarker(.5, () -> {
+                            autonWobble.setWobblePos(700);
+                        })
+                        .addDisplacementMarker(() -> {
+                            autonWobble.setWobblePos(900);
+                        })
+                        .splineToLinearHeading(new Pose2d(-34, -46 * isRed,Math.toRadians(0)),Math.toRadians(180))//was x=-34,-47
                         .build();
                 /*
                 trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
@@ -679,6 +697,10 @@ public class AModerateAuton extends OpMode {
                         .build();
                 autonPath.trajectory5 = robot.drive.trajectoryBuilder(autonPath.trajectory4.end())
                         .lineToLinearHeading(new Pose2d(12, isRed * -46,Math.toRadians(90)), velConstraint2,accelConstraint2)
+                        .addTemporalMarker(.5, () -> {
+                            autonWobble.setWobblePos(0);
+                        })
+
                         .build();
                 break;
         }

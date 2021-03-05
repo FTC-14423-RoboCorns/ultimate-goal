@@ -60,6 +60,7 @@ public class Driving extends LinearOpMode {
     private boolean resetOdomButtonDown;
     private boolean resetWobbleButtonDown;
     private boolean onePowershotButtonDown;
+    private boolean turnButtonDown;
     //private boolean switchGoalButtonDown;
 
     //Gamepad2
@@ -166,6 +167,8 @@ public class Driving extends LinearOpMode {
         // We want to turn off velocity control for teleop
         // Velocity control per wheel is not necessary outside of motion profiled auto
         robot.drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.shooter.liftState= Shooter.LiftState.DYNAMIC;
+        robot.shooter.SHOOTER_OFFSET=5;
         checkButtons();
         /*handled in checkButtons
         driveButtonDown = false;
@@ -244,7 +247,11 @@ public class Driving extends LinearOpMode {
 
                     }
 
-
+                    if (gamepad1.a&&!turnButtonDown) {
+                        turnButtonDown=true;
+                        robot.drive.turnAsync(Math.toRadians(4.5));
+                        currentMode = Mode.ALIGN_TO_POINT;
+                    }
 
 
                     if (gamepad2.left_bumper && !spinupButtonDown) {
@@ -255,7 +262,7 @@ public class Driving extends LinearOpMode {
 
                                 .build();*/
                         if (!robot.shooter.isShooterOn) {
-                            targetVelocity = robot.shooter.shooterOn();
+                            targetVelocity = robot.shooter.shooterOn(1850);
                         }
                         /*
                         robot.drive.followTrajectoryAsync(shootTraj);*/
@@ -573,7 +580,8 @@ public class Driving extends LinearOpMode {
         public void checkButtons(){
         if (!gamepad1.right_bumper) driveButtonDown=false;
             if (!gamepad1.left_bumper) onePowershotButtonDown=false;
-        if (!gamepad1.a) intakeButtonDown=false;
+        if (!gamepad2.a) intakeButtonDown=false;
+            if (!gamepad1.a) turnButtonDown=false;
         if (!gamepad1.y) spitButtonDown=false;
         if (!gamepad1.b) wobbleButtonDown=false;
         if (!gamepad1.x) endGameButtonDown=false;
@@ -612,7 +620,7 @@ public class Driving extends LinearOpMode {
     public void handleIntake() {
         switch (intakeMode) {
             case INTAKE_OFF:
-                if (gamepad1.a && !intakeButtonDown) {
+                if (gamepad2.a && !intakeButtonDown) {
                     intakeButtonDown=true;
                     robot.intake.turnOn();
                     intakeMode = Intake_State.INTAKE_ON;
@@ -624,7 +632,7 @@ public class Driving extends LinearOpMode {
                 }
                 break;
             case INTAKE_ON:
-                if (gamepad1.a && !intakeButtonDown) {
+                if (gamepad2.a && !intakeButtonDown) {
                     intakeButtonDown=true;
                     robot.intake.turnOff();
                     intakeMode = Intake_State.INTAKE_OFF;
@@ -636,7 +644,7 @@ public class Driving extends LinearOpMode {
                 }
                 break;
             case INTAKE_SPIT:
-                if (gamepad1.a && !intakeButtonDown) {
+                if (gamepad2.a && !intakeButtonDown) {
                     intakeButtonDown=true;
                     robot.intake.turnOn();
                     intakeMode = Intake_State.INTAKE_ON;
@@ -933,19 +941,23 @@ public class Driving extends LinearOpMode {
         {
             if(shootCount == 1)
             {
-               strafe1 = robot.drive.trajectoryBuilder(powerTraj.end())
+               /*strafe1 = robot.drive.trajectoryBuilder(powerTraj.end())
                         .strafeLeft(8)
                         .build();
                 robot.drive.followTrajectoryAsync(strafe1);
-                //turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot2)-POWEROFFSET2);
+
+                */
+                turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot2)-POWEROFFSET2);
             }
             else
             {
-                 strafe2 = robot.drive.trajectoryBuilder(strafe1.end())
+                 /*strafe2 = robot.drive.trajectoryBuilder(strafe1.end())
                         .strafeLeft(8.5)
                         .build();
                 robot.drive.followTrajectoryAsync(strafe2);
-              // turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot3)-POWEROFFSET3);
+
+                  */
+               turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot3)-POWEROFFSET3);
             }
         }
         else
