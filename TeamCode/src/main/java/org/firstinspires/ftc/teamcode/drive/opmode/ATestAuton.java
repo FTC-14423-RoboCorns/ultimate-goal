@@ -252,7 +252,6 @@ public class ATestAuton extends OpMode {
 
             case DRIVE_WOBBLE_1:
                 //wobblePos=630;
-                setDriveWobble1();
                 if (!autonShooting.isBusy()) {
                     setDriveWobble1();
                     robot.drive.followTrajectoryAsync(autonPath.trajectory2);
@@ -535,7 +534,7 @@ public class ATestAuton extends OpMode {
                     autonPath.pickUpRing = robot.drive.trajectoryBuilder(autonPath.trajectory3.end())
                         .lineToLinearHeading(new Pose2d(-44, isRed * -55, Math.toRadians(45)))
                         .build();
-                autonPath.misswobble = robot.drive.trajectoryBuilder(autonPath.trajectory3.end())
+                autonPath.misswobble = robot.drive.trajectoryBuilder(autonPath.pickUpRing.end())
                //         .splineToLinearHeading(new Pose2d(-8.0, -36.0, Math.toRadians(0.0)),Math.toRadians(90.0))
                         .splineToSplineHeading(new Pose2d(-12.0, -30.0, Math.toRadians(40.0)),Math.toRadians(45.0))
                         .addDisplacementMarker(() -> {
