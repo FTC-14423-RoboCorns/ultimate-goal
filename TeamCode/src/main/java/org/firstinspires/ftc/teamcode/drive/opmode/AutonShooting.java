@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.drive.Shooter;
 
 public class AutonShooting {
 
-    private boolean isBusy=false;
+    public boolean isBusy=false;
     private Robot robot;
     private AutonPath autonPath;
     public int desiredVelocity=0;
@@ -227,6 +227,7 @@ private int shootCount;
                      */
                     if(shootCount<secondShootTotal)
                     {
+                        System.out.println("SHOOTER_TURN_Final heading" + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                         if (debug) {
                             System.out.println("SHOOTER_shoot " + shootCount);
                             System.out.println("SHOOTER_TURN_Final heading" + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));

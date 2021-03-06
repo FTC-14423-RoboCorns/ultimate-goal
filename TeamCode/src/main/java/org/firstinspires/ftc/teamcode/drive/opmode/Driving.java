@@ -251,6 +251,7 @@ public class Driving extends LinearOpMode {
                     if (gamepad1.left_bumper && !onePowershotButtonDown) {
                         onePowershotButtonDown = true;
                         manualPowershot = true;
+                        twofer=false;
                         shootCount = 0;
                         robot.shooter.currentTarget = robot.shooter.redPowerShot1;
                         powershootNumber = 1;
@@ -259,6 +260,7 @@ public class Driving extends LinearOpMode {
                             if (debug) System.out.println("SHOOTER ON target vel " + targetVelocity);
                         }
                         endGame = PowershotState.TRAJECTORY_1;
+                        currentMode = Mode.POWERSHOT;
                     }
 
                     if (gamepad1.a&&!turnButtonDown) {
@@ -627,7 +629,7 @@ public class Driving extends LinearOpMode {
 
     }
 
-    public void handleShootMode() {
+    /*public void handleShootMode() {
         if (gamepad2.a && !liftModeButtonDown){
             liftModeButtonDown=true;
             if (robot.shooter.liftState== Shooter.LiftState.STATIC) {
@@ -636,7 +638,7 @@ public class Driving extends LinearOpMode {
                 robot.shooter.liftState= Shooter.LiftState.STATIC;
             }
         }
-    }
+    }*/
 
 
 
@@ -674,8 +676,8 @@ public class Driving extends LinearOpMode {
                 }
                 if (gamepad1.y && !spitButtonDown) {
                     spitButtonDown=true;
-                    intakeMode = Intake_State.INTAKE_OFF;
-                    robot.intake.turnOff();
+                    intakeMode = Intake_State.INTAKE_ON;
+                    robot.intake.turnOn();
                 }
                 break;
         }
@@ -862,7 +864,7 @@ public class Driving extends LinearOpMode {
                     if (debug)
                         System.out.println("SHOOTER_FIRSTTURN_Y " + robot.drive.getPoseEstimate().getY());
                     // turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)-POWEROFFSET);
-                    if (twofer)  robot.drive.turnAsync(4.5);
+                    if (twofer)  robot.drive.turnAsync(Math.toRadians(4.5));
                         else turnTo(0);
                     endGame = PowershotState.FIRST_TURN;
                     if (debug)
@@ -916,8 +918,7 @@ public class Driving extends LinearOpMode {
                         if (twofer) {
                             endGame=PowershotState.TRAJECTORY_1;
                             robot.shooter.pusherOut();
-                        }
-                        endGame = PowershotState.TURN;
+                        } else endGame = PowershotState.TURN;
                     } else {
                         if (!robot.shooter.isShooterReady(targetVelocity - 200) || waitTimer1.time() >= 300) {//was 500 should be shorter since only waiting for reshoot
                             currentMode = Mode.NORMAL_CONTROL;

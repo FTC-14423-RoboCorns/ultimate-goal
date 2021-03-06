@@ -78,6 +78,7 @@ public class AModerateAuton extends OpMode {
         GO_SHOOT,
         GRAB_WOBBLE_2,
         RELOAD_WAIT,
+        CHECK_SHOOTER,
         SHOOTAGAIN,
         RELOADAGAIN,
         GRAB_WAIT,
@@ -242,6 +243,7 @@ public class AModerateAuton extends OpMode {
                 waitTimer1.reset();
                 if (!robot.drive.isBusy()){
                     currentState= State.DRIVE_WOBBLE_1;
+                    autonShooting.isBusy=true;
                     autonShooting.shootingState = AutonShooting.ShootingState.SHOOTER_ON;
 
                 }
@@ -250,7 +252,6 @@ public class AModerateAuton extends OpMode {
 
             case DRIVE_WOBBLE_1:
                 //wobblePos=630;
-
                 if (!autonShooting.isBusy()) {
                     setDriveWobble1();
                     robot.drive.followTrajectoryAsync(autonPath.trajectory2);
@@ -284,7 +285,7 @@ public class AModerateAuton extends OpMode {
                 autonWobble.setWobblePos(630);
                 if(!robot.drive.isBusy()) {
                   //  if (autonPath.ringPosition == 2) robot.intake.turnOn();
-                    autonWobble.setWobblePos(850);
+                    autonWobble.setWobblePos(800);
                     if(!autonWobble.isBusy())
                     {
                      //   System.out.println("WOBBLE_POS " + robot.wobble.wobble.getCurrentPosition());
@@ -348,22 +349,21 @@ public class AModerateAuton extends OpMode {
                         autonWobble.setWobblePos(450);
                         //robot.drive.followTrajectoryAsync(pickUpRing);
                         autonShooting.desiredVelocity = 0;
-
-
-                        if (autonPath.ringPosition==1) {
-                            if (waitTimer1.milliseconds() > 1500) {
-                                robot.intake.turnOff();
-                                autonShooting.shootingState = AutonShooting.ShootingState.GO_SHOOT;
-                                currentState = State.GRAB_WAIT;
-                            }
-                        } else {
-                            robot.intake.turnOff();
-                            autonShooting.shootingState = AutonShooting.ShootingState.GO_SHOOT;
-                            currentState = State.GRAB_WAIT;
-                        }
-
-
+                        currentState = State.CHECK_SHOOTER;
                     }
+                }
+                break;
+
+            case CHECK_SHOOTER:
+                if (autonPath.ringPosition==1) {
+                    if (waitTimer1.milliseconds() > 1500) {
+                        autonShooting.shootingState = AutonShooting.ShootingState.GO_SHOOT;
+                        currentState = State.GRAB_WAIT;
+                    }
+                } else {
+                    robot.intake.turnOff();
+                    autonShooting.shootingState = AutonShooting.ShootingState.GO_SHOOT;
+                    currentState = State.GRAB_WAIT;
                 }
                 break;
 
@@ -392,10 +392,11 @@ public class AModerateAuton extends OpMode {
                     {
                         robot.intake.turnOff();
                     }*/
-                    autonWobble.setWobblePos(850);
+                    autonWobble.setWobblePos(800);
                    // wobblePos = 850;
                     if(!autonWobble.isBusy()) {
                         autonWobble.openClaw();
+                        robot.intake.turnOff();
                         currentState = State.CLAW_WAIT;
                         waitTimer1.reset();
                     }
@@ -493,10 +494,10 @@ public class AModerateAuton extends OpMode {
                         .splineToLinearHeading(new Pose2d(-34, -48 * isRed,Math.toRadians(0)),Math.toRadians(180))
                         .build();
                 autonPath.trajectory4 = robot.drive.trajectoryBuilder(autonPath.trajectory3.end())
-                        .splineToLinearHeading(new Pose2d(9.5, isRed * -40, Math.toRadians(90)), 0)
+                        .splineToLinearHeading(new Pose2d(9.5, isRed * -36, Math.toRadians(90)), 0)
                         .build();
                 autonPath.trajectory5 = robot.drive.trajectoryBuilder(autonPath.trajectory4.end())
-                        .splineToLinearHeading(new Pose2d(3, isRed * -30,Math.toRadians(90)), 0)
+                        .splineToLinearHeading(new Pose2d(3, isRed * -28,Math.toRadians(90)), 0)
                         .addTemporalMarker(.5, () -> {
                             autonWobble.setWobblePos(0);
                         })
@@ -504,7 +505,7 @@ public class AModerateAuton extends OpMode {
                 break;
             case 1: //B
                 //TODO: Verify Wobble Goal Position and Ring Height Map
-                autonPath.trajectory2 = robot.drive.trajectoryBuilder(CurrentP)
+                autonPath.trajectory2 = robot.drive.trajectoryBuilder(new Pose2d(-10,-23,Math.toRadians(9)))//CurrentP
                     /*.splineTo(new Vector2d(-8.0,-50.0),Math.toRadians(0.0))
                         .addDisplacementMarker(() -> {
                             autonWobble.setWobblePos(450);
@@ -694,7 +695,7 @@ public class AModerateAuton extends OpMode {
 */
                 autonPath.trajectory4 = robot.drive.trajectoryBuilder(autonPath.trajectory3.end())
                         .lineToLinearHeading(new Pose2d(36, isRed * -52, Math.toRadians(165)))
-                        .addTemporalMarker(1.5, () -> {
+                        .addTemporalMarker(2.5, () -> {
                             autonWobble.setWobblePos(550);
                         })
                         .build();

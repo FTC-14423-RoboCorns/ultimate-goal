@@ -30,7 +30,7 @@ public class Shooter {
     public boolean shooting;
 
     //the location of the red goal on the plane
-    public final static double goalX = 70;
+    public final static double goalX = 72;
     public final static double goalY = -36;
 
     public boolean isShooterOn = false;
@@ -87,13 +87,13 @@ public class Shooter {
 
         isShooterOn = false;
         liftState=LiftState.DYNAMIC;
-        redPowerShot1 = new target(goalX, powerShotY, goalHeight);
-        redPowerShot2 = new target(goalX, powerShotY+7.5, goalHeight);
-        redPowerShot3 = new target(goalX, powerShotY+15, goalHeight);
+        redPowerShot1 = new target(goalX-2, powerShotY, goalHeight);
+        redPowerShot2 = new target(goalX-2, powerShotY+7.5, goalHeight);
+        redPowerShot3 = new target(goalX-2, powerShotY+15, goalHeight);
 
-        bluePowerShot1 = new target(goalX, (powerShotY*-1), goalHeight);
-        bluePowerShot2 = new target(goalX, (powerShotY*-1)-7.5, goalHeight);
-        bluePowerShot3 = new target(goalX, (powerShotY*-1)-15, goalHeight);
+        bluePowerShot1 = new target(goalX-2, (powerShotY*-1), goalHeight);
+        bluePowerShot2 = new target(goalX-2, (powerShotY*-1)-7.5, goalHeight);
+        bluePowerShot3 = new target(goalX-2, (powerShotY*-1)-15, goalHeight);
 
         this.telemetry = telem;
     }
@@ -291,7 +291,7 @@ public class Shooter {
                 else liftPos = .76;
             } else {
                // liftPos = .58;//0.54;
-                if (Math.abs(robotX)<24) liftPos = .58;
+                if (Math.abs(robotX)<24) liftPos = .56;//.58
                 else
                 liftPos=.71;
             }
