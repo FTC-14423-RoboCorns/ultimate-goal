@@ -34,8 +34,10 @@ public    enum StartPosEnum {
 
 public    StartPosEnum startPos;
 public CurrentTarget currentTarget;
+public CurrentTarget[] currentTargetArray= new CurrentTarget[3];
     public int ringPosition=2;
     public double firstAngle;
+    public double[] firstAngleArray=new double[3];
     public AutonPath(Robot theRobot){
         robot=theRobot;
     }
@@ -46,8 +48,12 @@ public CurrentTarget currentTarget;
         STRAFE
     }
     public Trajectory trajectory1,trajectory2,trajectory3,pickUpRing, trajectory4,trajectory5,misswobble,strafe1,strafe2,ring2,ring3,drop1;
+
+    public Trajectory[] trajectory1Array,trajectory2Array,trajectory3Array,pickUpRingArray, trajectory4Array,trajectory5Array,misswobbleArray,strafe1Array,strafe2Array,ring2Array,ring3Array,drop1Array=new Trajectory[3];
+
     public PowershotTurnMode powershotTurnMode;
     public Vector2d firstShot;
+    public Vector2d[] firstShotArray =new Vector2d[3];
 
     public void setCurrentTarget(CurrentTarget target){
         currentTarget=target;
@@ -123,39 +129,55 @@ public CurrentTarget currentTarget;
         robot.drive.setPoseEstimate(startPose);
     }
 
-    public void setFirstTrajectory(){
-        switch (currentTarget) {
+
+
+    public Trajectory setFirstTrajectory(CurrentTarget curTar, Vector2d first){
+        switch (curTar) {
             case RED_POWERSHOT:
                 //firstAngle=robot.shooter.angleToGoal(firstShot, robot.shooter.redPowerShot1);
-                firstAngle=robot.shooter.angleToGoal(firstShot, robot.shooter.redPowerShot1);//0
-            trajectory1 = robot.drive.trajectoryBuilder(startPose)
+                firstAngle=robot.shooter.angleToGoal(first, robot.shooter.redPowerShot1);//0
+            return robot.drive.trajectoryBuilder(startPose)
 
                     //.splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), Math.toRadians(-15))
                     //.lineToLinearHeading(new Pose2d(firstShot, 0))
-                    .lineToLinearHeading(new Pose2d(firstShot, firstAngle))
+                    .lineToLinearHeading(new Pose2d(first, firstAngle))
                     .build();
              //affects lift height - change if we shoot for goal
-                break;
+
+
             case RED_GOAL:
-                firstAngle=robot.shooter.angleToGoal(firstShot, robot.shooter.redGoal)-AutonShooting.POWEROFFSET;
-                trajectory1 = robot.drive.trajectoryBuilder(startPose)
+                firstAngle=robot.shooter.angleToGoal(first, robot.shooter.redGoal)-AutonShooting.POWEROFFSET;
+                return  robot.drive.trajectoryBuilder(startPose)
                         //  .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), Math.toRadians(-15))
                         // .splineToLinearHeading(new Pose2d(-7, isRed * -24.5, 0), Math.toRadians(-15))
                         //.lineToLinearHeading(new Pose2d(shootX, isRed * shootY, Math.toRadians(0)))
-                        .lineToLinearHeading(new Pose2d(firstShot, firstAngle))
+                        .lineToLinearHeading(new Pose2d(first, firstAngle))
                         //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
                         .build();
                 //robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
-                break;
+
+            default:
+                return robot.drive.trajectoryBuilder(startPose)
+                        //  .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), Math.toRadians(-15))
+                        // .splineToLinearHeading(new Pose2d(-7, isRed * -24.5, 0), Math.toRadians(-15))
+                        //.lineToLinearHeading(new Pose2d(shootX, isRed * shootY, Math.toRadians(0)))
+                        .lineToLinearHeading(new Pose2d(first, firstAngle))
+                        //.splineToLinearHeading(new Pose2d(-7, isRed * -12, Math.toRadians(PowerTarget)), 0)
+                        .build();
+
         }
     }
 
-    public void aimFirst() {
-        switch (currentTarget) {
+    public Trajectory setFirstTrajectory(){
+        return setFirstTrajectory(currentTarget,firstShot);
+    }
+
+    public void aimFirst(double angle,CurrentTarget tar) {
+        switch (tar) {
             case RED_POWERSHOT:
-                turnTo(firstAngle);
+                turnTo(angle);
                // if (debug) System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
-                if (debug) System.out.println("SHOOTER_firstAngle " + firstAngle);
+                if (debug) System.out.println("SHOOTER_firstAngle " + angle);
                 //turnTo(Math.toRadians(0));
                 break;
             case RED_GOAL:
@@ -165,6 +187,9 @@ public CurrentTarget currentTarget;
         }
     }
 
+    public void aimFirst(){
+        aimFirst(firstAngle,currentTarget);
+    }
 
     }
 

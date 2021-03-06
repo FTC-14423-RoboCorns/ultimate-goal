@@ -71,10 +71,14 @@ private int shootCount;
     public void pusherOut(){
         robot.shooter.pusherOut();
     }
-
+/*
     public void setCurrentTarget(Shooter.target currentTarget){
         robot.shooter.currentTarget=currentTarget;
     }
+
+
+ */
+
 
     public void shooterOn(){
         if (desiredVelocity==0) targetVelocity= robot.shooter.shooterOn();
