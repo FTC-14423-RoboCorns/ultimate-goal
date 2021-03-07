@@ -465,10 +465,12 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
             dashboard.sendTelemetryPacket(packet);
         }
-        headingThen=headingNow;
-        clockThen=clockNow;
-        headingNow=getRawExternalHeading();
-        clockNow=clock.seconds();
+        if (USE_IMU==1) {
+            headingThen = headingNow;
+            clockThen = clockNow;
+            headingNow = getRawExternalHeading();
+            clockNow = clock.seconds();
+        }
     }
 
     public void waitForIdle() {
@@ -571,7 +573,9 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             return 0;
         }
 */
+        if (USE_IMU==1)
     return gyro.readGyro();
+        else return 0;
 
     }
 
@@ -596,6 +600,8 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         // flat on a surface
 
        // return (double) imu.getAngularVelocity().zRotationRate;
+        if (USE_IMU==1)
         return (headingNow-headingThen)/(clockNow-clockThen);
+        else return null;
     }
 }

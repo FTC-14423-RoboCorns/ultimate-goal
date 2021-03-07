@@ -45,7 +45,7 @@ public class Driving extends LinearOpMode {
     private boolean debug = false;
     private boolean dashboard =true;
     int oneShoot = 0;
-    public int wobblePos;
+    private int wobblePos;
     private boolean manualPowershot=false;
     private boolean twofer=false;
 
@@ -765,7 +765,8 @@ public class Driving extends LinearOpMode {
                     //System.out.println("Wobble position " + robot.wobble.wobble.getCurrentPosition());
                 //    wobbleButtonDown = true;
                     wobblePos=875;
-                    robot.wobble.wobbleMovetoPosition(wobblePos);
+                robot.wobble.openClaw();
+
                   //  robot.wobble.wobbleSetRaise(wobblePos);//should no longer be necessary
                     //robot.wobble.fastMovetoPos(900);
                     wobbleMode=Wobble_State.WOBBLE_DOWNWAIT;
@@ -798,7 +799,7 @@ public class Driving extends LinearOpMode {
                 }
                 break;
             case WOBBLE_OPEN:
-                robot.wobble.openClaw();
+
                 wobbleMode=Wobble_State.WOBBLE_CLOSE;
                 break;
             case WOBBLE_CLOSE:
@@ -824,7 +825,7 @@ public class Driving extends LinearOpMode {
                     //robot.wobble.raiseWobble();
                     wobblePos=500;
                     //robot.wobble.wobbleSetRaise(wobblePos);//should not need
-                    robot.wobble.wobbleMovetoPosition(wobblePos);
+                    //robot.wobble.wobbleMovetoPosition(wobblePos);
                     wobbleMode = Wobble_State.WOBBLE_UPWAIT;
                 }
                 break;
@@ -849,11 +850,14 @@ public class Driving extends LinearOpMode {
 
 
 
-
+                /*not needed
                 if (robot.wobble.isWobbleThere(wobblePos)) {
                     wobbleMode = Wobble_State.IDLE;
-                }
+                }*/
                 break;
+        }
+        if (!(wobbleMode==Wobble_State.IDLE)){
+            robot.wobble.wobbleMovetoPosition(wobblePos);
         }
     }
     public void turnTo(double targetAngle, boolean isInputRadians)
