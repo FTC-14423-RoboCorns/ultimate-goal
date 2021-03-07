@@ -264,18 +264,21 @@ public class Driving extends LinearOpMode {
                     }
 
                     if (gamepad1.a&&!turnButtonDown) {
-                        turnButtonDown=true;
-                        manualPowershot = false;
-                        twofer=true;
-                        shootCount = 0;
-                        robot.shooter.currentTarget = robot.shooter.redPowerShot1;
-                        powershootNumber = 2;
-                        if (!robot.shooter.isShooterOn) {
-                            targetVelocity = robot.shooter.shooterOn(1850);
-                            if (debug) System.out.println("SHOOTER ON target vel " + targetVelocity);
+                         if (gamepad1.right_trigger > .5) {
+                            turnButtonDown = true;
+                            manualPowershot = false;
+                            twofer = true;
+                            shootCount = 0;
+                            robot.shooter.currentTarget = robot.shooter.redPowerShot1;
+                            powershootNumber = 2;
+                            if (!robot.shooter.isShooterOn) {
+                                targetVelocity = robot.shooter.shooterOn(1850);
+                                if (debug)
+                                    System.out.println("SHOOTER ON target vel " + targetVelocity);
+                            }
+                            endGame = PowershotState.TRAJECTORY_1;
+                            currentMode = Mode.POWERSHOT;
                         }
-                        endGame = PowershotState.TRAJECTORY_1;
-                        currentMode = Mode.POWERSHOT;
                     }
 
 
@@ -296,19 +299,21 @@ public class Driving extends LinearOpMode {
 
 
                     if (gamepad2.b&&!powerShotButtonDown) {
-                        powershootNumber=3;
-                        manualPowershot=false;
-                        robot.shooter.currentTarget=robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
-                        if (!robot.shooter.isShooterOn) {
-                            targetVelocity = robot.shooter.shooterOn();
-                        }
-                        powerTraj = robot.drive.trajectoryBuilder(robot.drive.getPoseEstimate())
-                                //    .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), 0)
-                                .lineToLinearHeading(new Pose2d(-7, isRed * -24.5, 0))
+                        if (gamepad2.right_trigger > .5) {
+                            powershootNumber = 3;
+                            manualPowershot = false;
+                            robot.shooter.currentTarget = robot.shooter.redPowerShot1; //affects lift height - change if we shoot for goal
+                            if (!robot.shooter.isShooterOn) {
+                                targetVelocity = robot.shooter.shooterOn();
+                            }
+                            powerTraj = robot.drive.trajectoryBuilder(robot.drive.getPoseEstimate())
+                                    //    .splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), 0)
+                                    .lineToLinearHeading(new Pose2d(-7, isRed * -24.5, 0))
 
-                                .build();
-                        endGame= PowershotState.START;
-                        currentMode=Mode.POWERSHOT;
+                                    .build();
+                            endGame = PowershotState.START;
+                            currentMode = Mode.POWERSHOT;
+                        }
                     }
 
 
@@ -441,7 +446,7 @@ public class Driving extends LinearOpMode {
                     currentMode = Mode.NORMAL_CONTROL;
                     break;
             }
-            handleShootMode();
+            //handleShootMode();
             handleIntake();
             handleWobble();
 
@@ -687,8 +692,9 @@ public class Driving extends LinearOpMode {
 
         if (gamepad2.dpad_down&& !manualWobbleDecreaseButtonDown){
             manualWobbleDecreaseButtonDown=true;
-
-            wobblePos+=50;
+            if (gamepad2.left_trigger>.5) robot.wobble.override=true;
+            else robot.wobble.override=false;
+            wobblePos+=25;
             robot.wobble.wobbleMovetoPosition(wobblePos);
         }
 
@@ -696,7 +702,7 @@ public class Driving extends LinearOpMode {
             manualWobbleIncreaseButtonDown=true;
             if (gamepad2.left_trigger>.5) robot.wobble.override=true;
                     else robot.wobble.override=false;
-            wobblePos-=50;
+            wobblePos-=25;
             robot.wobble.wobbleMovetoPosition(wobblePos);
         }
 
@@ -713,7 +719,8 @@ public class Driving extends LinearOpMode {
                    // robot.wobble.lowerWobbleFromFront();
                     //System.out.println("Wobble position " + robot.wobble.wobble.getCurrentPosition());
                     wobbleButtonDown = true;
-                    wobblePos=850;
+                    wobblePos=875;
+                    robot.wobble.wobbleMovetoPosition(wobblePos);
                   //  robot.wobble.wobbleSetRaise(wobblePos);//should no longer be necessary
                     //robot.wobble.fastMovetoPos(900);
                     wobbleMode=Wobble_State.WOBBLE_DOWNWAIT;
@@ -728,7 +735,7 @@ public class Driving extends LinearOpMode {
                 break;
             case WOBBLE_DOWNWAIT:
                 //wobblePos=900;
-                robot.wobble.wobbleMovetoPosition(wobblePos);
+
                 if (gamepad1.b && !wobbleButtonDown){
                     // robot.wobble.lowerWobbleFromFront();
                     //System.out.println("Wobble position " + robot.wobble.wobble.getCurrentPosition());
@@ -775,7 +782,7 @@ public class Driving extends LinearOpMode {
                     //robot.wobble.raiseWobble();
                     wobblePos=500;
                     //robot.wobble.wobbleSetRaise(wobblePos);//should not need
-
+                    robot.wobble.wobbleMovetoPosition(wobblePos);
                     wobbleMode = Wobble_State.WOBBLE_UPWAIT;
                 }
                 break;
@@ -798,7 +805,7 @@ public class Driving extends LinearOpMode {
                     wobbleWait.reset();
                 }
 
-                robot.wobble.wobbleMovetoPosition(wobblePos);
+
 
 
                 if (robot.wobble.isWobbleThere(wobblePos)) {
@@ -865,7 +872,7 @@ public class Driving extends LinearOpMode {
                         System.out.println("SHOOTER_FIRSTTURN_Y " + robot.drive.getPoseEstimate().getY());
                     // turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)-POWEROFFSET);
                     if (twofer)  robot.drive.turnAsync(Math.toRadians(4.5));
-                        else turnTo(0);
+                        else if (!manualPowershot) turnTo(0);
                     endGame = PowershotState.FIRST_TURN;
                     if (debug)
                         System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
@@ -904,7 +911,10 @@ public class Driving extends LinearOpMode {
                     if (done) {*/
                     //if (debug) System.out.println("SHOOTER_now shooting heading " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                     if (shootCount < powershootNumber) {
-                        if (debug) System.out.println("SHOOTER_shoot " + shootCount);
+                        //if (debug)
+                            System.out.println("SHOOTER_shoot " + shootCount);
+                            System.out.println("SHOOTER_powershoot_NUMBER " + powershootNumber);
+
                         if (debug)
                             System.out.println("SHOOTER_Final heading" + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                         //   System.out.println("SHOOT_Shooter Ready " + robot.shooter.shooter.getVelocity());
@@ -915,10 +925,7 @@ public class Driving extends LinearOpMode {
                     }
                     if (shootCount < powershootNumber) {
                         //System.out.println("SHOOTER_shootToTurn");
-                        if (twofer) {
-                            endGame=PowershotState.TRAJECTORY_1;
-                            robot.shooter.pusherOut();
-                        } else endGame = PowershotState.TURN;
+                        endGame = PowershotState.TURN;
                     } else {
                         if (!robot.shooter.isShooterReady(targetVelocity - 200) || waitTimer1.time() >= 300) {//was 500 should be shorter since only waiting for reshoot
                             currentMode = Mode.NORMAL_CONTROL;
@@ -936,10 +943,16 @@ public class Driving extends LinearOpMode {
             case TURN:
                 // System.out.println("SHOOTER_turnInState");
                 if (!robot.shooter.isShooterReady(targetVelocity - 200) || waitTimer1.time() >= 400) {
-                    if (debug) System.out.println("SHOOTER_ringShot");
-                    robot.shooter.pusherOut();
-                    powerTurn();
-                    endGame = PowershotState.TURN2;//SHOOTER_ON;
+                    if (twofer) {
+                            endGame=PowershotState.TRAJECTORY_1;
+                            robot.shooter.pusherOut();
+                    } else {
+                        if (debug) System.out.println("SHOOTER_ringShot");
+                        robot.shooter.pusherOut();
+                        powerTurn();
+                        endGame = PowershotState.TURN2;
+                    }
+                    //SHOOTER_ON;
                 }
                 break;
             case TURN2:

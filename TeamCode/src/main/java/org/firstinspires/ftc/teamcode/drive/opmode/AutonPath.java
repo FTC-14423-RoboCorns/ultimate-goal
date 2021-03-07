@@ -49,7 +49,18 @@ public CurrentTarget[] currentTargetArray= new CurrentTarget[3];
     }
     public Trajectory trajectory1,trajectory2,trajectory3,pickUpRing, trajectory4,trajectory5,misswobble,strafe1,strafe2,ring2,ring3,drop1;
 
-    public Trajectory[] trajectory1Array,trajectory2Array,trajectory3Array,pickUpRingArray, trajectory4Array,trajectory5Array,misswobbleArray,strafe1Array,strafe2Array,ring2Array,ring3Array,drop1Array=new Trajectory[3];
+    public Trajectory[] trajectory1Array=new Trajectory[3];
+            public Trajectory[] trajectory2Array=new Trajectory[3];
+    public Trajectory[] trajectory3Array=new Trajectory[3];
+    public Trajectory[] pickUpRingArray=new Trajectory[3];
+    public Trajectory[] trajectory4Array=new Trajectory[3];
+    public Trajectory[] trajectory5Array=new Trajectory[3];
+    public Trajectory[] misswobbleArray=new Trajectory[3];
+    public Trajectory[] strafe1Array=new Trajectory[3];
+    public Trajectory[] strafe2Array=new Trajectory[3];
+    public Trajectory[] ring2Array=new Trajectory[3];
+    public Trajectory[] ring3Array=new Trajectory[3];
+    public Trajectory[] drop1Array=new Trajectory[3];
 
     public PowershotTurnMode powershotTurnMode;
     public Vector2d firstShot;

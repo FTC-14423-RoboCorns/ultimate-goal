@@ -356,7 +356,11 @@ public class AModerateAuton extends OpMode {
 
             case CHECK_SHOOTER:
                 if (autonPath.ringPosition==1) {
-                    if (waitTimer1.milliseconds() > 1500) {
+                    if (waitTimer1.milliseconds() > 6500) {
+                        autonShooting.shooterOn();
+                    }
+                    if (waitTimer1.milliseconds() > 7500) {
+                        robot.intake.turnOff();
                         autonShooting.shootingState = AutonShooting.ShootingState.GO_SHOOT;
                         currentState = State.GRAB_WAIT;
                     }
@@ -396,7 +400,7 @@ public class AModerateAuton extends OpMode {
                    // wobblePos = 850;
                     if(!autonWobble.isBusy()) {
                         autonWobble.openClaw();
-                        robot.intake.turnOff();
+                        //robot.intake.turnOff();
                         currentState = State.CLAW_WAIT;
                         waitTimer1.reset();
                     }
@@ -512,7 +516,7 @@ public class AModerateAuton extends OpMode {
                         })
 
                      */
-                   .lineToSplineHeading(new Pose2d(22.0,-32.0,Math.toRadians(175.0)))
+                   .lineToSplineHeading(new Pose2d(20.0,-32.0,Math.toRadians(175.0)))
                     //    .lineToSplineHeading(new Pose2d(22.0,-32.0,Math.toRadians(175.0)))
                 //.lineToLinearHeading(new Pose2d(20, isRed * -32, Math.toRadians(175)))
                      .build();
@@ -525,7 +529,7 @@ public class AModerateAuton extends OpMode {
                         .addDisplacementMarker(() -> {
                             autonWobble.setWobblePos(900);
                         })
-                        .splineToLinearHeading(new Pose2d(-34, -47 * isRed,Math.toRadians(0)),Math.toRadians(180))
+                        .splineToLinearHeading(new Pose2d(-34, -46 * isRed,Math.toRadians(0)),Math.toRadians(180))
                         .build();
                /* misswobble = robot.drive.trajectoryBuilder(trajectory3.end(),true)
                         //.splineTo(new Vector2d(-55, isRed * -55), 0)
@@ -539,7 +543,7 @@ public class AModerateAuton extends OpMode {
                         .build();
                 autonPath.misswobble = robot.drive.trajectoryBuilder(autonPath.pickUpRing.end())
                //         .splineToLinearHeading(new Pose2d(-8.0, -36.0, Math.toRadians(0.0)),Math.toRadians(90.0))
-                        .splineToSplineHeading(new Pose2d(-12.0, -30.0, Math.toRadians(40.0)),Math.toRadians(45.0))
+                        .splineToSplineHeading(new Pose2d(-12.0, -26.0, Math.toRadians(40.0)),Math.toRadians(45.0))
                         .addDisplacementMarker(() -> {
                             if (!robot.shooter.isShooterOn) {
                                 autonShooting.shooterOn();
@@ -552,7 +556,7 @@ public class AModerateAuton extends OpMode {
 
                 autonPath.trajectory4 = robot.drive.trajectoryBuilder(autonPath.misswobble.end())
                         //.splineToLinearHeading(new Pose2d(30, isRed * -56, Math.toRadians(260)), 0)
-                        .lineToLinearHeading(new Pose2d(10, isRed * -37, Math.toRadians(180)))
+                        .lineToLinearHeading(new Pose2d(10, isRed * -40, Math.toRadians(180)))
                         /*.addDisplacementMarker(20, () -> {
                             wobblePos = 630;
                         })

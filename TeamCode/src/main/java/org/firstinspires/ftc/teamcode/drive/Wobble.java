@@ -13,7 +13,7 @@ public class Wobble
     private static int START_POSITION = 0;
     private static int STOP_POSITION= 1140;
     private static double SERVO_OPEN = 0;
-    private static double SERVO_CLOSED = 0.23;
+    private static double SERVO_CLOSED =0.24;// 0.23;
     private boolean raise =true;
     public boolean override=false;
 
