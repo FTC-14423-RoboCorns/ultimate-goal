@@ -77,7 +77,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
     public  int USE_IMU=0;
     public static double LATERAL_MULTIPLIER = 1.3;//1.1; //was 2.05;
-
+    private GyroAnalog gyro;
     public static double VX_WEIGHT = .7;
     public static double VY_WEIGHT = .9;
     public static double OMEGA_WEIGHT =.9;// .8;
@@ -118,6 +118,10 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     private BNO055IMU imu1;
    // public GyroAnalog gyro;
     private VoltageSensor batteryVoltageSensor;
+    private double headingNow;
+    private double headingThen;
+    private double clockNow;
+    private double clockThen;
 
     private Pose2d lastPoseOnTurn;
 
@@ -127,7 +131,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             dashboard = FtcDashboard.getInstance();
             dashboard.setTelemetryTransmissionInterval(25);
         }
-
+        gyro = new GyroAnalog(hardwareMap);
 
         clock = NanoClock.system();
 
@@ -461,6 +465,10 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
             dashboard.sendTelemetryPacket(packet);
         }
+        headingThen=headingNow;
+        clockThen=clockNow;
+        headingNow=getRawExternalHeading();
+        clockNow=clock.seconds();
     }
 
     public void waitForIdle() {
@@ -563,18 +571,31 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             return 0;
         }
 */
-    return 0;
+    return gyro.readGyro();
 
     }
 
-    double getBatteryVoltage(HardwareMap hardwareMap) {
-        double result = Double.POSITIVE_INFINITY;
-        for (VoltageSensor sensor : hardwareMap.voltageSensor) {
-            double voltage = sensor.getVoltage();
-            if (voltage > 0) {
-                result = Math.min(result, voltage);
-            }
-        }
-        return result;
+    @Override
+    public Double getExternalHeadingVelocity() {
+        // TODO: This must be changed to match your configuration
+        //                           | Z axis
+        //                           |
+        //     (Motor Port Side)     |   / X axis
+        //                       ____|__/____
+        //          Y axis     / *   | /    /|   (IO Side)
+        //          _________ /______|/    //      I2C
+        //                   /___________ //     Digital
+        //                  |____________|/      Analog
+        //
+        //                 (Servo Port Side)
+        //
+        // The positive x axis points toward the USB port(s)
+        //
+        // Adjust the axis rotation rate as necessary
+        // Rotate about the z axis is the default assuming your REV Hub/Control Hub is laying
+        // flat on a surface
+
+       // return (double) imu.getAngularVelocity().zRotationRate;
+        return (headingNow-headingThen)/(clockNow-clockThen);
     }
 }

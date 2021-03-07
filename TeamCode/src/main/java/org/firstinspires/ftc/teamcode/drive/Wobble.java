@@ -144,7 +144,10 @@ public class Wobble
          */
         double lower = pos -30;
         double upper= pos + 30;
-        if (curPos > lower && curPos < upper) return true;
-        else return false;
+        if ((curPos > lower) && (curPos < upper)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

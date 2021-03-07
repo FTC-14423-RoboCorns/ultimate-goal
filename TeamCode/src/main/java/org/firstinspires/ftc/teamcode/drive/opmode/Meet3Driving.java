@@ -4,11 +4,11 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -16,12 +16,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.drive.PoseStorage;
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-//import org.firstinspires.ftc.teamcode.drive.advanced.TeleOpAlignWithPoint;
 import org.firstinspires.ftc.teamcode.drive.Shooter;
-import org.firstinspires.ftc.teamcode.drive.PoseStorage;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
+
+//import org.firstinspires.ftc.teamcode.drive.advanced.TeleOpAlignWithPoint;
 
 /**
  * This opmode demonstrates how one would implement "align to point behavior" in teleop. You specify
@@ -36,7 +37,7 @@ import org.firstinspires.ftc.teamcode.util.DashboardUtil;
  */
 @Config
 @TeleOp(group = "advanced")
-public class Driving extends LinearOpMode {
+public class Meet3Driving extends LinearOpMode {
 
     private Robot robot;
     public static double DRAWING_TARGET_RADIUS = 2;
@@ -97,7 +98,6 @@ public class Driving extends LinearOpMode {
     }
 
     enum Wobble_State {
-        IDLE,
         WOBBLE_UP,
         WOBBLE_DOWN,
         WOBBLE_DOWNWAIT,
@@ -134,7 +134,7 @@ public class Driving extends LinearOpMode {
     private Intake_State intakeMode = Intake_State.INTAKE_OFF;
     private Mode currentMode = Mode.NORMAL_CONTROL;
     private Shooter_State shooterMode = Shooter_State.SHOOTER_OFF;
-    private Wobble_State wobbleMode = Wobble_State.IDLE;
+    private Wobble_State wobbleMode = Wobble_State.WOBBLE_DOWN;
     private int shootCount = 0;
    private  ElapsedTime waitTimer1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     int isRed = 1;
@@ -194,7 +194,7 @@ public class Driving extends LinearOpMode {
         //isRed = PoseStorage.isRed;
 
         shooterMode = Shooter_State.SHOOTER_OFF;
-        wobbleMode = Wobble_State.IDLE;
+        wobbleMode = Wobble_State.WOBBLE_DOWN;
 
         // Set input bounds for the heading controller
         // Automatically handles overflow
@@ -458,7 +458,7 @@ public class Driving extends LinearOpMode {
                 stopShootButtonDown=true;
                 shooterMode = Shooter_State.SHOOTER_RESET;
 
-                if (currentMode==Mode.POWERSHOT) {
+                if (currentMode== Mode.POWERSHOT) {
                     robot.drive.cancelFollowing();
                     robot.shooter.shooterOff();
                     robot.shooter.pusherOut();
@@ -537,7 +537,7 @@ public class Driving extends LinearOpMode {
                     robot.shooter.shooterOff();
                     robot.shooter.pusherOut();
                     shootCount = 0;
-                    shooterMode=Shooter_State.SHOOTER_OFF;
+                    shooterMode= Shooter_State.SHOOTER_OFF;
                     break;
             }
             if (gamepad2.dpad_right && !ringIncreaseButtonDown) {
@@ -695,7 +695,7 @@ public class Driving extends LinearOpMode {
             manualWobbleDecreaseButtonDown=true;
             if (gamepad2.left_trigger>.5) robot.wobble.override=true;
             else robot.wobble.override=false;
-            wobblePos+=50;
+            wobblePos+=25;
             robot.wobble.wobbleMovetoPosition(wobblePos);
         }
 
@@ -703,7 +703,7 @@ public class Driving extends LinearOpMode {
             manualWobbleIncreaseButtonDown=true;
             if (gamepad2.left_trigger>.5) robot.wobble.override=true;
                     else robot.wobble.override=false;
-            wobblePos-=50;
+            wobblePos-=25;
             robot.wobble.wobbleMovetoPosition(wobblePos);
         }
 
@@ -712,85 +712,46 @@ public class Driving extends LinearOpMode {
             robot.wobble.resetWobble();
         }
 
-        if (gamepad1.b && !wobbleButtonDown){
-            wobbleButtonDown = true;
-            switch (wobbleMode){
-                case IDLE:
-                    //wobblePos=875;
-                    wobbleMode=Wobble_State.WOBBLE_DOWN;
-                break;
-               // case WOBBLE_DOWN:
-                 //   wobbleMode=Wobble_State.WOBBLE_DOWN;
-                   // break;
-                case WOBBLE_DOWNWAIT:
-                    wobbleWait.reset();
-                    wobbleMode=Wobble_State.WOBBLE_UP;
-                    break;
-                case WOBBLE_CLOSE:
-                    robot.wobble.closeClaw();
-                    wobbleWait.reset();
-                    wobbleMode=Wobble_State.WOBBLE_UP;
-                    break;
-                case WOBBLE_UPWAIT:
-                    wobbleMode=Wobble_State.WOBBLE_DOWN;
-                    break;
-            }
-        }
-
-        if (gamepad1.x && !endGameButtonDown){
-            endGameButtonDown = true;
-            if (gamepad2.left_trigger>.5){
-                wobblePos=20;
-                robot.wobble.wobbleMovetoPosition(wobblePos);
-                wobbleMode=Wobble_State.IDLE;
-            } else {
-
-
-            endGameButtonDown = true;
-            robot.wobble.openClaw();
-            wobbleMode=Wobble_State.WOBBLE_UP;
-            wobbleWait.reset();
-            }
-        }
 
         switch (wobbleMode){
-
-            case IDLE:
-                break;
-
             case WOBBLE_DOWN:
                 //System.out.println("** Wobble got to case WOBBLE_DOWN");
-              //  if (gamepad1.b && !wobbleButtonDown){
+                if (gamepad1.b && !wobbleButtonDown){
                    // robot.wobble.lowerWobbleFromFront();
                     //System.out.println("Wobble position " + robot.wobble.wobble.getCurrentPosition());
-                //    wobbleButtonDown = true;
+                    wobbleButtonDown = true;
                     wobblePos=875;
                     robot.wobble.wobbleMovetoPosition(wobblePos);
                   //  robot.wobble.wobbleSetRaise(wobblePos);//should no longer be necessary
                     //robot.wobble.fastMovetoPos(900);
-                    wobbleMode=Wobble_State.WOBBLE_DOWNWAIT;
-         //       }
+                    wobbleMode= Wobble_State.WOBBLE_DOWNWAIT;
+                }
+                if (gamepad1.x && !endGameButtonDown){
+                    endGameButtonDown = true;
+                    robot.wobble.openClaw();
+                    wobbleMode= Wobble_State.WOBBLE_UP;
+                    wobbleWait.reset();
+                }
 
                 break;
             case WOBBLE_DOWNWAIT:
                 //wobblePos=900;
 
-           //     if (gamepad1.b && !wobbleButtonDown){
+                if (gamepad1.b && !wobbleButtonDown){
                     // robot.wobble.lowerWobbleFromFront();
                     //System.out.println("Wobble position " + robot.wobble.wobble.getCurrentPosition());
-             //       wobbleButtonDown = true;
+                    wobbleButtonDown = true;
 
                     //  robot.wobble.wobbleSetRaise(wobblePos);//should no longer be necessary
                     //robot.wobble.fastMovetoPos(900);
-               //     wobbleMode=Wobble_State.WOBBLE_DOWN;
-                //}
-                /*
+                    wobbleMode= Wobble_State.WOBBLE_DOWN;
+                }
                 if (gamepad1.x && !endGameButtonDown){
                     endGameButtonDown = true;
                     robot.wobble.openClaw();
-                    wobbleMode=Wobble_State.WOBBLE_UP;
+                    wobbleMode= Wobble_State.WOBBLE_UP;
                     wobbleWait.reset();
-                }*/
+                }
 
                 if (robot.wobble.isWobbleThere(wobblePos))
                 {
@@ -799,23 +760,21 @@ public class Driving extends LinearOpMode {
                 break;
             case WOBBLE_OPEN:
                 robot.wobble.openClaw();
-                wobbleMode=Wobble_State.WOBBLE_CLOSE;
+                wobbleMode= Wobble_State.WOBBLE_CLOSE;
                 break;
             case WOBBLE_CLOSE:
-               /* if (gamepad1.b && !wobbleButtonDown){
+                if (gamepad1.b && !wobbleButtonDown){
                     wobbleButtonDown = true;
                     robot.wobble.closeClaw();
-                    wobbleMode=Wobble_State.WOBBLE_UP;
-                    wobbleWait.reset();
-                }*/
-                /*if (gamepad1.x && !endGameButtonDown){
-                    endGameButtonDown = true;
-                    robot.wobble.openClaw();
-                    wobbleMode=Wobble_State.WOBBLE_UP;
+                    wobbleMode= Wobble_State.WOBBLE_UP;
                     wobbleWait.reset();
                 }
-
-                 */
+                if (gamepad1.x && !endGameButtonDown){
+                    endGameButtonDown = true;
+                    robot.wobble.openClaw();
+                    wobbleMode= Wobble_State.WOBBLE_UP;
+                    wobbleWait.reset();
+                }
 
                 break;
             case WOBBLE_UP:
@@ -831,27 +790,27 @@ public class Driving extends LinearOpMode {
 
             case WOBBLE_UPWAIT:
                 //wobblePos=500
-                /*if (gamepad1.b && !wobbleButtonDown){
+                if (gamepad1.b && !wobbleButtonDown){
                     // robot.wobble.lowerWobbleFromFront();
                     //System.out.println("Wobble position " + robot.wobble.wobble.getCurrentPosition());
                     wobbleButtonDown = true;
 
                     //  robot.wobble.wobbleSetRaise(wobblePos);//should no longer be necessary
                     //robot.wobble.fastMovetoPos(900);
-                    wobbleMode=Wobble_State.WOBBLE_UP;
+                    wobbleMode= Wobble_State.WOBBLE_UP;
                 }
                 if (gamepad1.x && !endGameButtonDown){
                     endGameButtonDown = true;
                     robot.wobble.openClaw();
-                    wobbleMode=Wobble_State.WOBBLE_UP;
+                    wobbleMode= Wobble_State.WOBBLE_UP;
                     wobbleWait.reset();
-                }*/
+                }
 
 
 
 
                 if (robot.wobble.isWobbleThere(wobblePos)) {
-                    wobbleMode = Wobble_State.IDLE;
+                    wobbleMode = Wobble_State.WOBBLE_DOWN;
                 }
                 break;
         }
@@ -986,7 +945,7 @@ public class Driving extends LinearOpMode {
                 // System.out.println("SHOOTER_turnInState");
                 if (!robot.shooter.isShooterReady(targetVelocity - 200) || waitTimer1.time() >= 400) {
                     if (twofer) {
-                            endGame=PowershotState.TRAJECTORY_1;
+                            endGame= PowershotState.TRAJECTORY_1;
                             robot.shooter.pusherOut();
                     } else {
                         if (debug) System.out.println("SHOOTER_ringShot");
