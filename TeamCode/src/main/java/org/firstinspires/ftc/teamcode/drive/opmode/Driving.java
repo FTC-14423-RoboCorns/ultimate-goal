@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -40,6 +41,7 @@ public class Driving extends LinearOpMode {
 
     private Robot robot;
     public static double DRAWING_TARGET_RADIUS = 2;
+    private double SHOOTER_TURNTO=340;
     private ElapsedTime buttonWait;
     private ElapsedTime wobbleWait;
     private boolean debug = true;
@@ -48,7 +50,7 @@ public class Driving extends LinearOpMode {
     private int wobblePos;
     private boolean manualPowershot=false;
     private boolean twofer=false;
-
+    private double mult=1;
     //Gamepad1
     private boolean driveButtonDown;
     private boolean spitButtonDown;
@@ -245,7 +247,8 @@ public class Driving extends LinearOpMode {
                         if (!robot.shooter.isShooterOn) {
                             targetVelocity = robot.shooter.shooterOn();
                         }
-                        turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal));
+                        turnTo(SHOOTER_TURNTO);
+                        //turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal));
                         currentMode = Mode.ALIGN_TO_POINT;
 
                     }
@@ -326,10 +329,12 @@ public class Driving extends LinearOpMode {
 
                     // Standard teleop control
                     // Convert gamepad input into desired pose velocity
+                    mult= Range.clip(.8+(.4-gamepad1.right_trigger),1,.4);//two numbers should add to 1, subtraction is the min drive multiplier
+
                     driveDirection = new Pose2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x,
-                            -gamepad1.right_stick_x
+                            -gamepad1.left_stick_y*mult,
+                            -gamepad1.left_stick_x*mult,
+                            -gamepad1.right_stick_x*mult
                     );
                  //   robot.drive.speedMult= Range.clip(.8+(.4-gamepad1.right_trigger),1,.4);//two numbers should add to 1, subtraction is the min drive multiplier
                     robot.drive.setWeightedDrivePower(driveDirection);

@@ -11,6 +11,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -37,6 +38,7 @@ import org.firstinspires.ftc.teamcode.util.DashboardUtil;
  */
 @Config
 @TeleOp(group = "advanced")
+@Disabled
 public class Meet3Driving extends LinearOpMode {
 
     private Robot robot;

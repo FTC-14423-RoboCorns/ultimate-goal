@@ -91,6 +91,7 @@ private int shootCount;
 
 
     public void handleShooting(){
+        robot.shooter.update(robot.drive.getPoseEstimate());
 
         switch (shootingState){
         case IDLE:
@@ -101,7 +102,7 @@ private int shootCount;
         if (!robot.shooter.isShooterOn) {
             shooterOn();
         }
-        if (robot.shooter.isShooterReady(targetVelocity)) {
+        if (robot.shooter.isShooterReady(targetVelocity)&&!robot.drive.isBusy()) {
 
             shootingState = ShootingState.SHOOT;
         } //will need to add a timer later to move on in case we never get up to speed
@@ -114,7 +115,8 @@ private int shootCount;
                // System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                }
                  */
-        if (!robot.drive.isBusy()&& waitTimer1.time()>500) {//500//making sure our turn is done  && waitTimer1.time()>1500
+        //if (!robot.drive.isBusy()&& waitTimer1.time()>500) {//500//making sure our turn is done  && waitTimer1.time()>1500
+            if (!robot.drive.isBusy()){
                    /* if (isRed==1) {
                         done=robot.drive.getPoseEstimate().getHeading() <= Math.toRadians(PowerTarget);
                     } else {
@@ -145,7 +147,8 @@ private int shootCount;
             }
             else
             {
-                if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 300) {//500
+                //if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 300) {//500
+                if (waitTimer1.time() >= 200) {
                     robot.shooter.shooterOff();
                     pusherOut();
                     isBusy=false;
@@ -157,7 +160,8 @@ private int shootCount;
 
         case TURN:
         // System.out.println("SHOOTER_turnInState");
-        if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 400 ) {//500
+        //if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 400 ) {//500
+        if (waitTimer1.time() >= 200 ) {
             if (debug) {
                 System.out.println("SHOOTER_ringShot");
             }
@@ -174,7 +178,8 @@ private int shootCount;
             if ((autonPath.currentTarget== AutonPath.CurrentTarget.RED_POWERSHOT||autonPath.currentTarget== AutonPath.CurrentTarget.BLUE_POWERSHOT)&&(autonPath.powershotTurnMode==AutonPath.PowershotTurnMode.STRAFE)){
                 autonPath.turnTo(0);
             }
-            shootingState = ShootingState.SHOOTER_ON;
+            //shootingState = ShootingState.SHOOTER_ON;
+            shootingState = ShootingState.SHOOT;
         }
         break;
             case GO_SHOOT:
@@ -203,7 +208,7 @@ private int shootCount;
                     waitTimer1.reset();
                     robot.intake.turnOff();
 
-                    if (robot.shooter.isShooterReady(targetVelocity)) {
+                    if (robot.shooter.isShooterReady(targetVelocity)&&!robot.drive.isBusy()) {
 
                         shootingState = ShootingState.SHOOTAGAIN;
                     } //will need to add a timer later to move on in case we never get up to speed
@@ -218,8 +223,9 @@ private int shootCount;
                // System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
                }
                  */
-                if (!robot.drive.isBusy()&& waitTimer1.milliseconds()>500) {//500//making sure our turn is done  && waitTimer1.time()>1500
-                   /* if (isRed==1) {
+               // if (!robot.drive.isBusy()&& waitTimer1.milliseconds()>500) {//500//making sure our turn is done  && waitTimer1.time()>1500
+                if (!robot.drive.isBusy()){
+                /* if (isRed==1) {
                         done=robot.drive.getPoseEstimate().getHeading() <= Math.toRadians(PowerTarget);
                     } else {
                         done=robot.drive.getPoseEstimate().getHeading()>= Math.toRadians(PowerTarget);
@@ -249,7 +255,8 @@ private int shootCount;
                     }
                     else
                     {
-                        if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 500) {
+                        //if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 500) {
+                        if (waitTimer1.time() >= 150) {
                             robot.shooter.shooterOff();
                             pusherOut();
                             isBusy=false;
@@ -261,18 +268,20 @@ private int shootCount;
 
             case RELOADAGAIN:
                 // System.out.println("SHOOTER_turnInState");
-                if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 500 ) {
+                //if (!robot.shooter.isShooterReady(targetVelocity-200) || waitTimer1.time() >= 500 ) {
+                if ( waitTimer1.time() >= 150 ) {
                     if (debug) {
                         System.out.println("SHOOTER_ringShot");
                     }
                     robot.shooter.pusherOut();
-                    shootingState = ShootingState.SHOOT_SECOND_BATCH;
+                   // shootingState = ShootingState.SHOOT_SECOND_BATCH;
+                    shootingState = ShootingState.SHOOTAGAIN;
                 }
                 break;
 
 
         }
-        robot.shooter.update(robot.drive.getPoseEstimate());
+
     }
 
 
