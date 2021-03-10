@@ -40,8 +40,8 @@ public class Shooter {
     public double SHOOTER_OFFSET=7;
     private final int SHOOTER_VELOCITY = 2000;//2000;
     private final int MAX_VELOCITY = 2160;
-    private final double PUSHER_START=.20;//was .16; testing faster time
-    private final double PUSHER_STOP=.41;
+    private final double PUSHER_START=.18;// was.20 on old servo;//was .16; testing faster time
+    private final double PUSHER_STOP=.34;//was .41 on old servo;
     private final double RAMP_DISTANCE = 6;
     private final double CRANK_RADIUS=1.111;
     private final double ROD_LENGTH=3.75;

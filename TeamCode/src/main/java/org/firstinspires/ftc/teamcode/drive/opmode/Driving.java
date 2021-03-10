@@ -42,7 +42,7 @@ public class Driving extends LinearOpMode {
     public static double DRAWING_TARGET_RADIUS = 2;
     private ElapsedTime buttonWait;
     private ElapsedTime wobbleWait;
-    private boolean debug = false;
+    private boolean debug = true;
     private boolean dashboard =true;
     int oneShoot = 0;
     private int wobblePos;
@@ -109,6 +109,7 @@ public class Driving extends LinearOpMode {
     enum Shooter_State {
         SHOOTER_ON,
         RAMP_UP,
+        PUSH_OUT,
         SHOOT,
         PUSHER_OUT,
         SHOOTER_OFF,
@@ -487,33 +488,50 @@ public class Driving extends LinearOpMode {
                     if (!robot.shooter.isShooterOn) {
                         targetVelocity = robot.shooter.shooterOn();
                     }
-                    shooterMode = Shooter_State.RAMP_UP;
+                    robot.shooter.pusherOut();
+                    waitTimer.reset();
+                    if (robot.shooter.isShooterReady(targetVelocity)) {
+
+                        shooterMode = Shooter_State.RAMP_UP;
+                    }
+
+                    break;
+
+                case PUSH_OUT:
+                    if (waitTimer.milliseconds()>150){
+                        if (debug)
+                            System.out.println("SHOOT_Check Shoot " + targetVelocity + " " + robot.shooter.shooter.getVelocity());
+                        robot.shooter.pusherOut();
+                        waitTimer.reset();
+                        shooterMode = Shooter_State.RAMP_UP;
+                    }
                     break;
 
                 case RAMP_UP:
                     if (debug)
                         System.out.println("SHOOT_Ramp In " + robot.shooter.shooter.getVelocity());
-                    if (!robot.shooter.isShooterReady(targetVelocity - 200)||waitTimer.milliseconds()>500) { //was 500 test faster
+                    //if (!robot.shooter.isShooterReady(targetVelocity - 200)||waitTimer.milliseconds()>500) { //was 500 test faster
+                      /*if (waitTimer.milliseconds()>250){
                         if (debug)
                             System.out.println("SHOOT_Check Shoot " + targetVelocity + " " + robot.shooter.shooter.getVelocity());
                         robot.shooter.pusherOut();
                         waitTimer.reset();
-                    }
+                    }*/
                     if  (!robot.drive.isBusy()) {
                         if (debug) System.out.println("SHOOT_Shoot Count " + shootCount);
                         if (debug) System.out.println("SHOOT_Shoot Number " + shootNumber);
-                        if (shootCount <= shootNumber) {
+                        if (shootCount < shootNumber) {
 
-                            if (robot.shooter.isShooterReady(targetVelocity)) {
+                           // if (robot.shooter.isShooterReady(targetVelocity)) {
                                 if (debug)
                                     System.out.println("SHOOT_Shooter Ready " + robot.shooter.shooter.getVelocity());
                                 if (debug)
                                     System.out.println("SHOOT_Shooter Ready " + robot.shooter.isShooterReady(targetVelocity));
-                                if (!robot.shooter.shooting && waitTimer.milliseconds() > 400) { //was 400 testing faster
+                                if (!robot.shooter.shooting && waitTimer.milliseconds() > 150) { //was 400 testing faster
                                     shootCount += 1;
                                     shooterMode = Shooter_State.SHOOT;
                                     if (debug) System.out.println("SHOOT_Shooting");
-                                }
+                                //}
                             }
                         } else {
 
@@ -529,7 +547,7 @@ public class Driving extends LinearOpMode {
                 case SHOOT:
                     robot.shooter.pusherIn();
                     waitTimer.reset();
-                    shooterMode = Shooter_State.RAMP_UP;
+                    shooterMode = Shooter_State.PUSH_OUT;
                     if (debug) System.out.println("SHOOT_Done");
                     break;
 
