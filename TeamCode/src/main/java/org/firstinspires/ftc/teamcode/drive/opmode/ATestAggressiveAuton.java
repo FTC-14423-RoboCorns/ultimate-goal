@@ -28,7 +28,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 @Config
 @Autonomous(group = "drive")
 public class ATestAggressiveAuton extends OpMode {
-    private boolean debug=false;
+    private boolean debug=true;
     public static double DISTANCE = 60; // in
     double PowerTarget;
     int isRed; // BLUE = -1; RED = 1
@@ -78,6 +78,7 @@ public class ATestAggressiveAuton extends OpMode {
         GO_SHOOT,
         GRAB_WOBBLE_2,
         RELOAD_WAIT,
+        WAIT_MORE,
         CHECK_SHOOTER,
         SHOOTAGAIN,
         RELOADAGAIN,
@@ -113,7 +114,8 @@ public class ATestAggressiveAuton extends OpMode {
         isRed=autonPath.isRed;
         PoseStorage.isRed=isRed;
 
-        autonPath.powershotTurnMode= AutonPath.PowershotTurnMode.TURN;
+        //autonPath.powershotTurnMode= AutonPath.PowershotTurnMode.TURN;
+        autonPath.powershotTurnMode= AutonPath.PowershotTurnMode.STRAFE;
 
         //Pose2d startOutsidePose = new Pose2d(X, Y * isRed, 0);
         setPaths();
@@ -157,6 +159,7 @@ public class ATestAggressiveAuton extends OpMode {
         for (LynxModule module : robot.allHubs) {
             module.clearBulkCache();
         }
+        System.out.println("Loop: " + currentState );
         robot.drive.update();
         switch (currentState) {
             //TODO: CHANGE ORDER FOR OUTSIDE RED
@@ -305,16 +308,24 @@ public class ATestAggressiveAuton extends OpMode {
                     }
                     if (waitTimer1.milliseconds() > 7500) {
                         robot.intake.turnOff();
-                        autonShooting.shootingState = AutonShooting.ShootingState.GO_SHOOT;
-                        currentState = State.GRAB_WAIT;
+                        if (!robot.drive.isBusy()) {
+                            autonPath.turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal));
+                            autonShooting.shootingState = AutonShooting.ShootingState.GO_SHOOT;
+                            currentState = State.GRAB_WAIT;
+                        }
                     }
                 } else {
                     robot.intake.turnOff();
-                    autonShooting.shootingState = AutonShooting.ShootingState.GO_SHOOT;
-                    currentState = State.GRAB_WAIT;
+                    if (!robot.drive.isBusy()) {
+                        autonPath.turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal));
+                        autonShooting.shootingState = AutonShooting.ShootingState.GO_SHOOT;
+                        currentState = State.GRAB_WAIT;
+                    }
                 }
 
                 break;
+
+
 
             case GRAB_WAIT:
                 if (waitTimer1.time()>250 && !robot.drive.isBusy()&&!autonShooting.isBusy()) {
@@ -376,8 +387,8 @@ public class ATestAggressiveAuton extends OpMode {
                 }*/
                 break;
         }
-
         autonWobble.handleWobble();
+
         autonShooting.handleShooting();
 
         /*
@@ -393,12 +404,12 @@ public class ATestAggressiveAuton extends OpMode {
 
 
             PoseStorage.currentPose = robot.drive.getPoseEstimate();
+
             /*
             telemetry.addData("Stack Height", ringPosition);
             telemetry.addData("key", robot.pixy.sensorHeight);
-            telemetry.addData("key", robot.pixy.oneRing);*/
-            telemetry.update();
-
+            telemetry.addData("key", robot.pixy.oneRing);
+            telemetry.update();*/
     }
 
 
@@ -410,8 +421,9 @@ public class ATestAggressiveAuton extends OpMode {
 
              //A
                 //TODO: Verify Wobble Goal Position and Ring Height Map
-                autonPath.trajectory2Array[0] = robot.drive.trajectoryBuilder(getCurrentP(autonPath.firstShotArray[0],autonPath.firstAngleArray[0],autonPath.currentTargetArray[0]))
-                        .lineToLinearHeading(new Pose2d(12, isRed * -45, Math.toRadians(100)))
+                 autonPath.trajectory2Array[0] = robot.drive.trajectoryBuilder(autonPath.strafe2Array[0].end())
+             //   autonPath.trajectory2Array[0] = robot.drive.trajectoryBuilder(getCurrentP(autonPath.firstShotArray[0],autonPath.firstAngleArray[0],autonPath.currentTargetArray[0]))
+                        .lineToLinearHeading(new Pose2d(12, isRed * -43, Math.toRadians(100)))
                         .addTemporalMarker(1, () -> {
                             autonWobble.setWobblePos(650);
                         })
@@ -451,7 +463,9 @@ public class ATestAggressiveAuton extends OpMode {
                         .build();
             //B
                 //TODO: Verify Wobble Goal Position and Ring Height Map
-                autonPath.trajectory2Array[1] = robot.drive.trajectoryBuilder(getCurrentP(autonPath.firstShotArray[1],autonPath.firstAngleArray[1],autonPath.currentTargetArray[1]))
+                //TODO: Fix path choice for turn
+                autonPath.trajectory2Array[1] = robot.drive.trajectoryBuilder(autonPath.strafe2Array[1].end())
+               // autonPath.trajectory2Array[1] = robot.drive.trajectoryBuilder(getCurrentP(autonPath.firstShotArray[1],autonPath.firstAngleArray[1],autonPath.currentTargetArray[1]))
                     /*.splineTo(new Vector2d(-8.0,-50.0),Math.toRadians(0.0))
                         .addDisplacementMarker(() -> {
                             autonWobble.setWobblePos(450);
@@ -521,7 +535,7 @@ public class ATestAggressiveAuton extends OpMode {
                         new MecanumVelocityConstraint(17, TRACK_WIDTH)
                 ));
                 ProfileAccelerationConstraint accelConstraint = new ProfileAccelerationConstraint(MAX_ACCEL);
-                Vector2d ringVec =new Vector2d (-15,-40);//(-12,-42)
+                Vector2d ringVec =new Vector2d (-19,-39);//(-12,-42) (-15,-40)
                 //Vector2d nowVec=new Vector2d(CurrentP.getX(),CurrentP.getY());
         Pose2d cur=getCurrentP(autonPath.firstShotArray[2],autonPath.firstAngleArray[2],autonPath.currentTargetArray[2]);
         Vector2d nowVec=new Vector2d(cur.getX(),cur.getY());
@@ -610,7 +624,7 @@ public class ATestAggressiveAuton extends OpMode {
                         .addDisplacementMarker(() -> {
                             autonWobble.setWobblePos(900);
                         })
-                        .splineToLinearHeading(new Pose2d(-34, -48 * isRed,Math.toRadians(0)),Math.toRadians(180))
+                        .splineToLinearHeading(new Pose2d(-34, -45 * isRed,Math.toRadians(0)),Math.toRadians(180))
                         .build();
                 /*
                 trajectory3 = robot.drive.trajectoryBuilder(trajectory2.end())
@@ -660,11 +674,41 @@ public class ATestAggressiveAuton extends OpMode {
                         .build();
 
            }
+
+    public void setStrafe(){
+        MinVelocityConstraint velConstraint = new MinVelocityConstraint(Arrays.asList(
+                new AngularVelocityConstraint(Math.toRadians(60)),
+                new MecanumVelocityConstraint(10, TRACK_WIDTH)
+        ));
+        ProfileAccelerationConstraint accelConstraint = new ProfileAccelerationConstraint(15);
+        autonPath.strafe1Array[0] = robot.drive.trajectoryBuilder(autonPath.trajectory1Array[0].end())
+                .lineToLinearHeading(new Pose2d(autonPath.firstShotArray[0].getX(), autonPath.firstShotArray[0].getY() + 7.5, 0),velConstraint,accelConstraint)
+                .build();
+        autonPath.strafe2Array[0] = robot.drive.trajectoryBuilder(autonPath.strafe1Array[0].end())
+                //.strafeLeft(8.5)
+                .lineToLinearHeading(new Pose2d(autonPath.firstShotArray[0].getX(),autonPath.firstShotArray[0].getY()+15,0))//was 14 for ringposition==0
+                .build();
+        autonPath.strafe1Array[1] = robot.drive.trajectoryBuilder(autonPath.trajectory1Array[1].end())
+                .lineToLinearHeading(new Pose2d(autonPath.firstShotArray[1].getX(), autonPath.firstShotArray[1].getY() + 7.5, 0),velConstraint,accelConstraint)
+                .build();
+        autonPath.strafe2Array[1] = robot.drive.trajectoryBuilder(autonPath.strafe1Array[1].end())
+                //.strafeLeft(8.5)
+                .lineToLinearHeading(new Pose2d(autonPath.firstShotArray[1].getX(),autonPath.firstShotArray[1].getY()+15,0))//was 14 for ringposition==0
+                .build();
+        autonPath.strafe1Array[2] = robot.drive.trajectoryBuilder(autonPath.trajectory1Array[2].end())
+                .lineToLinearHeading(new Pose2d(autonPath.firstShotArray[2].getX(), autonPath.firstShotArray[2].getY() + 7.5, 0),velConstraint,accelConstraint)
+                .build();
+        autonPath.strafe2Array[2] = robot.drive.trajectoryBuilder(autonPath.strafe1Array[2].end())
+                //.strafeLeft(8.5)
+                .lineToLinearHeading(new Pose2d(autonPath.firstShotArray[2].getX(),autonPath.firstShotArray[2].getY()+15,0))//was 14 for ringposition==0
+                .build();
+
+    }
 public void setPaths()
     {
 
             //0
-            autonPath.firstShotArray[0]=new Vector2d(-10,isRed*-23);
+            autonPath.firstShotArray[0]=new Vector2d(-10,isRed*-22);
             //autonPath.firstShot=
             //shootX=-10;
             //shootY=-22;
@@ -682,7 +726,7 @@ public void setPaths()
              */
        //1
 
-            autonPath.firstShotArray[1]=new Vector2d(-10,isRed*-23);//-45,-22
+            autonPath.firstShotArray[1]=new Vector2d(-10,isRed*-22);//-45,-22//-10,-23
             autonPath.currentTargetArray[1]=AutonPath.CurrentTarget.RED_POWERSHOT;
         autonPath.setCurrentTarget(AutonPath.CurrentTarget.RED_POWERSHOT);
         autonPath.trajectory1Array[1]=autonPath.setFirstTrajectory(autonPath.currentTargetArray[1],autonPath.firstShotArray[1]);
@@ -730,14 +774,17 @@ public void setPaths()
 
             //robot.shooter.liftState= Shooter.LiftState.DYNAMIC;
 
-
+        setStrafe();
         setDriveWobble1();
+
     }
 
     public Pose2d getCurrentP(Vector2d firstVec, double angle,AutonPath.CurrentTarget target){
+        //if (autonPath.powershotTurnMode==AutonPath.PowershotTurnMode.TURN) {
         double endAngle=0;
         switch (target){
             case RED_POWERSHOT:
+
                 endAngle=angle+9;
                 break;
             case RED_GOAL:
@@ -745,6 +792,12 @@ public void setPaths()
                 break;
         }
         return new Pose2d(firstVec,endAngle);
+        /*}
+        else {
+            return autonPath.strafe2Array[autonPath.ringPosition].end();
+        }
+
+         */
     }
 
 }

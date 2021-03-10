@@ -293,7 +293,7 @@ public class Shooter {
                // liftPos = .58;//0.54;
                 if (Math.abs(robotX)<24) liftPos = .56;//.58
                 else
-                liftPos=.70;//.71;
+                liftPos=.67;//.70;//.71;
             }
             break;
         case DYNAMIC:

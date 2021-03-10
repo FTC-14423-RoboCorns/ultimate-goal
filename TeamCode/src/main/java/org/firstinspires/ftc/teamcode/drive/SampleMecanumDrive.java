@@ -63,7 +63,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     //public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(12, 0.002, 0.75);
     //public static PIDCoefficients HEADING_PID = new PIDCoefficients(12, 0.002, 0);
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(12, 0.002, 0.75);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(12, 0.002, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(13, 0.002, 0);
     /*faster try
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(8, 0.001, 2);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(20, 0.004, 0.75);
@@ -91,8 +91,8 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         FIXTURN,
         FOLLOW_TRAJECTORY
     }
-    private boolean debug=false;
-    private boolean usedashboard=true;
+    private boolean debug=true;
+    private boolean usedashboard=false;
     private FtcDashboard dashboard;
     private TelemetryPacket packet;
     private Canvas fieldOverlay;
@@ -127,10 +127,10 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
     public SampleMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
-        if (usedashboard) {
+
             dashboard = FtcDashboard.getInstance();
             dashboard.setTelemetryTransmissionInterval(25);
-        }
+
         gyro = new GyroAnalog(hardwareMap);
 
         clock = NanoClock.system();
@@ -309,7 +309,6 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
     public void update() {
         updatePoseEstimate();
-
         Pose2d currentPose = getPoseEstimate();
         Pose2d lastError = getLastError();
 
@@ -318,6 +317,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         if (POSE_HISTORY_LIMIT > -1 && poseHistory.size() > POSE_HISTORY_LIMIT) {
             poseHistory.removeFirst();
         }
+
         if (usedashboard) {
             packet = new TelemetryPacket();
             fieldOverlay = packet.fieldOverlay();
@@ -332,6 +332,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             packet.put("yError", lastError.getY());
             packet.put("headingError (deg)", Math.toDegrees(lastError.getHeading()));
         }
+
         switch (mode) {
             case IDLE:
                 // do nothing
@@ -459,18 +460,23 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                 break;
             }
         }
+
         if (usedashboard) {
             fieldOverlay.setStroke("#3F51B5");
             DashboardUtil.drawRobot(fieldOverlay, currentPose);
 
             dashboard.sendTelemetryPacket(packet);
         }
+        /*
         if (USE_IMU==1) {
             headingThen = headingNow;
             clockThen = clockNow;
             headingNow = getRawExternalHeading();
             clockNow = clock.seconds();
         }
+
+         */
+
     }
 
     public void waitForIdle() {
@@ -578,7 +584,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         else return 0;
 
     }
-
+/*
     @Override
     public Double getExternalHeadingVelocity() {
         // TODO: This must be changed to match your configuration
@@ -604,4 +610,6 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         return (headingNow-headingThen)/(clockNow-clockThen);
         else return null;
     }
+*/
 }
+

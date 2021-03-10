@@ -44,7 +44,7 @@ public class Driving extends LinearOpMode {
     private double SHOOTER_TURNTO=340;
     private ElapsedTime buttonWait;
     private ElapsedTime wobbleWait;
-    private boolean debug = true;
+    private boolean debug = false;
     private boolean dashboard =true;
     int oneShoot = 0;
     private int wobblePos;

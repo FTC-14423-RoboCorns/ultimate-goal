@@ -13,10 +13,10 @@ public class AutonPath {
     private Robot robot;
 
 
-    private static double INSIDEX=-63;
+    private static double INSIDEX=-63.5;//-63
     private static double INSIDEY=-24;
     public int isRed=1;
-private boolean debug=false;
+private boolean debug=true;
     public enum CurrentTarget {
         RED_GOAL,
         RED_POWERSHOT,
@@ -61,6 +61,7 @@ public CurrentTarget[] currentTargetArray= new CurrentTarget[3];
     public Trajectory[] ring2Array=new Trajectory[3];
     public Trajectory[] ring3Array=new Trajectory[3];
     public Trajectory[] drop1Array=new Trajectory[3];
+
 
     public PowershotTurnMode powershotTurnMode;
     public Vector2d firstShot;
@@ -186,6 +187,7 @@ public CurrentTarget[] currentTargetArray= new CurrentTarget[3];
     public void aimFirst(double angle,CurrentTarget tar) {
         switch (tar) {
             case RED_POWERSHOT:
+                angle=0;
                 turnTo(angle);
                // if (debug) System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
                 if (debug) System.out.println("SHOOTER_firstAngle " + angle);

@@ -71,10 +71,11 @@ public class Wobble
         int newPos;
         if (!override) newPos = Range.clip(pos,START_POSITION,STOP_POSITION);
         else  newPos=pos;
+        if (!isWobbleThere(newPos)){
         wobble.setTargetPosition(newPos);
         wobble.setPower(.5);
         wobble.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-        on=true;
+        on=true;}
     }
 
     //Moves Wobble Arm to Lowered Position (Extended position)
