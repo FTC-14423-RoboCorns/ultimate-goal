@@ -9,6 +9,10 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -23,6 +27,10 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.Shooter;
 import org.firstinspires.ftc.teamcode.drive.PoseStorage;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
+
+import java.util.Arrays;
+
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 
 /**
  * This opmode demonstrates how one would implement "align to point behavior" in teleop. You specify
@@ -77,7 +85,7 @@ public class Driving extends LinearOpMode {
     private boolean psDecreaseButtonDown;
     private boolean headingRightButtonDown;
     private boolean headingLeftButtonDown;
-
+    private  Pose2d strafePose;
     private boolean upOrDown = true;
 
     private int shootNumber = 3;
@@ -125,6 +133,7 @@ public class Driving extends LinearOpMode {
         FIRST_TURN,
         SHOOTER_ON,
         SHOOT,
+        WAIT,
         TURN,
         TURN2,
         IDLE
@@ -159,6 +168,12 @@ public class Driving extends LinearOpMode {
 
     // Declare a target vector you'd like your bot to align with
     // Can be any x/y coordinate of your choosing
+    MinVelocityConstraint velConstraint = new MinVelocityConstraint(Arrays.asList(
+            new AngularVelocityConstraint(Math.toRadians(60)),
+            new MecanumVelocityConstraint(10, TRACK_WIDTH)
+    ));
+    ProfileAccelerationConstraint accelConstraint = new ProfileAccelerationConstraint(15);
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -208,7 +223,6 @@ public class Driving extends LinearOpMode {
         Vector2d targetPosition = new Vector2d(robot.shooter.redGoal.x, ((isRed*robot.shooter.redGoal.y))); //offset to adjust for shooter position on robot
         if (isRed==1)  robot.shooter.currentTarget = robot.shooter.redGoal;
                 else robot.shooter.currentTarget = robot.shooter.blueGoal;
-
 
 
         waitForStart();
@@ -264,6 +278,7 @@ public class Driving extends LinearOpMode {
                             targetVelocity = robot.shooter.shooterOn(1850);
                             if (debug) System.out.println("SHOOTER ON target vel " + targetVelocity);
                         }
+                        strafePose=robot.drive.getPoseEstimate();
                         endGame = PowershotState.TRAJECTORY_1;
                         currentMode = Mode.POWERSHOT;
                     }
@@ -940,8 +955,18 @@ public class Driving extends LinearOpMode {
                     if (debug)
                         System.out.println("SHOOTER_FIRSTTURN_Y " + robot.drive.getPoseEstimate().getY());
                     // turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)-POWEROFFSET);
-                    if (twofer)  robot.drive.turnAsync(Math.toRadians(4.5));
-                        else if (!manualPowershot) turnTo(0);
+                    if (twofer) {
+
+                        strafe1 = robot.drive.trajectoryBuilder(strafePose)
+                                .lineToLinearHeading(new Pose2d(strafePose.getX(), strafePose.getY() + 7.5, 0),velConstraint,accelConstraint)
+                                .build();
+                        robot.drive.followTrajectoryAsync(strafe1);
+                     //   robot.drive.turnAsync(Math.toRadians(4.5));
+                    }
+                        else {
+                        //if (!manualPowershot) //turn all the time, not just auto
+                            turnTo(0);
+                    }
                     endGame = PowershotState.FIRST_TURN;
                     if (debug)
                         System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot1)));
@@ -966,12 +991,19 @@ public class Driving extends LinearOpMode {
                 } //will need to add a timer later to move on in case we never get up to speed
                 break;
 
+            case WAIT:
+                if (waitTimer1.milliseconds() >= 150 ) {
+                    endGame = PowershotState.SHOOT;
+                }
+                break;
+
             case SHOOT:
                 boolean done;
 
                 // if (debug) System.out.println("SHOOTER_shootInState");
                 // if (debug) System.out.println("SHOOTER_shootInState still turning " + Math.toDegrees(robot.drive.getPoseEstimate().getHeading()));
-                if (!robot.drive.isBusy() && waitTimer1.milliseconds() > 400) {//making sure our turn is done  && waitTimer1.time()>1500
+               // if (!robot.drive.isBusy() && waitTimer1.milliseconds() > 400) {//making sure our turn is done  && waitTimer1.time()>1500
+                if (!robot.drive.isBusy()){
                    /* if (isRed==1) {
                         done=robot.drive.getPoseEstimate().getHeading() <= Math.toRadians(PowerTarget);
                     } else {
@@ -996,7 +1028,8 @@ public class Driving extends LinearOpMode {
                         //System.out.println("SHOOTER_shootToTurn");
                         endGame = PowershotState.TURN;
                     } else {
-                        if (!robot.shooter.isShooterReady(targetVelocity - 200) || waitTimer1.time() >= 300) {//was 500 should be shorter since only waiting for reshoot
+                       // if (!robot.shooter.isShooterReady(targetVelocity - 200) || waitTimer1.time() >= 300) {//was 500 should be shorter since only waiting for reshoot
+                        if (waitTimer1.time() >= 150) {
                             currentMode = Mode.NORMAL_CONTROL;
 
                             if (manualPowershot)
@@ -1011,13 +1044,21 @@ public class Driving extends LinearOpMode {
 
             case TURN:
                 // System.out.println("SHOOTER_turnInState");
-                if (!robot.shooter.isShooterReady(targetVelocity - 200) || waitTimer1.time() >= 400) {
+               // if (!robot.shooter.isShooterReady(targetVelocity - 200) || waitTimer1.time() >= 400) {
+                if (waitTimer1.time() >= 150) {
                     if (twofer) {
-                            endGame=PowershotState.TRAJECTORY_1;
+
                             robot.shooter.pusherOut();
+                        strafe2 = robot.drive.trajectoryBuilder(strafe1.end())
+                                .lineToLinearHeading(new Pose2d(strafePose.getX(), strafePose.getY() + 15, 0),velConstraint,accelConstraint)
+                                .build();
+                        robot.drive.followTrajectoryAsync(strafe2);
+                            waitTimer1.reset();
+                        endGame=PowershotState.WAIT;
                     } else {
                         if (debug) System.out.println("SHOOTER_ringShot");
                         robot.shooter.pusherOut();
+                        waitTimer1.reset();
                         powerTurn();
                         endGame = PowershotState.TURN2;
                     }
@@ -1027,7 +1068,7 @@ public class Driving extends LinearOpMode {
             case TURN2:
                 if (!robot.drive.isBusy()) {
                     turnTo(0);
-                    endGame = PowershotState.SHOOTER_ON;
+                    endGame = PowershotState.WAIT;
                 }
                 break;
 

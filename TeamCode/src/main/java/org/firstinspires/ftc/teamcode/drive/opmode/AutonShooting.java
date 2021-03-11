@@ -337,7 +337,7 @@ private int shootCount;
                             .build();
 
                      */
-                    robot.drive.followTrajectoryAsync(autonPath.strafe1Array[autonPath.ringPosition]);
+
                     break;
                     case TURN:
                     autonPath.turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot2)-POWEROFFSET2);
