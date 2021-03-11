@@ -278,6 +278,8 @@ public class Driving extends LinearOpMode {
                             targetVelocity = robot.shooter.shooterOn(1850);
                             if (debug) System.out.println("SHOOTER ON target vel " + targetVelocity);
                         }
+
+                         //robot.drive.getLocalizer().setPoseEstimate(new Pose2d(robot.drive.getPoseEstimate().getX(),robot.drive.getPoseEstimate().getY(),0));
                         strafePose=robot.drive.getPoseEstimate();
                         endGame = PowershotState.TRAJECTORY_1;
                         currentMode = Mode.POWERSHOT;
