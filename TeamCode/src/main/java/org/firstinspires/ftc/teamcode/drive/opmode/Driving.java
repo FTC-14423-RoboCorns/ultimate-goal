@@ -30,6 +30,7 @@ import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
 import java.util.Arrays;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 
 /**
@@ -49,7 +50,7 @@ public class Driving extends LinearOpMode {
 
     private Robot robot;
     public static double DRAWING_TARGET_RADIUS = 2;
-    private double SHOOTER_TURNTO=340;
+    private double SHOOTER_TURNTO=Math.toRadians(345);
     private ElapsedTime buttonWait;
     private ElapsedTime wobbleWait;
     private boolean debug = false;
@@ -169,9 +170,9 @@ public class Driving extends LinearOpMode {
     // Declare a target vector you'd like your bot to align with
     // Can be any x/y coordinate of your choosing
     MinVelocityConstraint velConstraint = new MinVelocityConstraint(Arrays.asList(
-            new AngularVelocityConstraint(Math.toRadians(60)),
-            new MecanumVelocityConstraint(10, TRACK_WIDTH)
-    ));
+            new AngularVelocityConstraint(MAX_ANG_VEL),
+            new MecanumVelocityConstraint(15, TRACK_WIDTH)
+    ));//Math.toRadians(90)
     ProfileAccelerationConstraint accelConstraint = new ProfileAccelerationConstraint(15);
 
 
@@ -279,7 +280,7 @@ public class Driving extends LinearOpMode {
                             if (debug) System.out.println("SHOOTER ON target vel " + targetVelocity);
                         }
 
-                         //robot.drive.getLocalizer().setPoseEstimate(new Pose2d(robot.drive.getPoseEstimate().getX(),robot.drive.getPoseEstimate().getY(),0));
+                         robot.drive.getLocalizer().setPoseEstimate(new Pose2d(robot.drive.getPoseEstimate().getX(),robot.drive.getPoseEstimate().getY(),0));
                         strafePose=robot.drive.getPoseEstimate();
                         endGame = PowershotState.TRAJECTORY_1;
                         currentMode = Mode.POWERSHOT;
@@ -346,7 +347,7 @@ public class Driving extends LinearOpMode {
 
                     // Standard teleop control
                     // Convert gamepad input into desired pose velocity
-                    mult= Range.clip(.8+(.4-gamepad1.right_trigger),1,.4);//two numbers should add to 1, subtraction is the min drive multiplier
+                    mult= Range.clip(.8+(.4-gamepad1.right_trigger),.4,1);//two numbers should add to 1, subtraction is the min drive multiplier
 
                     driveDirection = new Pose2d(
                             -gamepad1.left_stick_y*mult,
@@ -779,7 +780,7 @@ public class Driving extends LinearOpMode {
 
         if (gamepad1.x && !endGameButtonDown){
             endGameButtonDown = true;
-            if (gamepad2.left_trigger>.5){
+            if (gamepad1.left_trigger>.5){
                 wobblePos=20;
                 robot.wobble.wobbleMovetoPosition(wobblePos);
                 wobbleMode=Wobble_State.IDLE;
@@ -942,7 +943,7 @@ public class Driving extends LinearOpMode {
             case START:
                 robot.drive.followTrajectoryAsync(powerTraj);
                 if (!robot.shooter.isShooterOn) {
-                    targetVelocity = robot.shooter.shooterOn();
+                    targetVelocity = robot.shooter.shooterOn(1850);
                     if (debug) System.out.println("SHOOTER ON target vel " + targetVelocity);
                 }
                 endGame = PowershotState.TRAJECTORY_1;
@@ -966,7 +967,7 @@ public class Driving extends LinearOpMode {
                      //   robot.drive.turnAsync(Math.toRadians(4.5));
                     }
                         else {
-                        //if (!manualPowershot) //turn all the time, not just auto
+                        if (!manualPowershot) //turn all the time, not just auto
                             turnTo(0);
                     }
                     endGame = PowershotState.FIRST_TURN;
@@ -1052,11 +1053,11 @@ public class Driving extends LinearOpMode {
 
                             robot.shooter.pusherOut();
                         strafe2 = robot.drive.trajectoryBuilder(strafe1.end())
-                                .lineToLinearHeading(new Pose2d(strafePose.getX(), strafePose.getY() + 15, 0),velConstraint,accelConstraint)
+                                .lineToLinearHeading(new Pose2d(strafePose.getX(), strafePose.getY() + 14.5, 0),velConstraint,accelConstraint)
                                 .build();
                         robot.drive.followTrajectoryAsync(strafe2);
                             waitTimer1.reset();
-                        endGame=PowershotState.WAIT;
+                        endGame=PowershotState.TURN2;
                     } else {
                         if (debug) System.out.println("SHOOTER_ringShot");
                         robot.shooter.pusherOut();

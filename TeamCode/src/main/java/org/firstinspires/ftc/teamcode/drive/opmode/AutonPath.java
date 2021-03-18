@@ -16,7 +16,7 @@ public class AutonPath {
     private static double INSIDEX=-63.5;//-63
     private static double INSIDEY=-24;
     public int isRed=1;
-private boolean debug=true;
+private boolean debug=false;
     public enum CurrentTarget {
         RED_GOAL,
         RED_POWERSHOT,

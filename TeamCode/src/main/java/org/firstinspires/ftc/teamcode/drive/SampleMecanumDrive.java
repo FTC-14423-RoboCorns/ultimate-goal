@@ -91,7 +91,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         FIXTURN,
         FOLLOW_TRAJECTORY
     }
-    private boolean debug=true;
+    private boolean debug=false;
     private boolean usedashboard=false;
     private FtcDashboard dashboard;
     private TelemetryPacket packet;
