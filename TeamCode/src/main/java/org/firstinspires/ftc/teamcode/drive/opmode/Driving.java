@@ -98,6 +98,7 @@ public class Driving extends LinearOpMode {
         ALIGN_TO_POINT,
         RESET_ODOMETRY,
         POWERSHOT,
+        STRAFE,
         SHOOT
     }
 
@@ -151,7 +152,7 @@ public class Driving extends LinearOpMode {
     private int shootCount = 0;
    private  ElapsedTime waitTimer1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     int isRed = 1;
-    Trajectory powerTraj,shootTraj,strafe1,strafe2;
+    Trajectory powerTraj,shootTraj,strafe1,strafe2,strafe;
 /*
     private static final double POWEROFFSET = Math.toRadians(6.5);
     private static final double POWEROFFSET2 = Math.toRadians(6);
@@ -171,10 +172,10 @@ public class Driving extends LinearOpMode {
     // Can be any x/y coordinate of your choosing
     MinVelocityConstraint velConstraint = new MinVelocityConstraint(Arrays.asList(
             new AngularVelocityConstraint(MAX_ANG_VEL),
-            new MecanumVelocityConstraint(15, TRACK_WIDTH)
+            new MecanumVelocityConstraint(20, TRACK_WIDTH)
     ));//Math.toRadians(90)
     ProfileAccelerationConstraint accelConstraint = new ProfileAccelerationConstraint(15);
-
+    double head=Math.toRadians(10);
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -287,8 +288,10 @@ public class Driving extends LinearOpMode {
                     }
 
                     if (gamepad1.a&&!turnButtonDown) {
-                         if (gamepad1.right_trigger > .5) {
-                            turnButtonDown = true;
+                        turnButtonDown = true;
+
+                        if (gamepad1.right_trigger > .5) {
+                            //turnButtonDown = true;
                             manualPowershot = false;
                             twofer = true;
                             shootCount = 0;
@@ -299,9 +302,23 @@ public class Driving extends LinearOpMode {
                                 if (debug)
                                     System.out.println("SHOOTER ON target vel " + targetVelocity);
                             }
+
+
                             endGame = PowershotState.TRAJECTORY_1;
                             currentMode = Mode.POWERSHOT;
-                        }
+                        } else {
+                            if (!robot.shooter.isShooterOn) {
+                                targetVelocity = robot.shooter.shooterOn(1850);
+                            }
+                            strafe = robot.drive.trajectoryBuilder(robot.drive.getPoseEstimate())
+                                  //.strafeLeft(7.5,velConstraint,accelConstraint)
+                                    .lineToLinearHeading(new Pose2d(strafePose.getX(), strafePose.getY() + 7.5, 0),velConstraint,accelConstraint)
+                                  .build();
+
+                            robot.drive.followTrajectoryAsync(strafe);
+                            currentMode = Mode.POWERSHOT;
+                         }
+
                     }
 
 
@@ -961,7 +978,7 @@ public class Driving extends LinearOpMode {
                     if (twofer) {
 
                         strafe1 = robot.drive.trajectoryBuilder(strafePose)
-                                .lineToLinearHeading(new Pose2d(strafePose.getX(), strafePose.getY() + 7.5, 0),velConstraint,accelConstraint)
+                                .lineToLinearHeading(new Pose2d(strafePose.getX(), strafePose.getY() + 7.5, head),velConstraint,accelConstraint)
                                 .build();
                         robot.drive.followTrajectoryAsync(strafe1);
                      //   robot.drive.turnAsync(Math.toRadians(4.5));
@@ -1053,7 +1070,7 @@ public class Driving extends LinearOpMode {
 
                             robot.shooter.pusherOut();
                         strafe2 = robot.drive.trajectoryBuilder(strafe1.end())
-                                .lineToLinearHeading(new Pose2d(strafePose.getX(), strafePose.getY() + 14.5, 0),velConstraint,accelConstraint)
+                                .lineToLinearHeading(new Pose2d(strafePose.getX(), strafePose.getY() + 14.5, head),velConstraint,accelConstraint)
                                 .build();
                         robot.drive.followTrajectoryAsync(strafe2);
                             waitTimer1.reset();
