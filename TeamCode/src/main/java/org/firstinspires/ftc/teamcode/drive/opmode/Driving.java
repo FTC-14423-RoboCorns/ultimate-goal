@@ -316,7 +316,7 @@ public class Driving extends LinearOpMode {
                                   .build();
 
                             robot.drive.followTrajectoryAsync(strafe);
-                            currentMode = Mode.POWERSHOT;
+                            currentMode = Mode.ALIGN_TO_POINT;
                          }
 
                     }
