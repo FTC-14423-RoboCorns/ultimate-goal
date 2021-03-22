@@ -42,11 +42,12 @@ public class Robot
         wobble = new Wobble(hardwareMap);
         intake = new IntakeAndRamp(hardwareMap);
         shooter = new Shooter(hardwareMap,telemetry);
+
         drive = new SampleMecanumDrive(hardwareMap);
-        if (imu)
-        drive.USE_IMU=1;
+        /*if (imu)
+            drive.USE_IMU=1;
         else
-            drive.USE_IMU=0;
+            drive.USE_IMU=0;*/
         pixy = new PixyAnalog(hardwareMap);
 
     }
