@@ -44,6 +44,7 @@ public class Robot
         shooter = new Shooter(hardwareMap,telemetry);
 
         drive = new SampleMecanumDrive(hardwareMap);
+        drive.initLocalizer(hardwareMap,imu);
         /*if (imu)
             drive.USE_IMU=1;
         else

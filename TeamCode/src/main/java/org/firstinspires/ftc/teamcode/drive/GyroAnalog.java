@@ -3,16 +3,17 @@ package org.firstinspires.ftc.teamcode.drive;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+
 public class GyroAnalog
 {
-   private double rawAngle;
-   private double finalAngle;
-   private double breakAngle;
-   private double lastAngle;
-   private double tempAngle;
+    private double rawAngle;
+    private double finalAngle;
+    private double breakAngle;
+    private double lastAngle;
+    private double tempAngle;
     public AnalogInput gyro;
-    private double BREAK=3.299;//Arbitrarily high, need to find
-   // private PixyDigital pixydig;
+    private double BREAK=3.216;//Arbitrarily high, need to find
+    // private PixyDigital pixydig;
     public GyroAnalog(HardwareMap hardwareMap) {
         init(hardwareMap);
     }
@@ -32,6 +33,7 @@ public class GyroAnalog
             finalAngle= ((1-(BREAK/3.3))*2*Math.PI*(3.227-rawAngle))/(3.227-BREAK);
             //finalAngle=breakAngle+lastAngle;
         }
+        //finalAngle=((2*Math.PI*(3.3-(rawAngle)))/3.3);//old range .003,3.225
         return finalAngle;
 
         /*let's say BREAK is 90 degrees (down to 0). BREAK=2.475
@@ -44,3 +46,4 @@ public class GyroAnalog
     }
 
 }
+

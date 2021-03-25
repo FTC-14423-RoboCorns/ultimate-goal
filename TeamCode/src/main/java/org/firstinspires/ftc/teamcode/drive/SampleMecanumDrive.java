@@ -92,7 +92,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         FOLLOW_TRAJECTORY
     }
     private boolean debug=false;
-    private boolean usedashboard=false;
+    private boolean usedashboard=true;
     private FtcDashboard dashboard;
     private TelemetryPacket packet;
     private Canvas fieldOverlay;
@@ -125,9 +125,10 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
     private Pose2d lastPoseOnTurn;
 
+
     public SampleMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
-
+        //if (useImu) USE_IMU=1;
             dashboard = FtcDashboard.getInstance();
             dashboard.setTelemetryTransmissionInterval(25);
 
@@ -213,14 +214,28 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         //leftFront.setDirection(DcMotor.Direction.REVERSE);
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
+        /*
+        if (USE_IMU==1) {
+            setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap,this));
+        } else {
+            setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
+
+        }*/
+    }
+
+
+    public void initLocalizer (HardwareMap hardwareMap,boolean useIMU){
+        if (useIMU) USE_IMU=1;
+        else USE_IMU=0;
         if (USE_IMU==1) {
             setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap,this));
         } else {
             setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
         }
-    }
 
+
+    }
 
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
@@ -579,8 +594,11 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             return 0;
         }
 */
-        if (USE_IMU==1)
+        if (USE_IMU==1) {
+           // System.out.println("gyro "+Math.toDegrees(gyro.readGyro()));
             return gyro.readGyro();
+
+        }
         else return 0;
 
     }
