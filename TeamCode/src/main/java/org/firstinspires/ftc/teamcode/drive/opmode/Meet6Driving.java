@@ -4,34 +4,36 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.drive.PoseStorage;
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-//import org.firstinspires.ftc.teamcode.drive.advanced.TeleOpAlignWithPoint;
 import org.firstinspires.ftc.teamcode.drive.Shooter;
-import org.firstinspires.ftc.teamcode.drive.PoseStorage;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
 import java.util.Arrays;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
+
+//import org.firstinspires.ftc.teamcode.drive.advanced.TeleOpAlignWithPoint;
 
 /**
  * This opmode demonstrates how one would implement "align to point behavior" in teleop. You specify
@@ -45,8 +47,9 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
  * want that to interfere with our graph so we just directly update localizer instead
  */
 @Config
+@Disabled
 @TeleOp(group = "advanced")
-public class Driving extends LinearOpMode {
+public class Meet6Driving extends LinearOpMode {
 
     private Robot robot;
     public static double DRAWING_TARGET_RADIUS = 2;
@@ -514,7 +517,7 @@ public class Driving extends LinearOpMode {
                 stopShootButtonDown=true;
                 shooterMode = Shooter_State.SHOOTER_RESET;
 
-                if (currentMode==Mode.POWERSHOT) {
+                if (currentMode== Mode.POWERSHOT) {
                     robot.drive.cancelFollowing();
                     robot.shooter.shooterOff();
                     robot.shooter.pusherOut();
@@ -613,7 +616,7 @@ public class Driving extends LinearOpMode {
                     robot.shooter.shooterOff();
                     robot.shooter.pusherOut();
                     shootCount = 0;
-                    shooterMode=Shooter_State.SHOOTER_OFF;
+                    shooterMode= Shooter_State.SHOOTER_OFF;
                     break;
             }
             if (gamepad2.dpad_right && !ringIncreaseButtonDown) {
@@ -794,22 +797,22 @@ public class Driving extends LinearOpMode {
             switch (wobbleMode){
                 case IDLE:
                     //wobblePos=875;
-                    wobbleMode=Wobble_State.WOBBLE_DOWN;
+                    wobbleMode= Wobble_State.WOBBLE_DOWN;
                 break;
                // case WOBBLE_DOWN:
                  //   wobbleMode=Wobble_State.WOBBLE_DOWN;
                    // break;
                 case WOBBLE_DOWNWAIT:
                     wobbleWait.reset();
-                    wobbleMode=Wobble_State.WOBBLE_UP;
+                    wobbleMode= Wobble_State.WOBBLE_UP;
                     break;
                 case WOBBLE_CLOSE:
                     robot.wobble.closeClaw();
                     wobbleWait.reset();
-                    wobbleMode=Wobble_State.WOBBLE_UP;
+                    wobbleMode= Wobble_State.WOBBLE_UP;
                     break;
                 case WOBBLE_UPWAIT:
-                    wobbleMode=Wobble_State.WOBBLE_DOWN;
+                    wobbleMode= Wobble_State.WOBBLE_DOWN;
                     break;
             }
         }
@@ -819,13 +822,13 @@ public class Driving extends LinearOpMode {
             if (gamepad1.left_trigger>.5){
                 wobblePos=20;
                 robot.wobble.wobbleMovetoPosition(wobblePos);
-                wobbleMode=Wobble_State.IDLE;
+                wobbleMode= Wobble_State.IDLE;
             } else {
 
 
             endGameButtonDown = true;
             robot.wobble.openClaw();
-            wobbleMode=Wobble_State.WOBBLE_UP;
+            wobbleMode= Wobble_State.WOBBLE_UP;
             wobbleWait.reset();
             }
         }
@@ -846,7 +849,7 @@ public class Driving extends LinearOpMode {
 
                   //  robot.wobble.wobbleSetRaise(wobblePos);//should no longer be necessary
                     //robot.wobble.fastMovetoPos(900);
-                    wobbleMode=Wobble_State.WOBBLE_DOWNWAIT;
+                    wobbleMode= Wobble_State.WOBBLE_DOWNWAIT;
          //       }
 
                 break;
@@ -877,7 +880,7 @@ public class Driving extends LinearOpMode {
                 break;
             case WOBBLE_OPEN:
 
-                wobbleMode=Wobble_State.WOBBLE_CLOSE;
+                wobbleMode= Wobble_State.WOBBLE_CLOSE;
                 break;
             case WOBBLE_CLOSE:
                /* if (gamepad1.b && !wobbleButtonDown){
@@ -933,7 +936,7 @@ public class Driving extends LinearOpMode {
                 }*/
                 break;
         }
-        if (!(wobbleMode==Wobble_State.IDLE)){
+        if (!(wobbleMode== Wobble_State.IDLE)){
             robot.wobble.wobbleMovetoPosition(wobblePos);
         }
     }
@@ -1096,7 +1099,7 @@ public class Driving extends LinearOpMode {
                                 .build();
                         robot.drive.followTrajectoryAsync(strafe2);
                             waitTimer1.reset();
-                        endGame=PowershotState.TURN2;
+                        endGame= PowershotState.TURN2;
                     } else {
                         if (debug) System.out.println("SHOOTER_ringShot");
                         robot.shooter.pusherOut();

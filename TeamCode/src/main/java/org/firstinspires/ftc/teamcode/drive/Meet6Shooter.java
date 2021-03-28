@@ -1,22 +1,14 @@
 package org.firstinspires.ftc.teamcode.drive;
 
-import android.app.ApplicationErrorReport;
-
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.util.Angle;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import static android.util.Log.println;
-import static java.lang.Math.cos;
-
-public class Shooter {
+public class Meet6Shooter {
     public DcMotorEx shooter;
     public Servo pusher;
     public Servo lift;
@@ -80,13 +72,13 @@ public class Shooter {
 
     public target currentTarget;
 
-    public Shooter(HardwareMap hardwareMap, Telemetry telem) {
+    public Meet6Shooter(HardwareMap hardwareMap, Telemetry telem) {
         init(hardwareMap);
         redGoal= new target(goalX, goalY, goalHeight);
         blueGoal= new target(goalX, goalY*-1, goalHeight);
 
         isShooterOn = false;
-        liftState=LiftState.DYNAMIC;
+        liftState= LiftState.DYNAMIC;
         redPowerShot1 = new target(goalX-2, powerShotY, goalHeight);
         redPowerShot2 = new target(goalX-2, powerShotY+7.5, goalHeight);
         redPowerShot3 = new target(goalX-2, powerShotY+15, goalHeight);

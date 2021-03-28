@@ -120,7 +120,8 @@ private int shootCount;
         break;
 
             case WAIT:
-                if (waitTimer1.milliseconds() >= 150 ) {
+                //if (waitTimer1.milliseconds() >= 150 ) {
+                if (robot.shooter.isShooterReady(targetVelocity)) {
                     shootingState = ShootingState.SHOOT;
                 }
                 break;

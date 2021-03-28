@@ -92,7 +92,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         FOLLOW_TRAJECTORY
     }
     private boolean debug=false;
-    private boolean usedashboard=true;
+    private boolean usedashboard=false;
     private FtcDashboard dashboard;
     private TelemetryPacket packet;
     private Canvas fieldOverlay;
@@ -373,7 +373,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
 
                 //&& error <Math.toRadians(1) is new here
-                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(.5)||t>turnProfile.duration()+.25))
+                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(.5)||t>turnProfile.duration()+.4))
                 {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
