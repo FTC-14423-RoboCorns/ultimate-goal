@@ -91,8 +91,8 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         FIXTURN,
         FOLLOW_TRAJECTORY
     }
-    private boolean debug=false;
-    private boolean usedashboard=false;
+    private boolean debug=true;
+    private boolean usedashboard=true;
     private FtcDashboard dashboard;
     private TelemetryPacket packet;
     private Canvas fieldOverlay;
@@ -221,6 +221,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
         }*/
+//initLocalizer(hardwareMap,true);
     }
 
 
@@ -373,7 +374,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
 
                 //&& error <Math.toRadians(1) is new here
-                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(.5)||t>turnProfile.duration()+.4))
+                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.05))//.5 tol,.25 duration
                 {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
@@ -388,7 +389,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                     }
                     else
                     {
-                        targetOmega = Math.signum(correction)*.6;
+                        targetOmega = Math.signum(correction)*.5;//.6
                         targetAlpha = 0;
                     }
                   /*

@@ -180,7 +180,7 @@ public class Driving extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Initialize SampleMecanumDrive
-        robot = new Robot(hardwareMap, telemetry,false);
+        robot = new Robot(hardwareMap, telemetry,true);
         robot.drive.speedMult=1;//use this to modulate speed
         //need this at beginning of each loop for bulk reads. Manual mode set in robot class, so must be first called after initializing class
         for (LynxModule module : robot.allHubs) {

@@ -198,7 +198,7 @@ private int shootCount;
         if (!robot.drive.isBusy()) {
             //if (ringPosition<2) turnTo(0);
            if ((autonPath.currentTarget== AutonPath.CurrentTarget.RED_POWERSHOT||autonPath.currentTarget== AutonPath.CurrentTarget.BLUE_POWERSHOT)&&(autonPath.powershotTurnMode==AutonPath.PowershotTurnMode.STRAFE)){
-                autonPath.turnTo(0);//0
+               autonPath.turnTo(0);//0
             }
 
 

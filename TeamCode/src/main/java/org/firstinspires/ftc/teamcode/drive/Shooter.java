@@ -22,7 +22,7 @@ public class Shooter {
     public Servo lift;
     public Telemetry telemetry;
     //TODO: confirm mag
-    private boolean debug=false;
+    private boolean debug=true;
     public double angle;
     public double shooterHeight;
     public double crankAngle;

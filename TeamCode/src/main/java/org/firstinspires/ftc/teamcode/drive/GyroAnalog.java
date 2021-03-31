@@ -26,7 +26,8 @@ public class GyroAnalog
     {
         rawAngle=gyro.getVoltage();
         if (rawAngle<BREAK) {
-            finalAngle = (2 * Math.PI * (3.3 - (rawAngle))) / 3.3;//old range .003,3.225
+            finalAngle = 2*Math.PI - (2*Math.PI*rawAngle/3.3);
+           // finalAngle = (2 * Math.PI * (3.227 - (rawAngle-.002))) / 3.3;//old range .003,3.225
         } else
         {
             //breakAngle= ((2 * Math.PI * (3.3 - (BREAK))) / 3.3);
