@@ -262,8 +262,10 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                 MAX_ANG_VEL,
                 MAX_ANG_ACCEL
         );
+        turnController.reset();
         turnController.setTargetPosition(heading+angle); //moved from TURN State - only set target once
-
+        turnController.setTargetVelocity(MAX_ANG_VEL);
+        turnController.setTargetAcceleration(MAX_ANG_ACCEL);
         turnStart = clock.seconds();
         mode = Mode.FIXTURN;
     }
@@ -354,10 +356,12 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                 // do nothing
                 break;
             case TURN: {
+
+
                 double t = clock.seconds() - turnStart;
 
                 MotionState targetState = turnProfile.get(t);
-
+                turnController.reset();
                 turnController.setTargetPosition(targetState.getX());
 
                 MotionState endState = turnProfile.end();
@@ -418,35 +422,41 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                 break;
             }
             case FIXTURN: {
-                double t = clock.seconds() - turnStart;
 
-                MotionState targetState = turnProfile.get(t);
 
                 double correction = turnController.update(currentPose.getHeading());
+
+              double error = Angle.normDelta(turnController.getTargetPosition() - currentPose.getHeading()); //don't need, debugging only
+                double PIDerror=turnController.getLastError();
                 if (debug) {
-                    System.out.println("TURN_Target " + turnController.getTargetPosition());
+                    System.out.println("TURN_Error " + Math.toDegrees(error));
+                    System.out.println("TURN_Error_FromPID " + Math.toDegrees(PIDerror));
+                    System.out.println("TURN_Heading before turn" + Math.toDegrees(currentPose.getHeading()));
+                    System.out.println("TURN_Final Target " + turnController.getTargetPosition());
+                    System.out.println("TURN_PID Vel " + correction);
 
-
-                    System.out.println("TURN_Error " + Math.toDegrees(turnController.getLastError()) + " " + Math.toDegrees(turnController.getTargetPosition()));
+                  //  System.out.println("TURN_time " + t);
+                   // System.out.println("TURN_duration " + turnProfile.duration());
                 }
-                if (Math.abs(turnController.getLastError())<Math.toRadians(1))//move test to the front to ensure no stale bulk reads
-                {
-                    mode = Mode.IDLE;
-                    setDriveSignal(new DriveSignal());
-                } else {
-                    double targetOmega = targetState.getV();
-                    double targetAlpha = targetState.getA();
-                    setDriveSignal(new DriveSignal(new Pose2d(
-                            0, 0, targetOmega + correction
-                    ), new Pose2d(
-                            0, 0, targetAlpha
-                    )));
-                }
-                Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
+                Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), currentPose.getHeading());
                 if (usedashboard) {
                     fieldOverlay.setStroke("#4CAF50");
                     DashboardUtil.drawRobot(fieldOverlay, newPose);
                 }
+
+                //&& error <Math.toRadians(1) is new here
+                //if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.05))//.5 tol,.25 duration
+                if (Math.abs(PIDerror)<Math.toRadians(1))
+                    {
+                    mode = Mode.IDLE;
+                    setDriveSignal(new DriveSignal());
+                } else {
+
+                    setDriveSignal(new DriveSignal(new Pose2d(0, 0, correction),
+                            new Pose2d(0, 0, 0)));
+
+                }
+
 
                 break;
             }
