@@ -73,6 +73,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
    // public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
 
     public static PIDCoefficients TURN_PID = new PIDCoefficients(15, 0.05, .01);
+    public static PIDCoefficients FIXTURN_PID = new PIDCoefficients(1.3, 0.002, .1);
     //public static PIDCoefficients Y_PID = new PIDCoefficients(12, 0, 0);
 
     public  int USE_IMU=0;
@@ -138,7 +139,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
         mode = Mode.IDLE;
 
-        turnController = new PIDFController(TURN_PID);
+        turnController = new PIDFController(FIXTURN_PID); //Change back to TURN_PID if using main turn
         turnController.setInputBounds(0, 2 * Math.PI);
 
         velConstraint = new MinVelocityConstraint(Arrays.asList(
@@ -221,7 +222,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
         }*/
-//initLocalizer(hardwareMap,true);
+    initLocalizer(hardwareMap,true);
     }
 
 
@@ -264,7 +265,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         );
         turnController.reset();
         turnController.setTargetPosition(heading+angle); //moved from TURN State - only set target once
-        turnController.setTargetVelocity(MAX_ANG_VEL);
+        turnController.setTargetVelocity(1.5);
         turnController.setTargetAcceleration(MAX_ANG_ACCEL);
         turnStart = clock.seconds();
         mode = Mode.FIXTURN;
@@ -345,6 +346,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             packet.put("x", currentPose.getX());
             packet.put("y", currentPose.getY());
             packet.put("heading (deg)", Math.toDegrees(currentPose.getHeading()));
+            packet.put("Gyro voltage", gyro.readGyroVoltage());
 
             packet.put("xError", lastError.getX());
             packet.put("yError", lastError.getY());
@@ -432,7 +434,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                     System.out.println("TURN_Error " + Math.toDegrees(error));
                     System.out.println("TURN_Error_FromPID " + Math.toDegrees(PIDerror));
                     System.out.println("TURN_Heading before turn" + Math.toDegrees(currentPose.getHeading()));
-                    System.out.println("TURN_Final Target " + turnController.getTargetPosition());
+                    System.out.println("TURN_Final Target " + Math.toDegrees(turnController.getTargetPosition()));
                     System.out.println("TURN_PID Vel " + correction);
 
                   //  System.out.println("TURN_time " + t);
@@ -446,7 +448,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
                 //&& error <Math.toRadians(1) is new here
                 //if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.05))//.5 tol,.25 duration
-                if (Math.abs(PIDerror)<Math.toRadians(1))
+                if (Math.abs(PIDerror)<Math.toRadians(0.5))
                     {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
@@ -582,6 +584,8 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         leftRear.setPower(v1);
         rightRear.setPower(v2);
         rightFront.setPower(v3);
+        if (debug)
+            System.out.println("TURN_Motor Power " + v);
     }
 
     @Override

@@ -22,6 +22,9 @@ public class GyroAnalog
         gyro = hardwareMap.get(AnalogInput.class, "Gyro");
 
     }
+    public double readGyroVoltage() {
+        return gyro.getVoltage();
+    }
     public double readGyro()
     {
         rawAngle=gyro.getVoltage();

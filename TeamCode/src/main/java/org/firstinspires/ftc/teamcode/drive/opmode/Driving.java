@@ -380,10 +380,11 @@ public class Driving extends LinearOpMode {
                     // Standard teleop control
                     // Convert gamepad input into desired pose velocity
                     mult= Range.clip(.8+(.4-gamepad1.right_trigger),.4,1);//two numbers should add to 1, subtraction is the min drive multiplier
-
+                  //  double x=gamepad1.left_stick_x;
+                  //  if (Math.abs(x)<.2) x=0;
                     driveDirection = new Pose2d(
                             -gamepad1.left_stick_y*mult,
-                            -gamepad1.left_stick_x*mult,
+                            -gamepad1.left_stick_x*mult,//-x*mult;//
                             -gamepad1.right_stick_x*mult
                     );
                  //   robot.drive.speedMult= Range.clip(.8+(.4-gamepad1.right_trigger),1,.4);//two numbers should add to 1, subtraction is the min drive multiplier
