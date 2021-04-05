@@ -84,7 +84,8 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     public double speedMult =1; //must be less than 1
 
     public static int POSE_HISTORY_LIMIT = 100;
-
+    private boolean isIMUread=false;
+    private double IMUHeading=0;
     public enum Mode {
         IDLE,
         TURN,
@@ -132,11 +133,11 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             dashboard = FtcDashboard.getInstance();
             dashboard.setTelemetryTransmissionInterval(25);
 
-        gyro = new GyroAnalog(hardwareMap);
 
         clock = NanoClock.system();
 
         mode = Mode.IDLE;
+//        gyro = new GyroAnalog(hardwareMap);
 
         turnController = new PIDFController(TURN_PID);
         turnController.setInputBounds(0, 2 * Math.PI);
@@ -168,16 +169,17 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         // TODO: adjust the names of the following hardware devices to match your configuration
         if (USE_IMU==1)
         {
-        // gyro = new GyroAnalog(hardwareMap);
+
+            // gyro = new GyroAnalog(hardwareMap);
          // gyro.gyro.resetDeviceConfigurationForOpMode();
-        /*imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
 
-            imu1 = hardwareMap.get(BNO055IMU.class, "imu1");
-            imu1.initialize(parameters);*/
+            //imu1 = hardwareMap.get(BNO055IMU.class, "imu1");
+            //imu1.initialize(parameters);
         }
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
         // upward (normal to the floor) using a command like the following:
@@ -326,6 +328,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     }
 
     public void update() {
+        if (USE_IMU==1) isIMUread=false;
         updatePoseEstimate();
         Pose2d currentPose = getPoseEstimate();
         Pose2d lastError = getLastError();
@@ -607,8 +610,14 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 */
         if (USE_IMU==1) {
            // System.out.println("gyro "+Math.toDegrees(gyro.readGyro()));
-            return gyro.readGyro();
-
+            //return gyro.readGyro();
+            if (isIMUread) {
+                return IMUHeading;
+            } else {
+               isIMUread=true;
+                IMUHeading= imu.getAngularOrientation().firstAngle;
+                return IMUHeading;
+            }
         }
         else return 0;
 
