@@ -22,7 +22,7 @@ public class TurnTest extends LinearOpMode {
 
         if (isStopRequested()) return;
 
-       drive.turn(Math.toRadians(ANGLE));
-        //drive.fixTurn(90);
+       //drive.turn(Math.toRadians(ANGLE));
+        drive.fixTurn(Math.toRadians(ANGLE));
     }
 }
