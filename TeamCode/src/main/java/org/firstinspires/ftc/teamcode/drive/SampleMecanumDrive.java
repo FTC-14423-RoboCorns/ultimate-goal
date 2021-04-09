@@ -140,7 +140,8 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         mode = Mode.IDLE;
 //        gyro = new GyroAnalog(hardwareMap);
 
-        turnController = new PIDFController(FIXTURN_PID); //Change back to TURN_PID if using main turn
+        //turnController = new PIDFController(FIXTURN_PID); //Change back to TURN_PID if using main turn
+        turnController = new PIDFController(TURN_PID);
         turnController.setInputBounds(0, 2 * Math.PI);
 
         velConstraint = new MinVelocityConstraint(Arrays.asList(
@@ -297,7 +298,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                 MAX_ANG_VEL,
                 MAX_ANG_ACCEL
         );
-
+        turnController.reset();
         turnStart = clock.seconds();
         mode = Mode.TURN;
     }
@@ -369,7 +370,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                 double t = clock.seconds() - turnStart;
 
                 MotionState targetState = turnProfile.get(t);
-                turnController.reset();
+                //turnController.reset();
                 turnController.setTargetPosition(targetState.getX());
 
                 MotionState endState = turnProfile.end();
