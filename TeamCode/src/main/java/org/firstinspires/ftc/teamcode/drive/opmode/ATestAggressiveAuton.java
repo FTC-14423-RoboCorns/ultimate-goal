@@ -112,7 +112,9 @@ public class ATestAggressiveAuton extends OpMode {
         }
         //TODO: Create Pre-Match Selection Using Joystick
         autonPath.setStartPos(AutonPath.StartPosEnum.INSIDE_RED);
+        robot.drive.update();
         PoseStorage.currentPose = robot.drive.getPoseEstimate();
+
         isRed=autonPath.isRed;
         PoseStorage.isRed=isRed;
 

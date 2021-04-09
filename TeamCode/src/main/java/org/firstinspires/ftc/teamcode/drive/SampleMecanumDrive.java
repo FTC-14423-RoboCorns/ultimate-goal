@@ -168,20 +168,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         */
 
         // TODO: adjust the names of the following hardware devices to match your configuration
-        if (USE_IMU==1)
-        {
 
-            // gyro = new GyroAnalog(hardwareMap);
-         // gyro.gyro.resetDeviceConfigurationForOpMode();
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-        imu.initialize(parameters);
-
-
-            //imu1 = hardwareMap.get(BNO055IMU.class, "imu1");
-            //imu1.initialize(parameters);
-        }
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
         // upward (normal to the floor) using a command like the following:
         // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
@@ -224,13 +211,29 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
         }*/
-    initLocalizer(hardwareMap,true);
+   // initLocalizer(hardwareMap,true);
     }
 
 
     public void initLocalizer (HardwareMap hardwareMap,boolean useIMU){
+
+
         if (useIMU) USE_IMU=1;
         else USE_IMU=0;
+        if (USE_IMU==1)
+        {
+
+            // gyro = new GyroAnalog(hardwareMap);
+            // gyro.gyro.resetDeviceConfigurationForOpMode();
+            imu = hardwareMap.get(BNO055IMU.class, "imu");
+            BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+            parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+            imu.initialize(parameters);
+
+
+            //imu1 = hardwareMap.get(BNO055IMU.class, "imu1");
+            //imu1.initialize(parameters);
+        }
         if (USE_IMU==1) {
             setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap,this));
         } else {
@@ -349,7 +352,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             packet.put("x", currentPose.getX());
             packet.put("y", currentPose.getY());
             packet.put("heading (deg)", Math.toDegrees(currentPose.getHeading()));
-            packet.put("Gyro voltage", gyro.readGyroVoltage());
+         //   packet.put("Gyro voltage", gyro.readGyroVoltage());
 
             packet.put("xError", lastError.getX());
             packet.put("yError", lastError.getY());
@@ -383,7 +386,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
 
                 //&& error <Math.toRadians(1) is new here
-                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.05))//.5 tol,.25 duration
+                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.25))//.5 tol,.25 duration
                 {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
@@ -615,12 +618,14 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         if (USE_IMU==1) {
            // System.out.println("gyro "+Math.toDegrees(gyro.readGyro()));
             //return gyro.readGyro();
-            if (isIMUread) {
+           if (isIMUread) {
                 return IMUHeading;
             } else {
                isIMUread=true;
                 IMUHeading= imu.getAngularOrientation().firstAngle;
                 return IMUHeading;
+         //       return  imu.getAngularOrientation().firstAngle;
+
             }
         }
         else return 0;
