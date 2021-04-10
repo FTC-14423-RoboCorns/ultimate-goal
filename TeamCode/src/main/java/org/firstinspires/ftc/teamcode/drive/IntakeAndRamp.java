@@ -15,6 +15,7 @@ public class IntakeAndRamp {
     public CRServo roller;
     public Servo intakeServo;
     public boolean isIntakeOn;
+    public boolean isWheelOn;
 
     public IntakeAndRamp(HardwareMap hardwareMap) {
         init(hardwareMap);
@@ -44,15 +45,16 @@ public class IntakeAndRamp {
         roller.setPower(1);
         wheels.setPower(1);
         isIntakeOn=true;
+        isWheelOn=true;
     }
 
     public void wheelsOn() {
         wheels.setPower(1);
-        isIntakeOn=true;
+        isWheelOn=true;
     }
     public void wheelsOff() {
         wheels.setPower(0);
-        isIntakeOn=false;
+        isWheelOn=false;
     }
 
     //Turns off the intake and ramp
@@ -60,12 +62,14 @@ public class IntakeAndRamp {
         intake.setPower(0);
         roller.setPower(0);
         wheels.setPower(0);
+        isWheelOn=false;
         isIntakeOn=false;
     }
     public void spit() {
         intake.setPower(-1);
         roller.setPower(-1);
         wheels.setPower(-1);
+        isWheelOn=true;
     }
 
 

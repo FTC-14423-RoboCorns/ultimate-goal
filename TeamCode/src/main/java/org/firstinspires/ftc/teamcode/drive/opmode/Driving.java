@@ -107,6 +107,11 @@ public class Driving extends LinearOpMode {
         INTAKE_ON,
         INTAKE_SPIT
     }
+    enum Wheel_State {
+        WHEEL_OFF,
+        WHEEL_ON,
+        WHEEL_FLOW
+    }
 
     enum Wobble_State {
         IDLE,
@@ -146,6 +151,7 @@ public class Driving extends LinearOpMode {
 
     double targetVelocity = 2000;
     private Intake_State intakeMode = Intake_State.INTAKE_OFF;
+    private Wheel_State wheelMode = Wheel_State.WHEEL_FLOW;
     private Mode currentMode = Mode.NORMAL_CONTROL;
     private Shooter_State shooterMode = Shooter_State.SHOOTER_OFF;
     private Wobble_State wobbleMode = Wobble_State.IDLE;
@@ -354,6 +360,7 @@ public class Driving extends LinearOpMode {
 
 
                     if (gamepad2.b&&!powerShotButtonDown) {
+                        powerShotButtonDown=true;
                         if (gamepad2.right_trigger > .5) {
                             powershootNumber = 3;
                             manualPowershot = false;
@@ -368,6 +375,11 @@ public class Driving extends LinearOpMode {
                                     .build();
                             endGame = PowershotState.START;
                             currentMode = Mode.POWERSHOT;
+                        } else
+                        {
+                            if (robot.intake.isWheelOn) robot.intake.wheelsOff();
+                            else robot.intake.wheelsOn();
+
                         }
                     }
 
@@ -727,6 +739,7 @@ public class Driving extends LinearOpMode {
 
 
     public void handleIntake() {
+
         switch (intakeMode) {
             case INTAKE_OFF:
                 if (gamepad2.a && !intakeButtonDown) {
