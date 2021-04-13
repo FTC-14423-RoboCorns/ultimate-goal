@@ -1,16 +1,12 @@
 package org.firstinspires.ftc.teamcode.drive;
 
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 public class PixyAnalog
 {
     public double sensorHeight;
-    public double oneRing;
+    public double fourRing;
     private AnalogInput pixy;
    // private PixyDigital pixydig;
     public PixyAnalog(HardwareMap hardwareMap) {
@@ -20,7 +16,7 @@ public class PixyAnalog
     private void init(HardwareMap hardwareMap) {
         pixy = hardwareMap.get(AnalogInput.class, "PixyAnalog");
   //      pixydig = new PixyDigital(hardwareMap);
-        oneRing = pixy.getVoltage();
+        fourRing = pixy.getVoltage();
     }
     private double readPixy()
     {
@@ -42,11 +38,11 @@ public class PixyAnalog
 */
 
         sensorHeight = readPixy();
-        if(sensorHeight<(oneRing - 1))
+        if(sensorHeight<(fourRing - 1))
         {
             return 0;
         }
-        else if(sensorHeight<(oneRing -.05))
+        else if(sensorHeight<(fourRing -.05))
         {
             return 1;
         }

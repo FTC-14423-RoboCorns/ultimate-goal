@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
@@ -549,12 +550,14 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     public void setWeightedDrivePower(Pose2d drivePower) {
         Pose2d vel = drivePower;
 
+        double head;
         if (Math.abs(drivePower.getX()) + Math.abs(drivePower.getY())
                 + Math.abs(drivePower.getHeading()) > 1) {
             // re-normalize the powers according to the weights
             double denom = VX_WEIGHT * Math.abs(drivePower.getX())
                     + VY_WEIGHT * Math.abs(drivePower.getY())
                     + OMEGA_WEIGHT * Math.abs(drivePower.getHeading());
+
 
             vel = new Pose2d(
                     VX_WEIGHT * drivePower.getX()* speedMult,
@@ -563,7 +566,11 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             ).div(denom);
         }
 
-        setDrivePower(vel);
+        if (vel.getHeading()> 0)
+            head= Range.clip(vel.getHeading(),.25,1);
+        else head=0;
+        Pose2d newVel =new Pose2d(vel.getX(),vel.getY(),head);
+        setDrivePower(newVel);
     }
 
     @NonNull

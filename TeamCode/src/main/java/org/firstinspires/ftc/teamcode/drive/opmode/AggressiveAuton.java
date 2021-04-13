@@ -14,8 +14,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.drive.PoseStorage;
 import org.firstinspires.ftc.teamcode.drive.Robot;
 
-import Unused.trclib.trclib.TrcPixyCam2;
-
 /*
  * This is a simple routine to test translational drive capabilities.
  */
@@ -143,7 +141,7 @@ public class AggressiveAuton extends OpMode {
         ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
        // telemetry.addData("gyro", Math.toDegrees(Localizer.gyro.readGyro()));
         telemetry.update();
     }
@@ -156,7 +154,7 @@ public class AggressiveAuton extends OpMode {
         ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
         telemetry.update();
         if (ringPosition==0) {
             trajectory1 = robot.drive.trajectoryBuilder(startPose)
@@ -514,7 +512,7 @@ public class AggressiveAuton extends OpMode {
             robot.shooter.update(robot.drive.getPoseEstimate());
             telemetry.addData("Stack Height", ringPosition);
             telemetry.addData("key", robot.pixy.sensorHeight);
-            telemetry.addData("key", robot.pixy.oneRing);
+            telemetry.addData("key", robot.pixy.fourRing);
             telemetry.update();
 
     }

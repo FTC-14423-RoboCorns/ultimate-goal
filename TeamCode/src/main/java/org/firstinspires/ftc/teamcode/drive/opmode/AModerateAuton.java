@@ -130,7 +130,7 @@ public class AModerateAuton extends OpMode {
         autonPath.ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", autonPath.ringPosition);
         telemetry.addData("current reading", robot.pixy.sensorHeight);
-        telemetry.addData("4 ring calibration", robot.pixy.oneRing);
+        telemetry.addData("4 ring calibration", robot.pixy.fourRing);
        // telemetry.addData("gyro", Math.toDegrees(Localizer.gyro.readGyro()));
         telemetry.update();
     }
@@ -143,7 +143,7 @@ public class AModerateAuton extends OpMode {
         autonPath.ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", autonPath.ringPosition);
         telemetry.addData("current reading", robot.pixy.sensorHeight);
-        telemetry.addData("4 ring calibration", robot.pixy.oneRing);
+        telemetry.addData("4 ring calibration", robot.pixy.fourRing);
         telemetry.update();
         if (autonPath.ringPosition==0) {
             autonPath.firstShot=new Vector2d(-10,isRed*-23);

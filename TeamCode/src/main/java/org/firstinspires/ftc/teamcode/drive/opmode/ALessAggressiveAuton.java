@@ -161,7 +161,7 @@ public class ALessAggressiveAuton extends OpMode {
         ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
        // telemetry.addData("gyro", Math.toDegrees(Localizer.gyro.readGyro()));
         telemetry.update();
     }
@@ -174,7 +174,7 @@ public class ALessAggressiveAuton extends OpMode {
         ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
         telemetry.update();
         if (ringPosition==0||ringPosition==2) {
             shootX=-10;
@@ -586,7 +586,7 @@ public class ALessAggressiveAuton extends OpMode {
             robot.shooter.update(robot.drive.getPoseEstimate());
             telemetry.addData("Stack Height", ringPosition);
             telemetry.addData("key", robot.pixy.sensorHeight);
-            telemetry.addData("key", robot.pixy.oneRing);
+            telemetry.addData("key", robot.pixy.fourRing);
             telemetry.update();
 
     }

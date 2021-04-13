@@ -142,7 +142,7 @@ public class TestAuton extends OpMode {
         ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
        // telemetry.addData("gyro", Math.toDegrees(Localizer.gyro.readGyro()));
         telemetry.update();
     }
@@ -155,7 +155,7 @@ public class TestAuton extends OpMode {
         ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
         telemetry.update();
 
         robot.drive.followTrajectoryAsync(trajectory1);
@@ -408,7 +408,7 @@ public class TestAuton extends OpMode {
             robot.shooter.update(robot.drive.getPoseEstimate());
             telemetry.addData("Stack Height", ringPosition);
             telemetry.addData("key", robot.pixy.sensorHeight);
-            telemetry.addData("key", robot.pixy.oneRing);
+            telemetry.addData("key", robot.pixy.fourRing);
             telemetry.update();
 
     }

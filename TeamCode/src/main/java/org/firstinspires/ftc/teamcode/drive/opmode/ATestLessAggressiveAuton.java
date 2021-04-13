@@ -130,7 +130,7 @@ public class ATestLessAggressiveAuton extends OpMode {
         autonPath.ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", autonPath.ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
        // telemetry.addData("gyro", Math.toDegrees(Localizer.gyro.readGyro()));
         telemetry.update();
     }
@@ -143,7 +143,7 @@ public class ATestLessAggressiveAuton extends OpMode {
         autonPath.ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", autonPath.ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
         telemetry.update();
         if (autonPath.ringPosition==0) {
             autonPath.firstShot=new Vector2d(-8,isRed*-23);//was -23

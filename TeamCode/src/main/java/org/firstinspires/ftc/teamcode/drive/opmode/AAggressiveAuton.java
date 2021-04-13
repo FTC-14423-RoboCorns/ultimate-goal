@@ -15,7 +15,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.PoseStorage;
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.Shooter;
@@ -24,7 +23,6 @@ import java.util.Arrays;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 
 /*
@@ -162,7 +160,7 @@ public class AAggressiveAuton extends OpMode {
         ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
        // telemetry.addData("gyro", Math.toDegrees(Localizer.gyro.readGyro()));
         telemetry.update();
     }
@@ -175,7 +173,7 @@ public class AAggressiveAuton extends OpMode {
         ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
         telemetry.update();
         if (ringPosition==0) {
             shootX=-10;
@@ -596,7 +594,7 @@ public class AAggressiveAuton extends OpMode {
             robot.shooter.update(robot.drive.getPoseEstimate());
             telemetry.addData("Stack Height", ringPosition);
             telemetry.addData("key", robot.pixy.sensorHeight);
-            telemetry.addData("key", robot.pixy.oneRing);
+            telemetry.addData("key", robot.pixy.fourRing);
             telemetry.update();
 
     }

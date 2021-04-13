@@ -3,12 +3,10 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
-import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -133,7 +131,7 @@ public class ATestAuton extends OpMode {
         autonPath.ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", autonPath.ringPosition);
         telemetry.addData("key", robot.pixy.sensorHeight);
-        telemetry.addData("key", robot.pixy.oneRing);
+        telemetry.addData("key", robot.pixy.fourRing);
        // telemetry.addData("gyro", Math.toDegrees(Localizer.gyro.readGyro()));
         telemetry.update();
     }
@@ -146,7 +144,7 @@ public class ATestAuton extends OpMode {
         autonPath.ringPosition = robot.pixy.getStackHeight();
         telemetry.addData("Stack Height", autonPath.ringPosition);
         telemetry.addData("Pixy", robot.pixy.sensorHeight);
-        telemetry.addData("One Ring", robot.pixy.oneRing);
+        telemetry.addData("One Ring", robot.pixy.fourRing);
         telemetry.update();
         if (autonPath.ringPosition==0) {
             autonPath.firstShot=new Vector2d(-10,isRed*-23);
