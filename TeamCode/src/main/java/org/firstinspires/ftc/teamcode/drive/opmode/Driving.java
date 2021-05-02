@@ -270,7 +270,7 @@ public class Driving extends LinearOpMode {
                             targetVelocity = robot.shooter.shooterOn();
                         }
                         //turnTo(SHOOTER_TURNTO);
-                        turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal));
+                        turnTo((robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal)+Math.toRadians(3)));
                         currentMode = Mode.ALIGN_TO_POINT;
 
                     }

@@ -61,7 +61,8 @@ public CurrentTarget[] currentTargetArray= new CurrentTarget[3];
     public Trajectory[] ring2Array=new Trajectory[3];
     public Trajectory[] ring3Array=new Trajectory[3];
     public Trajectory[] drop1Array=new Trajectory[3];
-
+    public Trajectory[] vacuum1Array=new Trajectory[3];
+    public Trajectory[] vacuum2Array=new Trajectory[3];
 
     public PowershotTurnMode powershotTurnMode;
     public Vector2d firstShot;

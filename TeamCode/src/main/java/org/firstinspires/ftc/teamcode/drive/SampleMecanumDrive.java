@@ -12,6 +12,7 @@ import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.localization.Localizer;
 import com.acmerobotics.roadrunner.profile.MotionProfile;
 import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
 import com.acmerobotics.roadrunner.profile.MotionState;
@@ -78,10 +79,10 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
     //public static PIDCoefficients Y_PID = new PIDCoefficients(12, 0, 0);
 
     public  int USE_IMU=0;
-    public static double LATERAL_MULTIPLIER = 1.3;//1.1; //was 2.05;
+    public static double LATERAL_MULTIPLIER = 1.3;////1.1; //was 2.05;
     private GyroAnalog gyro;
     public static double VX_WEIGHT = .7;
-    public static double VY_WEIGHT = .9;
+    public static double VY_WEIGHT = 1;
     public static double OMEGA_WEIGHT =.9;// .8;
     public double speedMult =1; //must be less than 1
 
@@ -169,6 +170,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         }
         */
 
+
         // TODO: adjust the names of the following hardware devices to match your configuration
 
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
@@ -213,7 +215,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
             setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
 
         }*/
-   // initLocalizer(hardwareMap,true);
+    //initLocalizer(hardwareMap,false);
     }
 
 
@@ -388,7 +390,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
 
 
                 //&& error <Math.toRadians(1) is new here
-                if (t >= turnProfile.duration() && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.25))//.5 tol,.25 duration
+                if ((t >= turnProfile.duration()) && (Math.abs(error) <Math.toRadians(1)||t>turnProfile.duration()+.2))//.5 tol,.25 duration
                 {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
@@ -403,7 +405,7 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
                     }
                     else
                     {
-                        targetOmega = Math.signum(correction)*.5;//.6
+                        targetOmega = Math.signum(correction)*.4;//.5;//.6
                         targetAlpha = 0;
                     }
                   /*
@@ -567,7 +569,9 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         }
 
         if (vel.getHeading()> 0)
-            head= Range.clip(vel.getHeading(),.25,1);
+        {head= Range.clip(vel.getHeading(),.25,1);}
+        else if (vel.getHeading()<0)
+        { head =Range.clip(vel.getHeading(),-1,-.25);}
         else head=0;
         Pose2d newVel =new Pose2d(vel.getX(),vel.getY(),head);
         setDrivePower(newVel);
@@ -598,8 +602,8 @@ public class SampleMecanumDrive extends com.acmerobotics.roadrunner.drive.Mecanu
         leftRear.setPower(v1);
         rightRear.setPower(v2);
         rightFront.setPower(v3);
-        if (debug)
-            System.out.println("TURN_Motor Power " + v);
+        //if (debug)
+          //  System.out.println("TURN_Motor Power " + v);
     }
 
     @Override

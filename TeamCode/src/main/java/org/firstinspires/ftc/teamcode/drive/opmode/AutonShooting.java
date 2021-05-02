@@ -114,6 +114,7 @@ private int shootCount;
         if (!robot.shooter.isShooterOn) {
             shooterOn();
         }
+
         if (robot.shooter.isShooterReady(targetVelocity)&&!robot.drive.isBusy()) {
             shootingState = ShootingState.SHOOT;
         } //will need to add a timer later to move on in case we never get up to speed

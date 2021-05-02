@@ -13,7 +13,7 @@ public class IntakeAndRamp {
     public DcMotor intake;
     public DcMotor wheels;
     public CRServo roller;
-    public Servo intakeServo;
+    public Servo dropper;
     public boolean isIntakeOn;
     public boolean isWheelOn;
 
@@ -34,12 +34,20 @@ public class IntakeAndRamp {
         roller = hardwareMap.get(CRServo.class, "Roller");
         roller.setDirection(CRServo.Direction.FORWARD);
 
+        dropper = hardwareMap.get(Servo.class, "Dropper");
+
         //TODO: Set pos
         //intakeServo = hardwareMap.get(Servo.class, "IntakeServo");
         isIntakeOn=false;
     }
 
     //Turns on the intake and ramp
+    public void lowerIntake(){
+        dropper.setPosition(0);
+    }
+    public void raiseIntake(){
+        dropper.setPosition(1);
+    }
     public void turnOn() {
         intake.setPower(1);
         roller.setPower(1);
@@ -72,6 +80,10 @@ public class IntakeAndRamp {
         isWheelOn=true;
     }
 
+
+        public void spitwheels(){
+            wheels.setPower(-1);
+        }
 
     //Flips intake from start position to end position
     public void flipIntake() {
