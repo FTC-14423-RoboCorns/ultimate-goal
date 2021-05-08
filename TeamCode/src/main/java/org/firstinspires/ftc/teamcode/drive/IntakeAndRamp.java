@@ -14,6 +14,8 @@ public class IntakeAndRamp {
     public DcMotor wheels;
     public CRServo roller;
     public Servo dropper;
+    public Servo wingL;
+    public Servo wingR;
     public boolean isIntakeOn;
     public boolean isWheelOn;
 
@@ -35,6 +37,11 @@ public class IntakeAndRamp {
         roller.setDirection(CRServo.Direction.FORWARD);
 
         dropper = hardwareMap.get(Servo.class, "Dropper");
+
+        wingL = hardwareMap.get(Servo.class, "wingL");
+        wingR = hardwareMap.get(Servo.class, "wingR");
+        wingInit();
+
 
         //TODO: Set pos
         //intakeServo = hardwareMap.get(Servo.class, "IntakeServo");
@@ -80,14 +87,27 @@ public class IntakeAndRamp {
         isWheelOn=true;
     }
 
+    public void wingInit(){
+        wingL.setPosition(.27);
+        wingR.setPosition(.78);
+    }
 
-        public void spitwheels(){
+    public void wingDown(){
+        wingL.setPosition(.98);
+        wingR.setPosition(.02);
+    }
+
+    public void wingUp(){
+        wingL.setPosition(0.85);
+        wingR.setPosition(0.15);
+    }
+    public void wingFullUp(){
+        wingL.setPosition(.7);
+        wingR.setPosition(.3);
+    }
+
+
+    public void spitwheels(){
             wheels.setPower(-1);
         }
-
-    //Flips intake from start position to end position
-    public void flipIntake() {
-        //TODO: Change pos
-        //intakeServo.setPosition();
-    }
 }

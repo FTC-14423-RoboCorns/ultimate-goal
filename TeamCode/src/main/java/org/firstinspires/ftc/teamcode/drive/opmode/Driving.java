@@ -86,6 +86,7 @@ public class Driving extends LinearOpMode {
     private boolean psDecreaseButtonDown;
     private boolean headingRightButtonDown;
     private boolean headingLeftButtonDown;
+    private boolean wingMacro;
     private  Pose2d strafePose;
     private boolean upOrDown = true;
 
@@ -105,7 +106,12 @@ public class Driving extends LinearOpMode {
     enum Intake_State {
         INTAKE_OFF,
         INTAKE_ON,
-        INTAKE_SPIT
+        INTAKE_SPIT,
+    }
+    enum Wing_State {
+        WING_MACRO,
+        WING_MANUAL,
+        WING_INIT
     }
     enum Wheel_State {
         WHEEL_OFF,
@@ -151,6 +157,7 @@ public class Driving extends LinearOpMode {
 
     double targetVelocity = 2000;
     private Intake_State intakeMode = Intake_State.INTAKE_OFF;
+    private Wing_State wingState = Wing_State.WING_INIT;
     private Wheel_State wheelMode = Wheel_State.WHEEL_FLOW;
     private Mode currentMode = Mode.NORMAL_CONTROL;
     private Shooter_State shooterMode = Shooter_State.SHOOTER_OFF;
@@ -519,7 +526,7 @@ public class Driving extends LinearOpMode {
             //handleShootMode();
             handleIntake();
             handleWobble();
-
+            handleWings();
             handlePowershot();
             handleChangeHeading();
             if (gamepad2.y && !stopShootButtonDown)
@@ -543,6 +550,7 @@ public class Driving extends LinearOpMode {
                     if (gamepad2.x && !shootButtonDown)
                     // if (oneShoot == 0)
                     {
+                        robot.intake.wingUp();
                         robot.shooter.currentTarget=robot.shooter.redGoal;
                         oneShoot = 1;
                         shootButtonDown = true;
@@ -611,6 +619,7 @@ public class Driving extends LinearOpMode {
                             currentMode = Mode.NORMAL_CONTROL;
                             robot.shooter.pusherOut();
                             if (debug) System.out.println("SHOOT_Done");
+                            robot.intake.wingDown();
                         }
                     }
                     break;
@@ -722,7 +731,7 @@ public class Driving extends LinearOpMode {
         //if (!gamepad2.left_bumper) ringDecreaseButtonDown=false;
         if (!gamepad2.dpad_right) psIncreaseButtonDown=false;
         if (!gamepad2.dpad_left) psDecreaseButtonDown=false;
-
+        if(!(Math.abs(gamepad2.right_stick_y) > 0.6)&&!(Math.abs(gamepad2.left_stick_y) > 0.6)) wingMacro = false;
     }
 
     /*public void handleShootMode() {
@@ -776,8 +785,36 @@ public class Driving extends LinearOpMode {
                     intakeMode = Intake_State.INTAKE_ON;
                     robot.intake.turnOn();
                 }
+
                 break;
         }
+    }
+
+    public void handleWings() {
+                if(gamepad2.right_stick_y < -0.6 && !wingMacro)
+                {
+                    wingMacro = true;
+                    robot.intake.wingUp();
+                }
+
+                if(gamepad2.right_stick_y > 0.6 && !wingMacro) {
+                    wingMacro = true;
+                    robot.intake.wingDown();
+                }
+        if(gamepad1.dpad_up && !wingMacro)
+        {
+            wingMacro = true;
+            robot.intake.wingFullUp();
+        }
+                if(gamepad2.left_stick_y < -0.6 && !wingMacro) {
+                    wingMacro = true;
+                    robot.intake.wingFullUp();
+                }
+                if(gamepad2.left_stick_y > 0.6 && !wingMacro) {
+                    wingMacro = true;
+                    robot.intake.wingDown();
+                }
+
     }
 
     public void handleWobble() {
