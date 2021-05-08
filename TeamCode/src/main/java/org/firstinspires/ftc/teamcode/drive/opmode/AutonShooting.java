@@ -347,6 +347,9 @@ private int shootCount;
                     case TURN:
                     autonPath.turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot2)-POWEROFFSET2);
                     break;
+                    DEFLECTOR:
+                    //robot.shooter.deflector.setPosition(robot.shooter.DEFLECTOR_MID);
+                    break;
                 }
             }
             else
@@ -364,7 +367,12 @@ private int shootCount;
                 break;
                     case TURN:
                 autonPath.turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redPowerShot3)-POWEROFFSET3);
-            break;}
+            break;
+                    DEFLECTOR:
+                  //  robot.shooter.deflector.setPosition(robot.shooter.DEFLECTOR_RIGHT);
+                    break;
+
+                }
 
                 }
         }

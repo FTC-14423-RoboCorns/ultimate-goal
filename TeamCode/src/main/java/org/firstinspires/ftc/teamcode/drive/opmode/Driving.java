@@ -551,6 +551,7 @@ public class Driving extends LinearOpMode {
                     // if (oneShoot == 0)
                     {
                         robot.intake.wingUp();
+                       // robot.shooter.deflector.setPosition(robot.shooter.DEFLECTOR_GOAL);
                         robot.shooter.currentTarget=robot.shooter.redGoal;
                         oneShoot = 1;
                         shootButtonDown = true;
@@ -1068,6 +1069,7 @@ public class Driving extends LinearOpMode {
                 if (!robot.drive.isBusy()) {
                     if (debug) System.out.println("SHOOTER Turn done moving to on");
                     if (twofer) {
+                        //robot.shooter.deflector.setPosition(robot.shooter.DEFLECTOR_MID);
                         turnTo(0);
                     }
                     endGame = PowershotState.SHOOTER_ON;
@@ -1160,6 +1162,9 @@ public class Driving extends LinearOpMode {
                 break;
             case TURN2:
                 if (!robot.drive.isBusy()) {
+
+                    //robot.shooter.deflector.setPosition(robot.shooter.DEFLECTOR_RIGHT);
+
                     turnTo(0);
                     endGame = PowershotState.WAIT;
                 }

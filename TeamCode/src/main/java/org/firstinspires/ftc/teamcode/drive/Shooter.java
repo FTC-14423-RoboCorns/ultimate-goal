@@ -20,6 +20,7 @@ public class Shooter {
     public DcMotorEx shooter;
     public Servo pusher;
     public Servo lift;
+    public Servo deflector;
     public Telemetry telemetry;
     //TODO: confirm mag
     private boolean debug=false;
@@ -49,6 +50,12 @@ public class Shooter {
     private final double RING_EXIT_VELOCITY=50;//feet per second
     private final double LAUNCH_HEIGHT=4;
     private final double GRAVITY_FEET=32.17;
+    public final double DEFLECTOR_OFF=0;
+    public final double DEFLECTOR_GOAL=0;
+    public final double DEFLECTOR_MID=0;
+    public final double DEFLECTOR_RIGHT=0;
+    public final double DEFLECTOR_LEFT=0;
+    public final double DEFLECTOR_INIT=0;
 
     //the location of the middle of the robot.
     public static double robotY = 0;
@@ -103,6 +110,8 @@ public class Shooter {
         shooter = hardwareMap.get(DcMotorEx.class, "Shooter");
         pusher = hardwareMap.get(Servo.class, "pusher");
         lift= hardwareMap.get(Servo.class, "lift");
+       // deflector=hardwareMap.get(Servo.class, "deflector");
+        //deflector.setPosition(DEFLECTOR_INIT);
         lift.scaleRange(.12,.6);//lift servo now goes from 0,1
         lift.setPosition(.6);
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);

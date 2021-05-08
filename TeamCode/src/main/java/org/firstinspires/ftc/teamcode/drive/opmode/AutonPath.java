@@ -45,7 +45,8 @@ public CurrentTarget[] currentTargetArray= new CurrentTarget[3];
     public Pose2d startPose;
     public enum PowershotTurnMode {
         TURN,
-        STRAFE
+        STRAFE,
+        DEFLECTOR
     }
     public Trajectory trajectory1,trajectory2,trajectory3,pickUpRing, trajectory4,trajectory5,misswobble,strafe1,strafe2,ring2,ring3,drop1;
 
