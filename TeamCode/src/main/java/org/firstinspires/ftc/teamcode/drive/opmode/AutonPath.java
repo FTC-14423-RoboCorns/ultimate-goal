@@ -154,7 +154,8 @@ public CurrentTarget[] currentTargetArray= new CurrentTarget[3];
 
                     //.splineToLinearHeading(new Pose2d(-7, isRed * -12, robot.shooter.angleToGoal(-7, -12, robot.shooter.redPowerShot1)-POWEROFFSET), Math.toRadians(-15))
                     //.lineToLinearHeading(new Pose2d(firstShot, 0))
-                    .lineToLinearHeading(new Pose2d(first, firstAngle))
+                    //.splineToLinearHeading(new Pose2d(first, firstAngle),0)
+                    .splineTo(first,0)
                     .build();
              //affects lift height - change if we shoot for goal
 

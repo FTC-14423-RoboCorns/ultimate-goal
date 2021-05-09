@@ -124,7 +124,8 @@ public class ATestAggressiveAuton extends OpMode {
         PoseStorage.isRed=isRed;
 
         //autonPath.powershotTurnMode= AutonPath.PowershotTurnMode.TURN;
-        autonPath.powershotTurnMode= AutonPath.PowershotTurnMode.STRAFE;
+        //autonPath.powershotTurnMode= AutonPath.PowershotTurnMode.STRAFE;
+        autonPath.powershotTurnMode= AutonPath.PowershotTurnMode.DEFLECTOR;
 
         //Pose2d startOutsidePose = new Pose2d(X, Y * isRed, 0);
         setPaths();
@@ -177,7 +178,8 @@ public class ATestAggressiveAuton extends OpMode {
             case LOWERINTAKE:
                 if (!robot.shooter.isShooterOn) {
                     if (autonPath.currentTarget == AutonPath.CurrentTarget.RED_POWERSHOT) {
-                        autonShooting.desiredVelocity=1850;
+                        //autonShooting.desiredVelocity=1850;
+                        autonShooting.desiredVelocity=2000;
                     }
                     else {
                         autonShooting.desiredVelocity = 2000;
@@ -363,6 +365,7 @@ public class ATestAggressiveAuton extends OpMode {
                         autonWobble.setWobblePos(450);
                         //robot.drive.followTrajectoryAsync(pickUpRing);
                         autonShooting.desiredVelocity = 0;
+                        robot.shooter.deflector.setPosition(robot.shooter.DEFLECTOR_OFF);
                         currentState = State.CHECK_SHOOTER;
 
 
@@ -819,7 +822,7 @@ public void setPaths()
     {
 
             //0
-            autonPath.firstShotArray[0]=new Vector2d(-10,isRed*-20);
+            autonPath.firstShotArray[0]=new Vector2d(-10,isRed*-6);//(-20,-30)
             //autonPath.firstShot=
             //shootX=-10;
             //shootY=-22;
