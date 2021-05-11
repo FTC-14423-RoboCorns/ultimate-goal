@@ -217,7 +217,7 @@ private int shootCount;
                 //robot.shooter.currentTarget=robot.shooter.redGoal;
                 if(autonPath.ringPosition ==1 )
                 {
-                    secondShootTotal =1;
+                    secondShootTotal =3;//1
                 }
                 else
                 {
