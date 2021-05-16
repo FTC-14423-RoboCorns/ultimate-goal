@@ -296,13 +296,13 @@ public class Shooter {
 
         case STATIC:
             if (Math.abs(goal.y) < 26) {
-                if (Math.abs(robotX)<24) liftPos = .69;//.67;//.68;//.67;//.68;//0.7;
-                else liftPos = .76;
+                if (Math.abs(robotX)<24) liftPos = 0.7;//.69;//.67;//.68;//.67;//.68;//0.7;
+                else liftPos = .76;//76
             } else {
                // liftPos = .58;//0.54;
                 if (Math.abs(robotX)<24) liftPos = .58;//.58
                 else
-                liftPos=.68;//.69;//.65;//.66;//.67;//.70;//.71;
+                liftPos=.69;//.69;//.65;//.66;//.67;//.70;//.71;
             }
             break;
         case DYNAMIC:
@@ -310,7 +310,7 @@ public class Shooter {
         //System.out.println("SHOOTER_TURN_distance: "+distance);
         if (Math.abs(goal.y) < 24) {
            // liftPos = 0.61;
-            liftPos=.70;//.69;//.67;//.68;//.69;//.68;//.69;//.68;//0.64;
+            liftPos=.71;//.70;//.69;//.67;//.68;//.69;//.68;//.69;//.68;//0.64;
         } else {
 
             if (distance < 78) {

@@ -197,7 +197,7 @@ public CurrentTarget[] currentTargetArray= new CurrentTarget[3];
                 //turnTo(Math.toRadians(0));
                 break;
             case RED_GOAL:
-                turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal)+Math.toRadians(2));//AutonShooting.POWEROFFSET
+                turnTo(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(), robot.shooter.redGoal)+Math.toRadians(6));//AutonShooting.POWEROFFSET
                 if (debug) System.out.println("SHOOTER_firstAngle " + Math.toDegrees(robot.shooter.angleToGoal(robot.drive.getPoseEstimate().getX(), robot.drive.getPoseEstimate().getY(),  robot.shooter.redGoal) - AutonShooting.POWEROFFSET));
                 break;
         }

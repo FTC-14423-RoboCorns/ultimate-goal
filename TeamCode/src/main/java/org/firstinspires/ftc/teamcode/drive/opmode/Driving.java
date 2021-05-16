@@ -292,7 +292,7 @@ public class Driving extends LinearOpMode {
                         powershootNumber = 1;
                         if (!robot.shooter.isShooterOn) {
                          // targetVelocity = robot.shooter.shooterOn(1850);
-                            targetVelocity = robot.shooter.shooterOn(2000);
+                            targetVelocity = robot.shooter.shooterOn(1950);
                             if (debug) System.out.println("SHOOTER ON target vel " + targetVelocity);
                         }
 
@@ -315,7 +315,7 @@ public class Driving extends LinearOpMode {
                             powershootNumber = 2;
                             if (!robot.shooter.isShooterOn) {
                              //   targetVelocity = robot.shooter.shooterOn(1850);
-                                targetVelocity = robot.shooter.shooterOn(2000);
+                                targetVelocity = robot.shooter.shooterOn(1950);
                                 if (debug)
                                     System.out.println("SHOOTER ON target vel " + targetVelocity);
                             }
@@ -328,7 +328,7 @@ public class Driving extends LinearOpMode {
                                 if (strafePose==null) strafePose=robot.drive.getPoseEstimate();
                                 if (!robot.shooter.isShooterOn) {
                                     //targetVelocity = robot.shooter.shooterOn(1850);
-                                    targetVelocity = robot.shooter.shooterOn(2000);
+                                    targetVelocity = robot.shooter.shooterOn(1950);
                                 }
                                 strafe = robot.drive.trajectoryBuilder(robot.drive.getPoseEstimate())
                                         //.strafeLeft(7.5,velConstraint,accelConstraint)
